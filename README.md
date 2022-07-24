@@ -1,6 +1,7 @@
 # TinyCLI
 
 *TinyCLI* is a command line interface for embedded systems that is intended to be very easy to use.
+Typical applications would e.g. be to provide a simple CLI over a serial line or over a Telnet connection.
 
 ![Sample](sample.gif)
 
