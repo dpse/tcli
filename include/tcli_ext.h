@@ -98,8 +98,8 @@ bool tclie_set_pre_cmd(tclie_t *tclie, tclie_pre_cmd_fn_t pre_cmd);
 bool tclie_set_post_cmd(tclie_t *tclie, tclie_post_cmd_fn_t post_cmd);
 
 #if TCLIE_ENABLE_USERS
-bool tclie_set_user_level(tclie_t *tclie, int user_level);
-bool tclie_get_user_level(const tclie_t *tclie, int *user_level);
+bool tclie_set_user_level(tclie_t *tclie, unsigned user_level);
+bool tclie_get_user_level(const tclie_t *tclie, unsigned *user_level);
 #endif
 
 #endif

@@ -510,7 +510,7 @@ bool tclie_reg_cmds(tclie_t *tclie, const tclie_cmd_t *cmds, size_t count)
 }
 
 #if TCLIE_ENABLE_USERS
-bool tclie_set_user_level(tclie_t *const tclie, const int user_level)
+bool tclie_set_user_level(tclie_t *const tclie, const unsigned user_level)
 {
     if (!tclie)
 	return false;
@@ -519,7 +519,7 @@ bool tclie_set_user_level(tclie_t *const tclie, const int user_level)
     return true;
 }
 
-bool tclie_get_user_level(const tclie_t *const tclie, int *const user_level)
+bool tclie_get_user_level(const tclie_t *const tclie, unsigned *const user_level)
 {
     if (!tclie || !user_level)
 	return false;
