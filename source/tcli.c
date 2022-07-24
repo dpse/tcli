@@ -652,7 +652,7 @@ static void tcli_term_reprint_all(tcli_t *const tcli)
 	tcli_out(tcli, tcli->hist.search_prompt);
     else
 #endif
-	if (tcli->res != 0)
+    if (tcli->res != 0)
 	tcli_out(tcli, tcli->error_prompt);
     else
 	tcli_out(tcli, tcli->prompt);
