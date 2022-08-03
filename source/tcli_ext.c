@@ -48,16 +48,20 @@ static bool tclie_valid_cmd(const tclie_t *const tclie,
 	return true;
 }
 
-static inline void tclie_out(tclie_t *const tclie, const char *const str)
+void tclie_out(tclie_t *const tclie, const char *const str)
 {
 	assert(tclie && str);
-	tcli_out(&tclie->tcli, str);
+
+	if (tclie && str)
+		tcli_out(&tclie->tcli, str);
 }
 
-static inline void tclie_flush(tclie_t *const tclie)
+void tclie_flush(tclie_t *const tclie)
 {
 	assert(tclie);
-	tcli_flush(&tclie->tcli);
+
+	if (tclie)
+		tcli_flush(&tclie->tcli);
 }
 
 static inline void tclie_out_flush(tclie_t *const tclie, const char *const str)
@@ -631,3 +635,82 @@ static int tclie_cmd_logout(void *arg, const int argc, const char *const *argv)
 	return 0;
 }
 #endif
+
+bool tclie_input_char(tclie_t *const tclie, const char c)
+{
+	return tclie ? tcli_input_char(&tclie->tcli, c) : false;
+}
+
+bool tclie_input_str(tclie_t *const tclie, const char *const str)
+{
+	return tclie ? tcli_input_str(&tclie->tcli, str) : false;
+}
+
+bool tclie_input(tclie_t *const tclie, const void *const buf, const size_t len)
+{
+	return tclie ? tcli_input(&tclie->tcli, buf, len) : false;
+}
+
+bool tclie_set_echo(tclie_t *const tclie, const tcli_echo_mode_t mode)
+{
+	return tclie ? tcli_set_echo(&tclie->tcli, mode) : false;
+}
+bool tclie_set_prompt(tclie_t *const tclie, const char *const prompt)
+{
+	return tclie ? tcli_set_prompt(&tclie->tcli, prompt) : false;
+}
+
+bool tclie_set_error_prompt(tclie_t *const tclie,
+							const char *const error_prompt)
+{
+	return tclie ? tcli_set_error_prompt(&tclie->tcli, error_prompt) : false;
+}
+
+#if TCLI_HISTORY_BUF_LEN > 0
+bool tclie_set_hist(tclie_t *const tclie, const tcli_history_mode_t mode)
+{
+	return tclie ? tcli_set_hist(&tclie->tcli, mode) : false;
+}
+
+bool tclie_set_search_prompt(tclie_t *const tclie,
+							 const char *const search_prompt)
+{
+	return tclie ? tcli_set_search_prompt(&tclie->tcli, search_prompt) : false;
+}
+#endif
+
+bool tclie_log_str(tclie_t *const tclie, const bool newline,
+				   const char *const str)
+{
+	return tclie ? tcli_log_str(&tclie->tcli, newline, str) : false;
+}
+
+int tclie_log_vprintf(tclie_t *const tclie, const bool newline, char *const buf,
+					  const size_t len, const char *const format, va_list arg)
+{
+	return tclie
+			   ? tcli_log_vprintf(&tclie->tcli, newline, buf, len, format, arg)
+			   : -1;
+}
+
+int tclie_log_printf(tclie_t *const tclie, const bool newline, char *const buf,
+					 const size_t len, const char *const format, ...)
+{
+	if (!tclie || !buf || !format)
+		return -1;
+
+	if (len == 0)
+		return 0;
+
+	va_list arg;
+	va_start(arg, format);
+	const int count = tclie_log_vprintf(tclie, newline, buf, len, format, arg);
+	va_end(arg);
+	return count;
+}
+
+void tclie_clear_screen(tclie_t *const tclie)
+{
+	if (tclie)
+		tcli_clear_screen(&tclie->tcli);
+}
