@@ -85,7 +85,6 @@ typedef struct tclie {
 	tclie_post_cmd_fn_t post_cmd;
 	tclie_sigint_fn_t sigint;
 	void *arg;
-	const char *prompt;
 } tclie_t;
 
 bool tclie_init(tclie_t *tclie, tclie_out_fn_t out, void *arg);
