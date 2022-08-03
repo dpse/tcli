@@ -474,6 +474,9 @@ void tcli_flush(tcli_t *const tcli)
 {
 	TCLI_ASSERT(tcli);
 
+	if (!tcli)
+		return;
+
 #if TCLI_OUTPUT_BUF_LEN > 0
 	TCLI_ASSERT_OUT_BUF(&tcli->out_buf);
 
@@ -491,6 +494,9 @@ void tcli_out(tcli_t *const tcli, const char *str)
 {
 	TCLI_ASSERT(tcli);
 	assert(str);
+
+	if (!tcli || !str)
+		return;
 
 	if (!tcli->out)
 		return;
@@ -766,6 +772,10 @@ static size_t tcli_offset_prev_word(const tcli_t *const tcli)
 void tcli_clear_screen(tcli_t *const tcli)
 {
 	TCLI_ASSERT(tcli);
+
+	if(!tcli)
+		return;
+
 	tcli_term_clear(tcli);
 	tcli_term_cursor_home(tcli);
 	tcli_term_reprint_all(tcli);
