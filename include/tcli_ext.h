@@ -20,70 +20,70 @@ typedef tcli_sigint_fn_t tclie_sigint_fn_t;
 typedef int (*tclie_cmd_fn_t)(void *arg, int argc, const char *const *argv);
 
 typedef const struct tclie_cmd {
-    char *name;
-    tclie_cmd_fn_t fn;
+	char *name;
+	tclie_cmd_fn_t fn;
 #if TCLIE_ENABLE_USERS
-    unsigned min_user_level;
+	unsigned min_user_level;
 #endif
-    int min_args;
-    int max_args;
-    char *desc;
+	int min_args;
+	int max_args;
+	char *desc;
 } tclie_cmd_t;
 
 typedef void (*tclie_pre_cmd_fn_t)(void *arg, int argc,
-				   const char *const *argv);
+								   const char *const *argv);
 typedef void (*tclie_post_cmd_fn_t)(void *arg, int argc,
-				    const char *const *argv, int res);
+									const char *const *argv, int res);
 
 typedef struct tclie_cmds {
-    tclie_cmd_t *cmds;
-    size_t count;
+	tclie_cmd_t *cmds;
+	size_t count;
 } tclie_cmds_t;
 
 #if TCLIE_ENABLE_USERS
 typedef const struct tclie_user {
 #if TCLIE_ENABLE_USERNAMES
-    char *name;
+	char *name;
 #endif
-    char *password;
-    unsigned level;
+	char *password;
+	unsigned level;
 } tclie_user_t;
 
 typedef enum tclie_login_state {
-    TCLIE_LOGIN_IDLE = 0,
+	TCLIE_LOGIN_IDLE = 0,
 #if TCLIE_ENABLE_USERNAMES
-    TCLIE_LOGIN_USERNAME,
+	TCLIE_LOGIN_USERNAME,
 #endif
-    TCLIE_LOGIN_PASSWORD
+	TCLIE_LOGIN_PASSWORD
 } tclie_login_state_t;
 
 typedef struct tclie_login {
-    tclie_login_state_t state;
+	tclie_login_state_t state;
 #if TCLIE_ENABLE_USERNAMES
-    size_t target_user;
+	size_t target_user;
 #endif
-    unsigned attempt;
+	unsigned attempt;
 } tclie_login_t;
 
 typedef struct tclie_users {
-    tclie_user_t *users;
-    size_t count;
-    tclie_login_t login;
-    unsigned level;
+	tclie_user_t *users;
+	size_t count;
+	tclie_login_t login;
+	unsigned level;
 } tclie_users_t;
 #endif
 
 typedef struct tclie {
-    tcli_t tcli;
-    void *arg;
-    tclie_cmds_t cmd;
+	tcli_t tcli;
+	void *arg;
+	tclie_cmds_t cmd;
 #if TCLIE_ENABLE_USERS
-    tclie_users_t user;
+	tclie_users_t user;
 #endif
-    tclie_pre_cmd_fn_t pre_cmd;
-    tclie_post_cmd_fn_t post_cmd;
-    tclie_sigint_fn_t sigint;
-    const char *prompt;
+	tclie_pre_cmd_fn_t pre_cmd;
+	tclie_post_cmd_fn_t post_cmd;
+	tclie_sigint_fn_t sigint;
+	const char *prompt;
 } tclie_t;
 
 bool tclie_init(tclie_t *tclie, tcli_out_fn_t out, void *arg);
