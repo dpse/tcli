@@ -149,11 +149,11 @@ bool tcli_set_hist(tcli_t *tcli, tcli_history_mode_t mode);
 bool tcli_set_search_prompt(tcli_t *tcli, const char *search_prompt);
 #endif
 
-bool tcli_log_str(tcli_t *tcli, bool newline, const char *str);
-int tcli_log_vprintf(tcli_t *tcli, bool newline, char *buf, size_t len,
-					 const char *format, va_list arg);
-int tcli_log_printf(tcli_t *tcli, bool newline, char *buf, size_t len,
-					const char *format, ...);
+bool tcli_log_str(tcli_t *tcli, const char *str);
+int tcli_log_vprintf(tcli_t *tcli, char *buf, size_t len, const char *format,
+					 va_list arg);
+int tcli_log_printf(tcli_t *tcli, char *buf, size_t len, const char *format,
+					...);
 
 void tcli_flush(tcli_t *tcli);
 void tcli_out(tcli_t *tcli, const char *str);

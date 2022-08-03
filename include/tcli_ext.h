@@ -115,11 +115,11 @@ bool tclie_set_user_level(tclie_t *tclie, unsigned user_level);
 bool tclie_get_user_level(const tclie_t *tclie, unsigned *user_level);
 #endif
 
-bool tclie_log_str(tclie_t *tclie, bool newline, const char *str);
-int tclie_log_vprintf(tclie_t *tclie, bool newline, char *buf, size_t len,
-					  const char *format, va_list arg);
-int tclie_log_printf(tclie_t *tclie, bool newline, char *buf, size_t len,
-					 const char *format, ...);
+bool tclie_log_str(tclie_t *tclie, const char *str);
+int tclie_log_vprintf(tclie_t *tclie, char *buf, size_t len, const char *format,
+					  va_list arg);
+int tclie_log_printf(tclie_t *tclie, char *buf, size_t len, const char *format,
+					 ...);
 
 void tclie_flush(tclie_t *tclie);
 void tclie_out(tclie_t *tclie, const char *str);

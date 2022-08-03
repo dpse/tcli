@@ -1529,7 +1529,7 @@ bool tcli_init(tcli_t *restrict const tcli, tcli_out_fn_t out, void *const arg)
 	return true;
 }
 
-bool tcli_log_str(tcli_t *restrict const tcli, const bool newline,
+bool tcli_log_str(tcli_t *restrict const tcli,
 				  const char *restrict str)
 {
 	if (!tcli || !str)
@@ -1537,16 +1537,12 @@ bool tcli_log_str(tcli_t *restrict const tcli, const bool newline,
 
 	if (tcli->executing) {
 		tcli_out(tcli, str);
-		if (newline)
-			tcli_term_newline(tcli);
 		tcli_flush(tcli);
 		return true;
 	}
 
 	tcli_term_return_cut(tcli);
 	tcli_out(tcli, str);
-	if (newline)
-		tcli_term_newline(tcli);
 	tcli_term_reprint_all(tcli);
 
 	if (tcli->complete.active)
@@ -1556,7 +1552,7 @@ bool tcli_log_str(tcli_t *restrict const tcli, const bool newline,
 	return true;
 }
 
-int tcli_log_vprintf(tcli_t *restrict const tcli, const bool newline,
+int tcli_log_vprintf(tcli_t *restrict const tcli,
 					 char *restrict const buf, size_t len,
 					 const char *restrict const format, va_list arg)
 {
@@ -1567,10 +1563,10 @@ int tcli_log_vprintf(tcli_t *restrict const tcli, const bool newline,
 		return 0;
 
 	const int count = vsnprintf(buf, len, format, arg);
-	return tcli_log_str(tcli, newline, buf) ? count : -1;
+	return tcli_log_str(tcli,  buf) ? count : -1;
 }
 
-int tcli_log_printf(tcli_t *restrict const tcli, const bool newline,
+int tcli_log_printf(tcli_t *restrict const tcli,
 					char *restrict const buf, size_t len,
 					const char *restrict const format, ...)
 {
@@ -1582,7 +1578,7 @@ int tcli_log_printf(tcli_t *restrict const tcli, const bool newline,
 
 	va_list arg;
 	va_start(arg, format);
-	const int count = tcli_log_vprintf(tcli, newline, buf, len, format, arg);
+	const int count = tcli_log_vprintf(tcli,  buf, len, format, arg);
 	va_end(arg);
 	return count;
 }

@@ -59,7 +59,7 @@ int main(int argc, char **argv)
 		tclie_input_char(&tclie, (char)c);
 
 		if (++counter % 100 == 0) {
-			tclie_log_str(&tclie, true, "Logging stuff...");
+			tclie_log_str(&tclie, "Logging stuff... \r\n");
 			counter = 0;
 		}
 	}

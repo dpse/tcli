@@ -392,7 +392,7 @@ static void tcli_sigint(void *const arg)
 
 #if TCLIE_ENABLE_USERS
 	if (tclie->user.login.state != TCLIE_LOGIN_IDLE) {
-		tcli_log_str(&tclie->tcli, true, "Aborted!");
+		tcli_log_str(&tclie->tcli, "Aborted!\r\n");
 		tclie_login_proceed(&tclie->user.login, TCLIE_LOGIN_IDLE);
 	}
 #endif
@@ -679,22 +679,19 @@ bool tclie_set_search_prompt(tclie_t *const tclie,
 }
 #endif
 
-bool tclie_log_str(tclie_t *const tclie, const bool newline,
-				   const char *const str)
+bool tclie_log_str(tclie_t *const tclie, const char *const str)
 {
-	return tclie ? tcli_log_str(&tclie->tcli, newline, str) : false;
+	return tclie ? tcli_log_str(&tclie->tcli, str) : false;
 }
 
-int tclie_log_vprintf(tclie_t *const tclie, const bool newline, char *const buf,
-					  const size_t len, const char *const format, va_list arg)
+int tclie_log_vprintf(tclie_t *const tclie, char *const buf, const size_t len,
+					  const char *const format, va_list arg)
 {
-	return tclie
-			   ? tcli_log_vprintf(&tclie->tcli, newline, buf, len, format, arg)
-			   : -1;
+	return tclie ? tcli_log_vprintf(&tclie->tcli, buf, len, format, arg) : -1;
 }
 
-int tclie_log_printf(tclie_t *const tclie, const bool newline, char *const buf,
-					 const size_t len, const char *const format, ...)
+int tclie_log_printf(tclie_t *const tclie, char *const buf, const size_t len,
+					 const char *const format, ...)
 {
 	if (!tclie || !buf || !format)
 		return -1;
@@ -704,7 +701,7 @@ int tclie_log_printf(tclie_t *const tclie, const bool newline, char *const buf,
 
 	va_list arg;
 	va_start(arg, format);
-	const int count = tclie_log_vprintf(tclie, newline, buf, len, format, arg);
+	const int count = tclie_log_vprintf(tclie, buf, len, format, arg);
 	va_end(arg);
 	return count;
 }
