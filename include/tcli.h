@@ -16,30 +16,53 @@
 #define TCLI_COLOR_DEFAULT "\033[0m"
 
 #ifndef TCLI_CMDLINE_MAX_LEN
+/**
+ * The maximum number of characters that the command line can hold (not including null-terminator).
+ */
 #define TCLI_CMDLINE_MAX_LEN 64
 #endif
 
 #ifndef TCLI_MAX_TOKENS
+/**
+ * The maximum number of tokens that can be processed on command execution.
+ */
 #define TCLI_MAX_TOKENS 8
 #endif
 
 #ifndef TCLI_HISTORY_BUF_LEN
+/**
+ * The size of the ring buffer used to save command history.
+ * Set to zero to disable history.
+ */
 #define TCLI_HISTORY_BUF_LEN 512
 #endif
 
 #ifndef TCLI_OUTPUT_BUF_LEN
+/**
+ * The size of the output buffer.
+ * Set to zero to disable output buffering.
+ */
 #define TCLI_OUTPUT_BUF_LEN 256
 #endif
 
 #ifndef TCLI_DEFAULT_PROMPT
+/**
+ * The default prompt.
+ */
 #define TCLI_DEFAULT_PROMPT (TCLI_COLOR_GREEN "> " TCLI_COLOR_DEFAULT)
 #endif
 
 #ifndef TCLI_DEFAULT_SEARCH_PROMPT
+/**
+ * The default search prompt used for backwards search.
+ */
 #define TCLI_DEFAULT_SEARCH_PROMPT (TCLI_COLOR_GREEN "? " TCLI_COLOR_DEFAULT)
 #endif
 
 #ifndef TCLI_DEFAULT_ERROR_PROMPT
+/**
+ * The default error prompt (displayed when the previous command failed).
+ */
 #define TCLI_DEFAULT_ERROR_PROMPT (TCLI_COLOR_RED "> " TCLI_COLOR_DEFAULT)
 #endif
 
@@ -130,13 +153,48 @@ typedef struct tcli {
 	volatile bool executing : 1;
 } tcli_t;
 
+/**
+ * Initializes the instance.
+ * @param tcli Pointer to instance.
+ * @param out Output callback function.
+ * @param arg User data to be passed to the callback functions.
+ */
 void tcli_init(tcli_t *tcli, tcli_out_fn_t out, void *arg);
 
+/**
+ * Pass input to be processed.
+ * @param tcli Instance pointer.
+ * @param c Character to process.
+ */
 void tcli_input_char(tcli_t *tcli, char c);
+
+/**
+ * Pass string input to be processed.
+ * @param tcli Instance pointer.
+ * @param str Null-terminated string to process.
+ */
 void tcli_input_str(tcli_t *tcli, const char *str);
+
+/**
+ * Pass data input to be processed.
+ * @param tcli Instance pointer.
+ * @param buf Pointer to data buffer.
+ * @param len Data length.
+ */
 void tcli_input(tcli_t *tcli, const void *buf, size_t len);
 
+/**
+ * Set callback function for output.
+ * @param tcli Instance pointer.
+ * @param out Output callback function.
+ */
 void tcli_set_out(tcli_t *tcli, tcli_out_fn_t out);
+
+/**
+ * Set callback function for command execution.
+ * @param tcli Instance pointer.
+ * @param exec Callback function.
+ */
 void tcli_set_exec(tcli_t *tcli, tcli_exec_fn_t exec);
 void tcli_set_arg(tcli_t *tcli, void *arg);
 void tcli_set_echo(tcli_t *tcli, tcli_echo_mode_t mode);
