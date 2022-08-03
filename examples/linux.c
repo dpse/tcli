@@ -41,12 +41,12 @@ int main(int argc, char **argv)
 	tcsetattr(STDIN_FILENO, TCSANOW, &term);
 
 	tclie_t tclie;
-	assert(tclie_init(&tclie, output, NULL));
+	tclie_init(&tclie, output, NULL);
 #if TCLIE_ENABLE_USERS
 	assert(tclie_reg_users(&tclie, users, ARRAY_SIZE(users)));
 #endif
 	assert(tclie_reg_cmds(&tclie, cmds, ARRAY_SIZE(cmds)));
-	assert(tclie_set_sigint(&tclie, sigint));
+	tclie_set_sigint(&tclie, sigint);
 
 	int counter = 0;
 

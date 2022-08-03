@@ -130,26 +130,26 @@ typedef struct tcli {
 	volatile bool executing : 1;
 } tcli_t;
 
-bool tcli_init(tcli_t *tcli, tcli_out_fn_t out, void *arg);
+void tcli_init(tcli_t *tcli, tcli_out_fn_t out, void *arg);
 
-bool tcli_input_char(tcli_t *tcli, char c);
-bool tcli_input_str(tcli_t *tcli, const char *str);
-bool tcli_input(tcli_t *tcli, const void *buf, size_t len);
+void tcli_input_char(tcli_t *tcli, char c);
+void tcli_input_str(tcli_t *tcli, const char *str);
+void tcli_input(tcli_t *tcli, const void *buf, size_t len);
 
-bool tcli_set_out(tcli_t *tcli, tcli_out_fn_t out);
-bool tcli_set_exec(tcli_t *tcli, tcli_exec_fn_t exec);
-bool tcli_set_arg(tcli_t *tcli, void *arg);
-bool tcli_set_echo(tcli_t *tcli, tcli_echo_mode_t mode);
-bool tcli_set_complete(tcli_t *tcli, tcli_compl_fn_t complete);
-bool tcli_set_sigint(tcli_t *tcli, tcli_sigint_fn_t sigint);
-bool tcli_set_prompt(tcli_t *tcli, const char *prompt);
-bool tcli_set_error_prompt(tcli_t *tcli, const char *error_prompt);
+void tcli_set_out(tcli_t *tcli, tcli_out_fn_t out);
+void tcli_set_exec(tcli_t *tcli, tcli_exec_fn_t exec);
+void tcli_set_arg(tcli_t *tcli, void *arg);
+void tcli_set_echo(tcli_t *tcli, tcli_echo_mode_t mode);
+void tcli_set_complete(tcli_t *tcli, tcli_compl_fn_t complete);
+void tcli_set_sigint(tcli_t *tcli, tcli_sigint_fn_t sigint);
+void tcli_set_prompt(tcli_t *tcli, const char *prompt);
+void tcli_set_error_prompt(tcli_t *tcli, const char *error_prompt);
 #if TCLI_HISTORY_BUF_LEN > 0
-bool tcli_set_hist(tcli_t *tcli, tcli_history_mode_t mode);
-bool tcli_set_search_prompt(tcli_t *tcli, const char *search_prompt);
+void tcli_set_hist(tcli_t *tcli, tcli_history_mode_t mode);
+void tcli_set_search_prompt(tcli_t *tcli, const char *search_prompt);
 #endif
 
-bool tcli_log_str(tcli_t *tcli, const char *str);
+void tcli_log_str(tcli_t *tcli, const char *str);
 int tcli_log_vprintf(tcli_t *tcli, char *buf, size_t len, const char *format,
 					 va_list arg);
 int tcli_log_printf(tcli_t *tcli, char *buf, size_t len, const char *format,
