@@ -1366,7 +1366,7 @@ bool tcli_input_str(tcli_t *restrict const tcli, const char *restrict str)
 
     bool res = true;
     while (res && *str != '\0')
-	res = tcli_input_char(tcli, *str);
+	res = tcli_input_char(tcli, *str++);
 
     return res;
 }
