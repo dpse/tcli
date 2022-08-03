@@ -15,6 +15,7 @@
 #define TCLIE_LOGIN_ATTEMPTS 3
 #endif
 
+typedef tcli_out_fn_t tclie_out_fn_t;
 typedef tcli_sigint_fn_t tclie_sigint_fn_t;
 
 typedef int (*tclie_cmd_fn_t)(void *arg, int argc, const char *const *argv);
@@ -75,23 +76,25 @@ typedef struct tclie_users {
 
 typedef struct tclie {
 	tcli_t tcli;
-	void *arg;
 	tclie_cmds_t cmd;
 #if TCLIE_ENABLE_USERS
 	tclie_users_t user;
 #endif
+	tclie_out_fn_t out;
 	tclie_pre_cmd_fn_t pre_cmd;
 	tclie_post_cmd_fn_t post_cmd;
 	tclie_sigint_fn_t sigint;
+	void *arg;
 	const char *prompt;
 } tclie_t;
 
-bool tclie_init(tclie_t *tclie, tcli_out_fn_t out, void *arg);
+bool tclie_init(tclie_t *tclie, tclie_out_fn_t out, void *arg);
 #if TCLIE_ENABLE_USERS
 bool tclie_reg_users(tclie_t *tclie, const tclie_user_t *users, size_t count);
 #endif
 bool tclie_reg_cmds(tclie_t *tclie, const tclie_cmd_t *cmds, size_t count);
 
+bool tclie_set_out(tclie_t *tclie, tclie_out_fn_t out);
 bool tclie_set_arg(tclie_t *tclie, void *arg);
 bool tclie_set_sigint(tclie_t *tclie, tclie_sigint_fn_t sigint);
 bool tclie_set_pre_cmd(tclie_t *tclie, tclie_pre_cmd_fn_t pre_cmd);

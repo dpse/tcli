@@ -397,6 +397,28 @@ static void tcli_sigint(void *const arg)
 		tclie->sigint(tclie->arg);
 }
 
+static void tcli_output(void *const arg, const char *const str)
+{
+	assert(arg);
+	assert(str);
+
+	tclie_t *const tclie = arg;
+
+	if (!tclie->out)
+		return;
+
+	tclie->out(tclie->arg, str);
+}
+
+bool tclie_set_out(tclie_t *const tclie, tcli_out_fn_t out)
+{
+	if (!tclie)
+		return false;
+
+	tclie->out = out;
+	return true;
+}
+
 bool tclie_set_arg(tclie_t *const tclie, void *const arg)
 {
 	if (!tclie)
@@ -433,13 +455,15 @@ bool tclie_set_sigint(tclie_t *const tclie, tclie_sigint_fn_t sigint)
 	return true;
 }
 
-bool tclie_init(tclie_t *tclie, tcli_out_fn_t out, void *arg)
+bool tclie_init(tclie_t *tclie, tclie_out_fn_t out, void *arg)
 {
 	if (!tclie)
 		return false;
 
 	memset(tclie, 0, sizeof(tclie_t));
 
+	if (!tclie_set_out(tclie, out))
+		return false;
 	if (!tclie_set_arg(tclie, arg))
 		return false;
 	if (!tclie_set_pre_cmd(tclie, NULL))
@@ -449,7 +473,7 @@ bool tclie_init(tclie_t *tclie, tcli_out_fn_t out, void *arg)
 	if (!tclie_set_sigint(tclie, NULL))
 		return false;
 
-	if (!tcli_init(&tclie->tcli, out, tclie))
+	if (!tcli_init(&tclie->tcli, tcli_output, tclie))
 		return false;
 	if (!tcli_set_exec(&tclie->tcli, tcli_exec))
 		return false;
