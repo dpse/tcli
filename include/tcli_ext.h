@@ -1,5 +1,5 @@
-#ifndef TINYSH_EXT_H
-#define TINYSH_EXT_H
+#ifndef TCLI_EXT_H
+#define TCLI_EXT_H
 
 #include "tcli.h"
 

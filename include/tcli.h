@@ -1,5 +1,5 @@
-#ifndef TINYSH_H
-#define TINYSH_H
+#ifndef TCLI_H
+#define TCLI_H
 
 #include <stdarg.h>
 #include <stdbool.h>
