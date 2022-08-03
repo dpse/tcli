@@ -46,88 +46,88 @@
 typedef void (*tcli_out_fn_t)(void *arg, const char *str);
 typedef int (*tcli_exec_fn_t)(void *arg, int argc, const char *const *argv);
 typedef void (*tcli_compl_fn_t)(void *arg, int argc, const char *const *argv,
-				const char * * compl, size_t max_count,
-				size_t *count);
+								const char * * compl, size_t max_count,
+								size_t *count);
 typedef void (*tcli_sigint_fn_t)(void *arg);
 
 typedef struct tcli_cmdline {
-    char buf[TCLI_CMDLINE_MAX_LEN + 1];
-    size_t len;
-    size_t cursor;
+	char buf[TCLI_CMDLINE_MAX_LEN + 1];
+	size_t len;
+	size_t cursor;
 } tcli_cmdline_t;
 
 typedef struct tcli_esc {
-    unsigned char code;
-    bool esc : 1;
+	unsigned char code;
+	bool esc : 1;
 } tcli_esc_t;
 
 typedef enum tcli_echo_mode {
-    TCLI_ECHO_ON = 0,
-    TCLI_ECHO_OFF,
-    TCLI_ECHO_OFF_ONCE
+	TCLI_ECHO_ON = 0,
+	TCLI_ECHO_OFF,
+	TCLI_ECHO_OFF_ONCE
 } tcli_echo_mode_t;
 
 typedef struct tcli_echo {
-    tcli_echo_mode_t mode : 2;
+	tcli_echo_mode_t mode : 2;
 } tcli_echo_t;
 
 #if TCLI_HISTORY_BUF_LEN > 0
 typedef enum tcli_history_mode {
-    TCLI_HIST_ON = 0,
-    TCLI_HIST_OFF,
-    TCLI_HIST_OFF_ONCE
+	TCLI_HIST_ON = 0,
+	TCLI_HIST_OFF,
+	TCLI_HIST_OFF_ONCE
 } tcli_history_mode_t;
 
 typedef struct tcli_rb {
-    size_t head;
-    size_t tail;
-    size_t count;
-    size_t pos;
-    char buf[TCLI_HISTORY_BUF_LEN];
+	size_t head;
+	size_t tail;
+	size_t count;
+	size_t pos;
+	char buf[TCLI_HISTORY_BUF_LEN];
 } tcli_rb_t;
 
 typedef struct tcli_hist {
-    size_t offset;
-    tcli_rb_t rb;
-    tcli_history_mode_t mode : 2;
-    bool has_line : 1;
-    bool search : 1;
-    const char *search_prompt;
+	size_t offset;
+	tcli_rb_t rb;
+	tcli_history_mode_t mode : 2;
+	bool has_line : 1;
+	bool search : 1;
+	const char *search_prompt;
 } tcli_hist_t;
 #endif
 
 #if TCLI_OUTPUT_BUF_LEN > 0
 typedef struct tcli_out_buf {
-    size_t len;
-    char buf[TCLI_OUTPUT_BUF_LEN];
+	size_t len;
+	char buf[TCLI_OUTPUT_BUF_LEN];
 } tcli_out_buf_t;
 #endif
 
 typedef struct tcli_complete {
-    tcli_compl_fn_t complete;
-    bool active : 1;
+	tcli_compl_fn_t complete;
+	bool active : 1;
 } tcli_complete_t;
 
 typedef struct tcli {
-    tcli_cmdline_t cmdline;
-    tcli_out_fn_t out;
-    tcli_exec_fn_t exec;
-    tcli_complete_t complete;
-    tcli_sigint_fn_t sigint;
-    tcli_esc_t esc;
-    tcli_echo_t echo;
+	tcli_cmdline_t cmdline;
+	tcli_out_fn_t out;
+	tcli_exec_fn_t exec;
+	tcli_complete_t complete;
+	tcli_sigint_fn_t sigint;
+	tcli_esc_t esc;
+	tcli_echo_t echo;
 #if TCLI_HISTORY_BUF_LEN > 0
-    tcli_hist_t hist;
+	tcli_hist_t hist;
 #endif
 #if TCLI_OUTPUT_BUF_LEN > 0
-    tcli_out_buf_t out_buf;
+	tcli_out_buf_t out_buf;
 #endif
-    void *arg;
-    int res;
-    const char *prompt;
-    const char *error_prompt;
-    char last_endl;
-    volatile bool executing : 1;
+	void *arg;
+	int res;
+	const char *prompt;
+	const char *error_prompt;
+	char last_endl;
+	volatile bool executing : 1;
 } tcli_t;
 
 bool tcli_init(tcli_t *tcli, tcli_out_fn_t out, void *arg);
@@ -151,8 +151,13 @@ bool tcli_set_search_prompt(tcli_t *tcli, const char *search_prompt);
 
 bool tcli_log_str(tcli_t *tcli, bool newline, const char *str);
 int tcli_log_vprintf(tcli_t *tcli, bool newline, char *buf, size_t len,
-		     const char *format, va_list arg);
+					 const char *format, va_list arg);
 int tcli_log_printf(tcli_t *tcli, bool newline, char *buf, size_t len,
-		    const char *format, ...);
+					const char *format, ...);
+
+void tcli_flush(tcli_t *tcli);
+void tcli_out(tcli_t *tcli, const char *str);
+
+void tcli_clear_screen(tcli_t *tcli);
 
 #endif

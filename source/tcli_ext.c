@@ -4,11 +4,6 @@
 
 #define TCLIE_ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
 
-extern void tcli_clear_screen(tcli_t *tcli);
-
-extern void tcli_out(tcli_t *tcli, const char *str);
-extern void tcli_flush(tcli_t *tcli);
-
 static int tclie_cmd_help(void *arg, int argc, const char *const *argv);
 static int tclie_cmd_clear(void *arg, int argc, const char *const *argv);
 #if TCLIE_ENABLE_USERS
