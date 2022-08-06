@@ -1,5 +1,5 @@
-#ifndef TCLI_EXT_H
-#define TCLI_EXT_H
+#ifndef TCLIE_H
+#define TCLIE_H
 
 #include "tcli.h"
 
@@ -245,7 +245,7 @@ unsigned tclie_get_user_level(const tclie_t *tclie);
  * @param tclie Instance pointer.
  * @param str String.
  */
-void tclie_log_str(tclie_t *tclie, const char *str);
+void tclie_log(tclie_t *tclie, const char *str);
 
 /**
  * Logs formatted data from variable argument list without disturbing the

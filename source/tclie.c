@@ -1,4 +1,4 @@
-#include "tcli_ext.h"
+#include "tclie.h"
 #include <assert.h>
 #include <string.h>
 
@@ -50,9 +50,7 @@ static bool tclie_valid_cmd(const tclie_t *const tclie,
 
 void tclie_out(tclie_t *const tclie, const char *const str)
 {
-	assert(tclie && str);
-
-	if (tclie && str)
+	if (tclie)
 		tcli_out(&tclie->tcli, str);
 }
 
@@ -408,7 +406,7 @@ static void tcli_sigint(void *const arg)
 
 #if TCLIE_ENABLE_USERS
 	if (tclie->user.login.state != TCLIE_LOGIN_IDLE) {
-		tcli_log_str(&tclie->tcli, "Aborted!\r\n");
+		tcli_log(&tclie->tcli, "Aborted!\r\n");
 		tclie_login_proceed(&tclie->user.login, TCLIE_LOGIN_IDLE);
 	}
 #endif
@@ -685,10 +683,10 @@ void tclie_set_search_prompt(tclie_t *const tclie,
 }
 #endif
 
-void tclie_log_str(tclie_t *const tclie, const char *const str)
+void tclie_log(tclie_t *const tclie, const char *const str)
 {
 	if (tclie)
-		tcli_log_str(&tclie->tcli, str);
+		tcli_log(&tclie->tcli, str);
 }
 
 int tclie_log_vprintf(tclie_t *const tclie, char *const buf, const size_t len,
@@ -700,12 +698,6 @@ int tclie_log_vprintf(tclie_t *const tclie, char *const buf, const size_t len,
 int tclie_log_printf(tclie_t *const tclie, char *const buf, const size_t len,
 					 const char *const format, ...)
 {
-	if (!tclie || !buf || !format)
-		return -1;
-
-	if (len == 0)
-		return 0;
-
 	va_list arg;
 	va_start(arg, format);
 	const int count = tclie_log_vprintf(tclie, buf, len, format, arg);

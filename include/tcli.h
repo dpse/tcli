@@ -263,7 +263,7 @@ void tcli_set_search_prompt(tcli_t *tcli, const char *search_prompt);
  * @param tcli Instance pointer.
  * @param str String.
  */
-void tcli_log_str(tcli_t *tcli, const char *str);
+void tcli_log(tcli_t *tcli, const char *str);
 
 /**
  * Logs formatted data from variable argument list without disturbing the

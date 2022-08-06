@@ -8,7 +8,7 @@ if(CMAKE_BUILD_TYPE MATCHES Release)
 endif()
 
 include_directories(include)
-add_library(tcli source/tcli.c source/tcli_ext.c)
+add_library(tcli source/tcli.c source/tclie.c)
 
 add_executable(example_linux examples/linux.c)
 target_link_libraries(example_linux tcli)

@@ -1,4 +1,4 @@
-#include "tcli_ext.h"
+#include "tclie.h"
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -8,10 +8,10 @@
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
 
 static int echo(__attribute__((unused)) void *arg, int argc,
-				const char *const *argv);
+				const char **argv);
 static int fail(__attribute__((unused)) void *arg,
 				__attribute__((unused)) int argc,
-				__attribute__((unused)) const char *const *argv);
+				__attribute__((unused)) const char **argv);
 static void output(__attribute__((unused)) void *arg, const char *str);
 
 enum { USER_LEVEL_DEFAULT = 0, USER_LEVEL_DEBUG, USER_LEVEL_ADMIN };
@@ -59,7 +59,7 @@ int main(int argc, char **argv)
 		tclie_input_char(&tclie, (char)c);
 
 		if (++counter % 100 == 0) {
-			tclie_log_str(&tclie, "Logging stuff... \r\n");
+			tclie_log(&tclie, "Logging stuff... \r\n");
 			counter = 0;
 		}
 	}
@@ -69,7 +69,7 @@ int main(int argc, char **argv)
 }
 
 static int echo(__attribute__((unused)) void *const arg, const int argc,
-				const char *const *const argv)
+				const char **const argv)
 {
 	if (argc != 2)
 		return 0;
@@ -80,7 +80,7 @@ static int echo(__attribute__((unused)) void *const arg, const int argc,
 
 static int fail(__attribute__((unused)) void *const arg,
 				__attribute__((unused)) const int argc,
-				__attribute__((unused)) const char *const *const argv)
+				__attribute__((unused)) const char **const argv)
 {
 	printf("Command failed...\n");
 	return -1;

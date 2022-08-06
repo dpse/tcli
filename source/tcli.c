@@ -1580,7 +1580,7 @@ void tcli_init(tcli_t *restrict const tcli, tcli_out_fn_t out, void *const arg)
 #endif
 }
 
-void tcli_log_str(tcli_t *restrict const tcli, const char *restrict str)
+void tcli_log(tcli_t *restrict const tcli, const char *restrict str)
 {
 	if (!tcli || !str)
 		return;
@@ -1611,7 +1611,7 @@ int tcli_log_vprintf(tcli_t *restrict const tcli, char *restrict const buf,
 		return 0;
 
 	const int count = vsnprintf(buf, len, format, arg);
-	tcli_log_str(tcli, buf);
+	tcli_log(tcli, buf);
 	return count;
 }
 
