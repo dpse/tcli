@@ -37,7 +37,7 @@ typedef void (*tclie_post_cmd_fn_t)(void *arg, int argc,
 									const char *const *argv, int res);
 
 typedef struct tclie_cmds {
-	tclie_cmd_t *cmds;
+	const tclie_cmd_t *cmds;
 	size_t count;
 } tclie_cmds_t;
 
@@ -67,7 +67,7 @@ typedef struct tclie_login {
 } tclie_login_t;
 
 typedef struct tclie_users {
-	tclie_user_t *users;
+	const tclie_user_t *users;
 	size_t count;
 	tclie_login_t login;
 	unsigned level;
