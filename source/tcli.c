@@ -170,6 +170,26 @@ typedef enum tcli_hist_mode {
 	TCLI_HIST_SAME
 } tcli_hist_it_t;
 
+static inline void tcli_rb_scan_backwards(tcli_rb_t *const rb)
+{
+	TCLI_ASSERT_RB(rb);
+
+	if (rb->pos == 0)
+		rb->pos = TCLI_ARRAY_SIZE(rb->buf);
+
+	rb->pos--;
+}
+
+static inline void tcli_rb_scan_forwards(tcli_rb_t *const rb)
+{
+	TCLI_ASSERT_RB(rb);
+
+	rb->pos++;
+
+	if (rb->pos >= TCLI_ARRAY_SIZE(rb->buf))
+		rb->pos = 0;
+}
+
 static void tcli_rb_pop_first(tcli_rb_t *const rb)
 {
 	TCLI_ASSERT_RB(rb);
@@ -216,6 +236,51 @@ static void tcli_rb_pop(tcli_rb_t *const rb)
 	}
 }
 
+static bool tcli_rb_peekcmp(tcli_rb_t *restrict const rb,
+							const char *restrict str, size_t len)
+{
+	TCLI_ASSERT_RB(rb);
+	assert(str);
+
+	if (rb->count == 0 || rb->pos == rb->tail)
+		return false;
+
+	const size_t pos = rb->pos;
+
+	tcli_rb_scan_backwards(rb);
+	assert(rb->buf[rb->pos] == '\0');
+	tcli_rb_scan_backwards(rb);
+
+	size_t l = 0;
+	while (rb->buf[rb->pos] != '\0') {
+		l++;
+
+		if (rb->pos == rb->tail)
+			break;
+
+		tcli_rb_scan_backwards(rb);
+	}
+
+	assert(l != 0);
+
+	if (rb->pos != rb->tail)
+		tcli_rb_scan_forwards(rb);
+
+	bool match = l == len;
+	if (match) {
+		for (size_t i = 0; i < l; i++) {
+			if (*str++ != rb->buf[rb->pos]) {
+				match = false;
+				break;
+			}
+			tcli_rb_scan_forwards(rb);
+		}
+	}
+
+	rb->pos = pos;
+	return match;
+}
+
 static bool tcli_rb_push(tcli_rb_t *restrict const rb, const char *restrict str,
 						 size_t len, const bool move_pos)
 {
@@ -227,6 +292,9 @@ static bool tcli_rb_push(tcli_rb_t *restrict const rb, const char *restrict str,
 
 	if (len == 0 || len + 1 > TCLI_ARRAY_SIZE(rb->buf))
 		return false;
+
+	if (tcli_rb_peekcmp(rb, str, len))
+		return true;
 
 	while (rb->count + len + 1 > TCLI_ARRAY_SIZE(rb->buf))
 		tcli_rb_pop(rb);
@@ -250,26 +318,6 @@ static bool tcli_rb_push(tcli_rb_t *restrict const rb, const char *restrict str,
 		rb->pos = rb->head;
 
 	return true;
-}
-
-static inline void tcli_rb_scan_backwards(tcli_rb_t *const rb)
-{
-	TCLI_ASSERT_RB(rb);
-
-	if (rb->pos == 0)
-		rb->pos = TCLI_ARRAY_SIZE(rb->buf);
-
-	rb->pos--;
-}
-
-static inline void tcli_rb_scan_forwards(tcli_rb_t *const rb)
-{
-	TCLI_ASSERT_RB(rb);
-
-	rb->pos++;
-
-	if (rb->pos >= TCLI_ARRAY_SIZE(rb->buf))
-		rb->pos = 0;
 }
 
 static bool tcli_rb_previous(tcli_rb_t *restrict const rb, char *str,
