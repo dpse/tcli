@@ -520,12 +520,11 @@ static bool tcli_is_word_char(const char c)
 
 void tcli_flush(tcli_t *const tcli)
 {
+#if TCLI_OUTPUT_BUF_LEN > 0
 	if (!tcli)
 		return;
 
 	TCLI_ASSERT(tcli);
-
-#if TCLI_OUTPUT_BUF_LEN > 0
 	TCLI_ASSERT_OUT_BUF(&tcli->out_buf);
 
 	if (tcli->out_buf.len == 0)
