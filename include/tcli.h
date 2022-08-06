@@ -17,7 +17,8 @@
 
 #ifndef TCLI_CMDLINE_MAX_LEN
 /**
- * The maximum number of characters that the command line can hold (not including null-terminator).
+ * The maximum number of characters that the command line can hold (not
+ * including null-terminator).
  */
 #define TCLI_CMDLINE_MAX_LEN 64
 #endif
@@ -157,7 +158,7 @@ typedef struct tcli {
  * Initializes the instance.
  * @param tcli Pointer to instance.
  * @param out Output callback function.
- * @param arg User data to be passed to the callback functions.
+ * @param arg User data to be passed to callback functions.
  */
 void tcli_init(tcli_t *tcli, tcli_out_fn_t out, void *arg);
 
@@ -196,26 +197,117 @@ void tcli_set_out(tcli_t *tcli, tcli_out_fn_t out);
  * @param exec Callback function.
  */
 void tcli_set_exec(tcli_t *tcli, tcli_exec_fn_t exec);
+
+/**
+ * Set user data for callback functions.
+ * @param tcli Instance pointer.
+ * @param arg Pointer to user data.
+ */
 void tcli_set_arg(tcli_t *tcli, void *arg);
+
+/**
+ * Set echo mode for output.
+ * @param tcli Instance pointer.
+ * @param mode Echo mode.
+ */
 void tcli_set_echo(tcli_t *tcli, tcli_echo_mode_t mode);
+
+/**
+ * Set callback function for tab-completion.
+ * @param tcli Instance pointer.
+ * @param complete Callback function.
+ */
 void tcli_set_complete(tcli_t *tcli, tcli_compl_fn_t complete);
+
+/**
+ * Set callback function for SIGINT (ctrl+c).
+ * @param tcli Instance pointer.
+ * @param sigint Callback function.
+ */
 void tcli_set_sigint(tcli_t *tcli, tcli_sigint_fn_t sigint);
+
+/**
+ * Set default prompt string.
+ * @param tcli Instance pointer.
+ * @param prompt Prompt string.
+ */
 void tcli_set_prompt(tcli_t *tcli, const char *prompt);
+
+/**
+ * Set error prompt string (used when previous command failed).
+ * @param tcli Instance pointer.
+ * @param error_prompt Prompt string.
+ */
 void tcli_set_error_prompt(tcli_t *tcli, const char *error_prompt);
+
 #if TCLI_HISTORY_BUF_LEN > 0
+
+/**
+ * Set history mode for recording entered lines.
+ * @param tcli Instance pointer.
+ * @param mode History mode.
+ */
 void tcli_set_hist(tcli_t *tcli, tcli_history_mode_t mode);
+
+/**
+ * Set search prompt (used when backwards-searching).
+ * @param tcli Instance pointer.
+ * @param search_prompt Prompt string.
+ */
 void tcli_set_search_prompt(tcli_t *tcli, const char *search_prompt);
+
 #endif
 
+/**
+ * Logs a string without disturbing the current prompt.
+ * @param tcli Instance pointer.
+ * @param str String.
+ */
 void tcli_log_str(tcli_t *tcli, const char *str);
+
+/**
+ * Logs formatted data from variable argument list without disturbing the
+ * current prompt.
+ * @param tcli Instance pointer.
+ * @param buf Buffer to hold formatted data.
+ * @param len Buffer length.
+ * @param format Format string.
+ * @param arg Variable arguments list.
+ * @return On success, the total number of characters written, else -1.
+ */
 int tcli_log_vprintf(tcli_t *tcli, char *buf, size_t len, const char *format,
 					 va_list arg);
+
+/**
+ * Logs formatted string without disturbing the current prompt.
+ * @param tcli Instance pointer.
+ * @param buf Buffer to hold formatted data.
+ * @param len Buffer length.
+ * @param format Format string.
+ * @param ... Arguments depending on format string.
+ * @return On success, the total number of characters written, else -1.
+ */
 int tcli_log_printf(tcli_t *tcli, char *buf, size_t len, const char *format,
 					...);
 
+/**
+ * Flushes output buffer (if used).
+ * @param tcli Instance pointer.
+ */
 void tcli_flush(tcli_t *tcli);
+
+/**
+ * Outputs a string through the instance output callback function. May be
+ * buffered.
+ * @param tcli Instance pointer.
+ * @param str String to output.
+ */
 void tcli_out(tcli_t *tcli, const char *str);
 
+/**
+ * Clears the current screen output.
+ * @param tcli Instance pointer.
+ */
 void tcli_clear_screen(tcli_t *tcli);
 
 #endif
