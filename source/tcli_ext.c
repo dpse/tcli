@@ -525,13 +525,12 @@ void tclie_set_user_level(tclie_t *const tclie, const unsigned user_level)
 	tclie->user.level = user_level;
 }
 
-void tclie_get_user_level(const tclie_t *const tclie,
-						  unsigned *const user_level)
+unsigned tclie_get_user_level(const tclie_t *const tclie)
 {
-	if (!tclie || !user_level)
-		return;
+	if (!tclie)
+		return 0;
 
-	*user_level = tclie->user.level;
+	return tclie->user.level;
 }
 #endif
 

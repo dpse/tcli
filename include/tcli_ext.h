@@ -112,7 +112,13 @@ void tclie_set_search_prompt(tclie_t *tclie, const char *search_prompt);
 
 #if TCLIE_ENABLE_USERS
 void tclie_set_user_level(tclie_t *tclie, unsigned user_level);
-void tclie_get_user_level(const tclie_t *tclie, unsigned *user_level);
+
+/**
+ * Get current user level.
+ * @param tclie Instance pointer.
+ * @return Current user level or 0 on failure.
+ */
+unsigned tclie_get_user_level(const tclie_t *tclie);
 #endif
 
 void tclie_log_str(tclie_t *tclie, const char *str);
