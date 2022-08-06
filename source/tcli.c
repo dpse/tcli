@@ -236,24 +236,27 @@ static void tcli_rb_pop(tcli_rb_t *const rb)
 	}
 }
 
-static bool tcli_rb_peekcmp(tcli_rb_t *restrict const rb,
-							const char *restrict str, size_t len)
+static size_t tcli_rb_move_backwards(tcli_rb_t *restrict const rb,
+									 const size_t max_len)
 {
 	TCLI_ASSERT_RB(rb);
-	assert(str);
 
 	if (rb->count == 0 || rb->pos == rb->tail)
-		return false;
-
-	const size_t pos = rb->pos;
+		return 0;
 
 	tcli_rb_scan_backwards(rb);
 	assert(rb->buf[rb->pos] == '\0');
 	tcli_rb_scan_backwards(rb);
 
-	size_t l = 0;
+	const size_t pos = rb->pos;
+	size_t len = 0;
 	while (rb->buf[rb->pos] != '\0') {
-		l++;
+		len++;
+
+		if (max_len != 0 && len > max_len) {
+			rb->pos = pos;
+			return 0;
+		}
 
 		if (rb->pos == rb->tail)
 			break;
@@ -261,10 +264,25 @@ static bool tcli_rb_peekcmp(tcli_rb_t *restrict const rb,
 		tcli_rb_scan_backwards(rb);
 	}
 
-	assert(l != 0);
+	assert(len != 0);
 
 	if (rb->pos != rb->tail)
 		tcli_rb_scan_forwards(rb);
+
+	return len;
+}
+
+static bool tcli_rb_peekcmp(tcli_rb_t *restrict const rb,
+							const char *restrict str, size_t len)
+{
+	TCLI_ASSERT_RB(rb);
+	assert(str);
+
+	const size_t pos = rb->pos;
+	const size_t l = tcli_rb_move_backwards(rb, len);
+
+	if (l == 0)
+		return false;
 
 	bool match = l == len;
 	if (match) {
@@ -329,34 +347,20 @@ static bool tcli_rb_previous(tcli_rb_t *restrict const rb, char *str,
 	assert(str);
 	assert(len);
 
-SCAN:
+SCAN:;
 
-	if (rb->count == 0 || rb->pos == rb->tail)
+	const size_t l = tcli_rb_move_backwards(rb, 0);
+
+	if (l == 0)
 		return false;
-
-	tcli_rb_scan_backwards(rb);
-	assert(rb->buf[rb->pos] == '\0');
-	tcli_rb_scan_backwards(rb);
-
-	size_t l = 0;
-	while (rb->buf[rb->pos] != '\0') {
-		l++;
-
-		if (rb->pos == rb->tail)
-			break;
-
-		tcli_rb_scan_backwards(rb);
-	}
-
-	assert(l != 0);
-
-	if (rb->pos != rb->tail)
-		tcli_rb_scan_forwards(rb);
 
 	const size_t pos = rb->pos;
 	if (match_str) {
 		if (match_len == 0 || *match_str == '\0')
 			return false;
+
+		if (l < match_len)
+			goto SCAN;
 
 		// Check if we match
 		size_t matched = 0;
