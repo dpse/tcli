@@ -588,7 +588,7 @@ static int tclie_cmd_clear(void *arg, const int argc, const char *const *argv)
 	assert(argv[0]);
 
 	tclie_t *const tclie = arg;
-	tcli_clear_screen(&tclie->tcli);
+	tclie_clear_screen(tclie);
 	return 0;
 }
 
