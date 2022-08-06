@@ -27,7 +27,7 @@
 typedef tcli_out_fn_t tclie_out_fn_t;
 typedef tcli_sigint_fn_t tclie_sigint_fn_t;
 
-typedef int (*tclie_cmd_fn_t)(void *arg, int argc, const char *const *argv);
+typedef int (*tclie_cmd_fn_t)(void *arg, int argc, const char **argv);
 
 // Command definition
 typedef const struct tclie_cmd {
@@ -42,9 +42,9 @@ typedef const struct tclie_cmd {
 } tclie_cmd_t;
 
 typedef void (*tclie_pre_cmd_fn_t)(void *arg, int argc,
-								   const char *const *argv);
+								   const char **argv);
 typedef void (*tclie_post_cmd_fn_t)(void *arg, int argc,
-									const char *const *argv, int res);
+									const char **argv, int res);
 
 typedef struct tclie_cmds {
 	const tclie_cmd_t *cmds;

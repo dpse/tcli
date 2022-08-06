@@ -4,11 +4,11 @@
 
 #define TCLIE_ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
 
-static int tclie_cmd_help(void *arg, int argc, const char *const *argv);
-static int tclie_cmd_clear(void *arg, int argc, const char *const *argv);
+static int tclie_cmd_help(void *arg, int argc, const char **argv);
+static int tclie_cmd_clear(void *arg, int argc, const char **argv);
 #if TCLIE_ENABLE_USERS
-static int tclie_cmd_login(void *arg, int argc, const char *const *argv);
-static int tclie_cmd_logout(void *arg, int argc, const char *const *argv);
+static int tclie_cmd_login(void *arg, int argc, const char **argv);
+static int tclie_cmd_logout(void *arg, int argc, const char **argv);
 #endif
 
 static const tclie_cmd_t tclie_internal_cmds[] = {
@@ -159,7 +159,7 @@ static void tclie_complete(const tclie_t *const tclie,
 }
 
 static void tcli_complete(void *const arg, const int argc,
-						  const char *const *const argv,
+						  const char **const argv,
 						  const char **const compl, const size_t max_count,
 						  size_t *const count)
 {
@@ -192,7 +192,7 @@ static void tcli_complete(void *const arg, const int argc,
 
 static bool tclie_exec(tclie_t *const tclie, const tclie_cmd_t *const cmds,
 					   const size_t cmd_count, void *const arg, const int argc,
-					   const char *const *const argv, int *const res)
+					   const char **const argv, int *const res)
 {
 	assert(tclie);
 	assert(cmds);
@@ -373,7 +373,7 @@ static inline int tclie_login_begin(tclie_t *const tclie, const char *const str)
 #endif
 
 static int tcli_exec(void *const arg, const int argc,
-					 const char *const *const argv)
+					 const char **const argv)
 {
 	assert(arg);
 	assert(argc >= 1);
@@ -550,7 +550,7 @@ unsigned tclie_get_user_level(const tclie_t *const tclie)
 }
 #endif
 
-static int tclie_cmd_help(void *arg, const int argc, const char *const *argv)
+static int tclie_cmd_help(void *arg, const int argc, const char **argv)
 {
 	assert(arg);
 	assert(argc >= 1);
@@ -596,7 +596,7 @@ static int tclie_cmd_help(void *arg, const int argc, const char *const *argv)
 	return 0;
 }
 
-static int tclie_cmd_clear(void *arg, const int argc, const char *const *argv)
+static int tclie_cmd_clear(void *arg, const int argc, const char **argv)
 {
 	assert(arg);
 	assert(argc >= 1);
@@ -609,7 +609,7 @@ static int tclie_cmd_clear(void *arg, const int argc, const char *const *argv)
 }
 
 #if TCLIE_ENABLE_USERS
-static int tclie_cmd_login(void *arg, const int argc, const char *const *argv)
+static int tclie_cmd_login(void *arg, const int argc, const char **argv)
 {
 	assert(arg);
 	assert(argc >= 1);
@@ -620,7 +620,7 @@ static int tclie_cmd_login(void *arg, const int argc, const char *const *argv)
 	return tclie_login_begin(tclie, argc == 2 ? argv[1] : NULL);
 }
 
-static int tclie_cmd_logout(void *arg, const int argc, const char *const *argv)
+static int tclie_cmd_logout(void *arg, const int argc, const char **argv)
 {
 	assert(arg);
 	assert(argc >= 1);
