@@ -565,6 +565,36 @@ void tcli_out(tcli_t *const tcli, const char *str)
 #endif
 }
 
+int tcli_out_vprintf(tcli_t *restrict const tcli, char *restrict const buf,
+					 size_t len, const char *restrict const format, va_list arg)
+{
+	if (!tcli || !buf || !format)
+		return -1;
+
+	if (len == 0)
+		return 0;
+
+	const int count = vsnprintf(buf, len, format, arg);
+	tcli_out(tcli, buf);
+	return count;
+}
+
+int tcli_out_printf(tcli_t *restrict const tcli, char *restrict const buf,
+					size_t len, const char *restrict const format, ...)
+{
+	if (!tcli || !buf || !format)
+		return -1;
+
+	if (len == 0)
+		return 0;
+
+	va_list arg;
+	va_start(arg, format);
+	const int count = tcli_out_vprintf(tcli, buf, len, format, arg);
+	va_end(arg);
+	return count;
+}
+
 static void tcli_term_move_cursor(tcli_t *const tcli, int offset)
 {
 	TCLI_ASSERT(tcli);

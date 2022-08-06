@@ -56,6 +56,22 @@ void tclie_out(tclie_t *const tclie, const char *const str)
 		tcli_out(&tclie->tcli, str);
 }
 
+int tclie_out_vprintf(tclie_t *const tclie, char *const buf, const size_t len,
+					  const char *const format, va_list arg)
+{
+	return tclie ? tcli_out_vprintf(&tclie->tcli, buf, len, format, arg) : -1;
+}
+
+int tclie_out_printf(tclie_t *const tclie, char *const buf, const size_t len,
+					 const char *const format, ...)
+{
+	va_list arg;
+	va_start(arg, format);
+	const int count = tclie_out_vprintf(tclie, buf, len, format, arg);
+	va_end(arg);
+	return count;
+}
+
 void tclie_flush(tclie_t *const tclie)
 {
 	assert(tclie);

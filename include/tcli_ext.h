@@ -287,6 +287,32 @@ void tclie_flush(tclie_t *tclie);
 void tclie_out(tclie_t *tclie, const char *str);
 
 /**
+ * Outputs data from variable argument list without disturbing the
+ * current prompt. May be buffered.
+ * @param tcli Instance pointer.
+ * @param buf Buffer to hold formatted data.
+ * @param len Buffer length.
+ * @param format Format string.
+ * @param arg Variable arguments list.
+ * @return On success, the total number of characters written, else -1.
+ */
+int tclie_out_vprintf(tclie_t *tclie, char *buf, size_t len, const char *format,
+					  va_list arg);
+
+/**
+ * Outputs formatted string without disturbing the current prompt. May be
+ * buffered.
+ * @param tcli Instance pointer.
+ * @param buf Buffer to hold formatted data.
+ * @param len Buffer length.
+ * @param format Format string.
+ * @param ... Arguments depending on format string.
+ * @return On success, the total number of characters written, else -1.
+ */
+int tclie_out_printf(tclie_t *tclie, char *buf, size_t len, const char *format,
+					 ...);
+
+/**
  * Clears the current screen output.
  * @param tclie Instance pointer.
  */
