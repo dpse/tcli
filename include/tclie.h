@@ -30,15 +30,15 @@ typedef tcli_sigint_fn_t tclie_sigint_fn_t;
 typedef int (*tclie_cmd_fn_t)(void *arg, int argc, const char **argv);
 
 // Command definition
-typedef const struct tclie_cmd {
-	char *name;		   // Command
+typedef struct tclie_cmd {
+	const char *name;		   // Command
 	tclie_cmd_fn_t fn; // Callback function
 #if TCLIE_ENABLE_USERS
 	unsigned min_user_level; // Minimum user level required for execution
 #endif
 	int min_args;
 	int max_args;
-	char *desc; // Command description
+	const char *desc; // Command description
 } tclie_cmd_t;
 
 typedef void (*tclie_pre_cmd_fn_t)(void *arg, int argc,
@@ -52,11 +52,11 @@ typedef struct tclie_cmds {
 } tclie_cmds_t;
 
 #if TCLIE_ENABLE_USERS
-typedef const struct tclie_user {
+typedef struct tclie_user {
 #if TCLIE_ENABLE_USERNAMES
-	char *name; // Username
+	const char *name; // Username
 #endif
-	char *password; // Password
+	const char *password; // Password
 	unsigned level; // User level used for restricting command access.
 } tclie_user_t;
 
