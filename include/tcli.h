@@ -70,7 +70,7 @@
 typedef void (*tcli_out_fn_t)(void *arg, const char *str);
 typedef int (*tcli_exec_fn_t)(void *arg, int argc, const char **argv);
 typedef void (*tcli_compl_fn_t)(void *arg, int argc, const char **argv,
-								const char ** compl, size_t max_count,
+								const char ** completions, size_t max_count,
 								size_t *count);
 typedef void (*tcli_sigint_fn_t)(void *arg);
 
