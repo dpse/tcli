@@ -853,10 +853,10 @@ static size_t tcli_offset_prev_word(const tcli_t *const tcli)
 
 void tcli_clear_screen(tcli_t *const tcli)
 {
-	TCLI_ASSERT(tcli);
-
 	if (!tcli)
 		return;
+
+	TCLI_ASSERT(tcli);
 
 	tcli_term_clear(tcli);
 	tcli_term_cursor_home(tcli);
