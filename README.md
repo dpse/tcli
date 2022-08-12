@@ -47,7 +47,7 @@ tclie_init(&tclie, output, NULL);
 2. Register user table (if needed):
 
 ```c
-tclie_user_t users[] = {
+static const tclie_user_t users[] = {
     // Name, password, level
     {"debug", NULL, 1},
     {"admin", "12345", 2}
@@ -59,7 +59,7 @@ tclie_reg_users(&tclie, users, 2);
 3. Register command table:
 
 ```c
-int echo(void * arg, int argc, const char * const * argv)
+int echo(void * arg, int argc, const char ** argv)
 {
     if(argc > 1)
         printf("%s\r\n", argv[1]);
@@ -80,7 +80,7 @@ tclie_reg_cmds(&tclie, cmds, 1);
 ```c
 while (1) {
     char c = getchar(); // Read e.g. serial input
-    tcli_input_char(&tclie.tcli, c);
+    tclie_input_char(&tclie, c);
 }
 ```
 
@@ -96,6 +96,7 @@ See the examples directory for more details.
 | Ctrl+d | Delete current character.               |
 | Ctrl+e | Move cursor to line end.                |
 | Ctrl+f | Move cursor forward one character.      |
+| Ctrl+g | Exit reverse search mode.               |
 | Ctrl+h | Delete previous character.              |
 | Ctrl+i | Equivalent to the tab key.              |
 | Ctrl+j | Equivalent to the enter key.            |
@@ -109,5 +110,5 @@ See the examples directory for more details.
 | Alt+b | Move cursor backward one word.          |
 | Alt+d | Delete word after cursor.               |
 | Alt+f | Move cursor forward one word.           |
-| Alt+r | Cancel changes to history line.            |
+| Alt+r | Cancel changes to history line.         |
 
