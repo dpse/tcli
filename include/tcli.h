@@ -107,15 +107,16 @@ typedef struct tcli_rb {
 	size_t tail;
 	size_t count;
 	size_t pos;
+	size_t index;
 	char buf[TCLI_HISTORY_BUF_LEN];
 } tcli_rb_t;
 
 typedef struct tcli_hist {
-	size_t offset;
 	tcli_rb_t rb;
 	tcli_history_mode_t mode : 2;
 	bool has_line : 1;
 	bool search : 1;
+	bool next : 1;
 	const char *search_prompt;
 } tcli_hist_t;
 #endif

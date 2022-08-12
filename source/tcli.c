@@ -25,7 +25,8 @@ static_assert(TCLI_OUTPUT_BUF_LEN >= 0,
 	assert((rb)->head < TCLI_ARRAY_SIZE((rb)->buf));                           \
 	assert((rb)->tail < TCLI_ARRAY_SIZE((rb)->buf));                           \
 	assert((rb)->count <= TCLI_ARRAY_SIZE((rb)->buf));                         \
-	assert((rb)->pos < TCLI_ARRAY_SIZE((rb)->buf))
+	assert((rb)->pos < TCLI_ARRAY_SIZE((rb)->buf));                            \
+	assert((rb)->index <= (rb)->count)
 #endif
 
 #if TCLI_OUTPUT_BUF_LEN > 0
@@ -171,6 +172,19 @@ typedef enum tcli_hist_mode {
 	TCLI_HIST_SAME
 } tcli_hist_it_t;
 
+static inline void tcli_rb_reset_pos(tcli_rb_t *const rb)
+{
+	TCLI_ASSERT_RB(rb);
+	rb->pos = rb->head;
+	rb->index = 0;
+}
+
+static inline bool tcli_rb_at_head(tcli_rb_t *const rb)
+{
+	TCLI_ASSERT_RB(rb);
+	return rb->index == 0;
+}
+
 static inline void tcli_rb_scan_backwards(tcli_rb_t *const rb)
 {
 	TCLI_ASSERT_RB(rb);
@@ -217,7 +231,7 @@ static void tcli_rb_pop_first(tcli_rb_t *const rb)
 		prev_head = rb->head;
 	}
 
-	rb->pos = rb->head;
+	tcli_rb_reset_pos(rb);
 }
 
 static void tcli_rb_pop(tcli_rb_t *const rb)
@@ -235,6 +249,9 @@ static void tcli_rb_pop(tcli_rb_t *const rb)
 		if (c == '\0')
 			break;
 	}
+
+	if (rb->index > rb->count)
+		tcli_rb_reset_pos(rb);
 }
 
 static size_t tcli_rb_move_backwards(tcli_rb_t *restrict const rb,
@@ -245,11 +262,12 @@ static size_t tcli_rb_move_backwards(tcli_rb_t *restrict const rb,
 	if (rb->count == 0 || rb->pos == rb->tail)
 		return 0;
 
+	const size_t pos = rb->pos;
+
 	tcli_rb_scan_backwards(rb);
 	assert(rb->buf[rb->pos] == '\0');
 	tcli_rb_scan_backwards(rb);
 
-	const size_t pos = rb->pos;
 	size_t len = 0;
 	while (rb->buf[rb->pos] != '\0') {
 		len++;
@@ -270,6 +288,7 @@ static size_t tcli_rb_move_backwards(tcli_rb_t *restrict const rb,
 	if (rb->pos != rb->tail)
 		tcli_rb_scan_forwards(rb);
 
+	rb->index++;
 	return len;
 }
 
@@ -280,14 +299,18 @@ static bool tcli_rb_peekcmp(tcli_rb_t *restrict const rb,
 	assert(str);
 
 	const size_t pos = rb->pos;
+	rb->pos = rb->head; // Always peek from head
 	const size_t l = tcli_rb_move_backwards(rb, len);
 
-	if (l == 0)
+	if (l == 0) {
+		rb->pos = pos;
 		return false;
+	}
 
 	bool match = l == len;
 	if (match) {
 		for (size_t i = 0; i < l; i++) {
+			assert(*str != '\0');
 			if (*str++ != rb->buf[rb->pos]) {
 				match = false;
 				break;
@@ -334,7 +357,7 @@ static bool tcli_rb_push(tcli_rb_t *restrict const rb, const char *restrict str,
 	rb->count += len + 1;
 
 	if (move_pos)
-		rb->pos = rb->head;
+		tcli_rb_reset_pos(rb);
 
 	return true;
 }
@@ -430,6 +453,9 @@ static bool tcli_rb_next(tcli_rb_t *restrict const rb, char *restrict str,
 
 	assert(rb->buf[rb->pos] == '\0');
 	tcli_rb_scan_forwards(rb);
+
+	assert(rb->index > 0);
+	rb->index--;
 
 	return tcli_rb_current(rb, str, len);
 }
@@ -943,10 +969,10 @@ static inline void tcli_reset_hist(tcli_t *const tcli)
 	if (tcli->hist.has_line)
 		tcli_rb_pop_first(&tcli->hist.rb);
 
-	tcli->hist.rb.pos = tcli->hist.rb.head;
+	tcli_rb_reset_pos(&tcli->hist.rb);
 	tcli->hist.has_line = false;
-	tcli->hist.offset = 0;
 	tcli->hist.search = false;
+	tcli->hist.next = false;
 }
 
 static inline void tcli_reset_hist_mode(tcli_t *const tcli)
@@ -1056,6 +1082,178 @@ static size_t tcli_str_match(const char *restrict a, const char *restrict b,
 		len++;
 
 	return len;
+}
+
+static bool tcli_newline(tcli_t *const tcli, const char c)
+{
+	TCLI_ASSERT(tcli);
+
+	if (c != TCLI_CR && c != TCLI_LF) {
+		tcli->last_endl = 0;
+		return false;
+	}
+
+	tcli->last_endl = c;
+
+	if (tcli->last_endl == (c == TCLI_CR ? TCLI_LF : TCLI_CR))
+		return true;
+
+#if TCLI_HISTORY_BUF_LEN > 0
+	tcli_reset_hist(tcli);
+
+	if (tcli->echo.mode == TCLI_ECHO_ON && tcli->hist.mode == TCLI_HIST_ON)
+		tcli_rb_push(&tcli->hist.rb, tcli->cmdline.buf, tcli->cmdline.len,
+					 true);
+#endif
+
+	tcli_term_newline(tcli);
+	tcli_flush(tcli);
+#if TCLI_HISTORY_BUF_LEN > 0
+	tcli_reset_hist_mode(tcli);
+#endif
+	tcli_reset_echo_mode(tcli);
+	tcli_exec(tcli);
+	tcli_clear_all(tcli, false);
+	return true;
+}
+
+static void tcli_insert_char(tcli_t *const tcli, const char c)
+{
+	TCLI_ASSERT(tcli);
+
+	if (c <= 31 || c >= 127)
+		return;
+
+	if (tcli->cmdline.len == 0 && c == ' ')
+		return;
+
+	tcli_insert(tcli, &c, 1);
+}
+
+static void tcli_sigint(tcli_t *const tcli)
+{
+	TCLI_ASSERT(tcli);
+
+	if (tcli->sigint)
+		tcli->sigint(tcli->arg);
+
+	tcli_clear_all(tcli, true);
+}
+
+#if TCLI_HISTORY_BUF_LEN > 0
+static void tcli_hist_remove_line(tcli_t *const tcli)
+{
+	TCLI_ASSERT(tcli);
+
+	if (tcli->hist.has_line && tcli_rb_at_head(&tcli->hist.rb)) {
+		tcli_rb_pop_first(&tcli->hist.rb);
+		tcli->hist.has_line = false;
+	}
+}
+
+static void tcli_hist_set_search_mode(tcli_t *const tcli, const bool search)
+{
+	TCLI_ASSERT(tcli);
+
+	if (tcli->hist.search == search) {
+		tcli->hist.next = search;
+		return;
+	}
+
+	if (tcli->echo.mode != TCLI_ECHO_ON && search)
+		return;
+
+	if (!search)
+		tcli_reset_hist(tcli);
+
+	tcli->hist.search = search;
+	tcli_term_reprint_all(tcli);
+	tcli_flush(tcli);
+}
+
+static void tcli_hist(tcli_t *const tcli, const tcli_hist_it_t mode)
+{
+	TCLI_ASSERT(tcli);
+	assert(mode == TCLI_HIST_PREV || mode == TCLI_HIST_NEXT ||
+		   mode == TCLI_HIST_SAME);
+
+	if (tcli->echo.mode != TCLI_ECHO_ON)
+		return;
+
+	size_t len = 0;
+	if (mode == TCLI_HIST_PREV) {
+		if (tcli_rb_at_head(&tcli->hist.rb))
+			tcli->hist.has_line = tcli_rb_push(
+				&tcli->hist.rb, tcli->cmdline.buf, tcli->cmdline.len, false);
+		if (!tcli_rb_previous(&tcli->hist.rb, tcli->cmdline.buf, &len, NULL,
+							  0)) {
+			tcli_hist_remove_line(tcli);
+			return;
+		}
+	} else if (mode == TCLI_HIST_NEXT) {
+		if (!tcli_rb_next(&tcli->hist.rb, tcli->cmdline.buf, &len)) {
+			tcli_clear(tcli);
+			tcli_reset_hist(tcli);
+			return;
+		}
+		tcli_hist_remove_line(tcli);
+	} else {
+		if (tcli_rb_at_head(&tcli->hist.rb))
+			return;
+		if (!tcli_rb_current(&tcli->hist.rb, tcli->cmdline.buf, &len)) {
+			tcli_clear(tcli);
+			tcli_reset_hist(tcli);
+			return;
+		}
+	}
+
+	tcli_term_erase_line(tcli);
+	tcli->cmdline.len = len;
+	tcli->cmdline.cursor = len;
+	tcli_echo_out(tcli, 0);
+	tcli_flush(tcli);
+}
+
+static void tcli_hist_search(tcli_t *const tcli)
+{
+	TCLI_ASSERT(tcli);
+
+	if (!tcli->hist.search)
+		return;
+
+	if (tcli->echo.mode != TCLI_ECHO_ON) {
+		tcli_hist_set_search_mode(tcli, false);
+		return;
+	}
+
+	if (tcli->cmdline.len == 0)
+		return;
+
+	if (!tcli->hist.next) {
+		tcli_reset_hist(tcli);
+		tcli->hist.search = true;
+	}
+
+	tcli->hist.next = false;
+
+	if (tcli_rb_previous(&tcli->hist.rb, tcli->cmdline.buf, &tcli->cmdline.len,
+						 tcli->cmdline.buf, tcli->cmdline.cursor)) {
+		tcli_term_reprint_from_cursor(tcli, true);
+		tcli_flush(tcli);
+	}
+}
+#endif
+
+static void tcli_convert_op(const char c, unsigned char *const op)
+{
+	assert(op);
+
+	for (size_t i = 0; i < TCLI_ARRAY_SIZE(ctrl_char_table); i++) {
+		if (c == ctrl_char_table[i].match) {
+			*op = ctrl_char_table[i].op;
+			return;
+		}
+	}
 }
 
 static void tcli_complete(tcli_t *const tcli)
@@ -1182,178 +1380,15 @@ static void tcli_exit_compl(tcli_t *const tcli)
 	tcli_flush(tcli);
 }
 
-static bool tcli_newline(tcli_t *const tcli, const char c)
-{
-	TCLI_ASSERT(tcli);
-
-	if (c != TCLI_CR && c != TCLI_LF) {
-		tcli->last_endl = 0;
-		return false;
-	}
-
-	tcli->last_endl = c;
-
-	if (tcli->last_endl == (c == TCLI_CR ? TCLI_LF : TCLI_CR))
-		return true;
-
 #if TCLI_HISTORY_BUF_LEN > 0
-	tcli_reset_hist(tcli);
-
-	if (tcli->echo.mode == TCLI_ECHO_ON && tcli->hist.mode == TCLI_HIST_ON)
-		tcli_rb_push(&tcli->hist.rb, tcli->cmdline.buf, tcli->cmdline.len,
-					 true);
-#endif
-
-	tcli_term_newline(tcli);
-	tcli_flush(tcli);
-#if TCLI_HISTORY_BUF_LEN > 0
-	tcli_reset_hist_mode(tcli);
-#endif
-	tcli_reset_echo_mode(tcli);
-	tcli_exec(tcli);
-	tcli_clear_all(tcli, false);
-	return true;
-}
-
-static void tcli_insert_char(tcli_t *const tcli, const char c)
+static inline void tcli_exit_hist_search(tcli_t *const tcli, const char c)
 {
 	TCLI_ASSERT(tcli);
 
-	if (c <= 31 || c >= 127)
-		return;
-
-	if (tcli->cmdline.len == 0 && c == ' ')
-		return;
-
-	tcli_insert(tcli, &c, 1);
-}
-
-static void tcli_sigint(tcli_t *const tcli)
-{
-	TCLI_ASSERT(tcli);
-
-	if (tcli->sigint)
-		tcli->sigint(tcli->arg);
-
-	tcli_clear_all(tcli, true);
-}
-
-#if TCLI_HISTORY_BUF_LEN > 0
-static void tcli_hist_remove_line(tcli_t *const tcli)
-{
-	TCLI_ASSERT(tcli);
-
-	if (tcli->hist.has_line && tcli->hist.offset == 0) {
-		tcli_rb_pop_first(&tcli->hist.rb);
-		tcli->hist.has_line = false;
-	}
-}
-
-static void tcli_hist(tcli_t *const tcli, const tcli_hist_it_t mode)
-{
-	TCLI_ASSERT(tcli);
-	assert(mode == TCLI_HIST_PREV || mode == TCLI_HIST_NEXT ||
-		   mode == TCLI_HIST_SAME);
-
-	if (tcli->echo.mode != TCLI_ECHO_ON)
-		return;
-
-	size_t len = 0;
-	if (mode == TCLI_HIST_PREV) {
-		if (tcli->hist.offset == 0)
-			tcli->hist.has_line = tcli_rb_push(
-				&tcli->hist.rb, tcli->cmdline.buf, tcli->cmdline.len, false);
-		if (!tcli_rb_previous(&tcli->hist.rb, tcli->cmdline.buf, &len, NULL,
-							  0)) {
-			tcli_hist_remove_line(tcli);
-			return;
-		}
-		tcli->hist.offset++;
-	} else if (mode == TCLI_HIST_NEXT) {
-		if (!tcli_rb_next(&tcli->hist.rb, tcli->cmdline.buf, &len)) {
-			tcli_clear(tcli);
-			tcli_reset_hist(tcli);
-			return;
-		}
-		assert(tcli->hist.offset != 0);
-		tcli->hist.offset--;
-		tcli_hist_remove_line(tcli);
-	} else {
-		if (tcli->hist.offset == 0)
-			return;
-		if (!tcli_rb_current(&tcli->hist.rb, tcli->cmdline.buf, &len)) {
-			tcli_clear(tcli);
-			tcli_reset_hist(tcli);
-			return;
-		}
-	}
-
-	tcli_term_erase_line(tcli);
-	tcli->cmdline.len = len;
-	tcli->cmdline.cursor = len;
-	tcli_echo_out(tcli, 0);
-	tcli_flush(tcli);
-}
-
-static void tcli_hist_set_search_mode(tcli_t *const tcli, const bool search)
-{
-	TCLI_ASSERT(tcli);
-
-	if (tcli->hist.search == search)
-		return;
-
-	if (tcli->echo.mode != TCLI_ECHO_ON && search)
-		return;
-
-	if (!search)
-		tcli_reset_hist(tcli);
-
-	tcli->hist.search = search;
-
-	tcli_term_reprint_all(tcli);
-	tcli_flush(tcli);
-}
-
-static void tcli_hist_search(tcli_t *const tcli)
-{
-	TCLI_ASSERT(tcli);
-
-	if (!tcli->hist.search)
-		return;
-
-	if (tcli->echo.mode != TCLI_ECHO_ON) {
+	if (tcli->hist.search && tcli->esc.esc && c == TCLI_ESC)
 		tcli_hist_set_search_mode(tcli, false);
-		return;
-	}
-
-	if (tcli->cmdline.len == 0)
-		return;
-
-	tcli_reset_hist(tcli);
-	tcli->hist.search = true;
-
-	if (tcli_rb_previous(&tcli->hist.rb, tcli->cmdline.buf, &tcli->cmdline.len,
-						 tcli->cmdline.buf, tcli->cmdline.cursor)) {
-		tcli_term_reprint_from_cursor(tcli, true);
-		tcli_flush(tcli);
-		return;
-	}
-
-	tcli_delete(tcli, TCLI_CMDLINE_MAX_LEN);
 }
 #endif
-
-static void tcli_convert_op(const char c, unsigned char *const op)
-{
-	assert(op);
-
-	for (size_t i = 0; i < TCLI_ARRAY_SIZE(ctrl_char_table); i++) {
-		if (c == ctrl_char_table[i].match) {
-			*op = ctrl_char_table[i].op;
-			return;
-		}
-	}
-}
 
 void tcli_input_char(tcli_t *const tcli, char c)
 {
@@ -1368,6 +1403,7 @@ void tcli_input_char(tcli_t *const tcli, char c)
 	unsigned char op = TCLI_OP_NONE;
 
 	tcli_exit_compl(tcli);
+	tcli_exit_hist_search(tcli, c);
 
 	if (tcli_unescape(tcli, c, &op) || tcli_newline(tcli, c))
 		return;
@@ -1426,7 +1462,7 @@ void tcli_input_char(tcli_t *const tcli, char c)
 		tcli_hist(tcli, TCLI_HIST_SAME);
 		break;
 	case TCLI_OP_HIST_SEARCH_MODE_ON:
-		tcli_hist_set_search_mode(tcli, !tcli->hist.search);
+		tcli_hist_set_search_mode(tcli, true);
 		break;
 	case TCLI_OP_HIST_SEARCH_MODE_OFF:
 		tcli_hist_set_search_mode(tcli, false);
