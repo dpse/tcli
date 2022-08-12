@@ -81,8 +81,8 @@ enum {
 	TCLI_OP_CURSOR_FORWARD_ONE,
 	TCLI_OP_CURSOR_BACKWARD_ONE,
 #if TCLI_HISTORY_BUF_LEN > 0
-	TCLI_OP_HIST_MODE_TOGGLE,
-	TCLI_OP_HIST_MODE_OFF,
+	TCLI_OP_HIST_SEARCH_MODE_ON,
+	TCLI_OP_HIST_SEARCH_MODE_OFF,
 	TCLI_OP_HIST_PREV,
 	TCLI_OP_HIST_NEXT,
 	TCLI_OP_HIST_RESTORE,
@@ -112,8 +112,9 @@ static const struct {
 #if TCLI_HISTORY_BUF_LEN > 0
 					   {TCLI_DLE, TCLI_OP_HIST_PREV},
 					   {TCLI_SO, TCLI_OP_HIST_NEXT},
-					   {TCLI_DC2, TCLI_OP_HIST_MODE_TOGGLE},
-					   {TCLI_ESC, TCLI_OP_HIST_MODE_OFF},
+					   {TCLI_DC2, TCLI_OP_HIST_SEARCH_MODE_ON},
+					   {TCLI_ESC, TCLI_OP_HIST_SEARCH_MODE_OFF},
+					   {TCLI_BEL, TCLI_OP_HIST_SEARCH_MODE_OFF},
 #endif
 					   {TCLI_HT, TCLI_OP_COMPLETE},
 					   {TCLI_ETX, TCLI_OP_SIGINT},
@@ -1424,10 +1425,10 @@ void tcli_input_char(tcli_t *const tcli, char c)
 	case TCLI_OP_HIST_RESTORE:
 		tcli_hist(tcli, TCLI_HIST_SAME);
 		break;
-	case TCLI_OP_HIST_MODE_TOGGLE:
+	case TCLI_OP_HIST_SEARCH_MODE_ON:
 		tcli_hist_set_search_mode(tcli, !tcli->hist.search);
 		break;
-	case TCLI_OP_HIST_MODE_OFF:
+	case TCLI_OP_HIST_SEARCH_MODE_OFF:
 		tcli_hist_set_search_mode(tcli, false);
 		break;
 #endif
