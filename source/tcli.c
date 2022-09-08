@@ -763,22 +763,28 @@ static void tcli_echo_out(tcli_t *const tcli, const size_t cursor)
 }
 
 static void tcli_term_print_from_cursor(tcli_t *const tcli,
-										const bool save_cursor)
+										const bool save_cursor,
+										const char *color)
 {
 	TCLI_ASSERT(tcli);
 	if (save_cursor)
 		tcli_term_save_cursor(tcli);
+	if (color)
+		tcli_out(tcli, color);
 	tcli_echo_out(tcli, tcli->cmdline.cursor);
+	if (color)
+		tcli_out(tcli, TCLI_COLOR_DEFAULT);
 	if (save_cursor)
 		tcli_term_restore_cursor(tcli);
 }
 
 static inline void tcli_term_reprint_from_cursor(tcli_t *const tcli,
-												 const bool save_cursor)
+												 const bool save_cursor,
+												 const char *const color)
 {
 	TCLI_ASSERT(tcli);
 	tcli_term_cut(tcli);
-	tcli_term_print_from_cursor(tcli, save_cursor);
+	tcli_term_print_from_cursor(tcli, save_cursor, color);
 }
 
 static void tcli_term_reprint_all(tcli_t *const tcli)
@@ -934,7 +940,7 @@ static void tcli_insert(tcli_t *restrict const tcli,
 	memcpy(tcli->cmdline.buf + tcli->cmdline.cursor, str, len);
 
 	tcli->cmdline.len += len;
-	tcli_term_print_from_cursor(tcli, false);
+	tcli_term_print_from_cursor(tcli, false, NULL);
 	tcli->cmdline.cursor += len;
 	tcli_term_move_cursor(
 		tcli,
@@ -957,7 +963,7 @@ static void tcli_backspace(tcli_t *const tcli, size_t len)
 	tcli->cmdline.len -= len;
 	tcli->cmdline.cursor -= len;
 	tcli_term_move_cursor(tcli, -(int)len); // Move cursor back len steps
-	tcli_term_reprint_from_cursor(tcli, true);
+	tcli_term_reprint_from_cursor(tcli, true, NULL);
 	tcli_flush(tcli);
 }
 
@@ -974,7 +980,7 @@ static void tcli_delete(tcli_t *const tcli, size_t len)
 			tcli->cmdline.len - tcli->cmdline.cursor + 1);
 
 	tcli->cmdline.len -= len;
-	tcli_term_reprint_from_cursor(tcli, true);
+	tcli_term_reprint_from_cursor(tcli, true, NULL);
 	tcli_flush(tcli);
 }
 
@@ -1263,7 +1269,7 @@ static void tcli_hist_search(tcli_t *const tcli)
 
 	if (tcli_rb_previous(&tcli->hist.rb, tcli->cmdline.buf, &tcli->cmdline.len,
 						 tcli->cmdline.buf, tcli->cmdline.cursor)) {
-		tcli_term_reprint_from_cursor(tcli, true);
+		tcli_term_reprint_from_cursor(tcli, true, TCLI_SEARCH_COLOR);
 		tcli_flush(tcli);
 	}
 }
@@ -1362,7 +1368,7 @@ static void tcli_complete(tcli_t *const tcli)
 		tcli->cmdline.len = cursor;
 		tcli->cmdline.buf[tcli->cmdline.len] = '\0';
 		tcli_term_move_cursor(tcli, move);
-		tcli_term_reprint_from_cursor(tcli, false);
+		tcli_term_reprint_from_cursor(tcli, false, NULL);
 		tcli->cmdline.cursor = cursor;
 
 		if (compl_count == 1) {
