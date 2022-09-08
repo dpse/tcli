@@ -487,8 +487,7 @@ static int tcli_itoa(int n, char *const str)
 	return j;
 }
 
-static size_t tcli_tokenize(char *restrict str,
-							const char *restrict *const tokens,
+static size_t tcli_tokenize(char *str, const char **const tokens,
 							const size_t max_tokens)
 {
 	assert(str);
@@ -500,35 +499,61 @@ static size_t tcli_tokenize(char *restrict str,
 		while (*str == ' ')
 			str++;
 
-		const char *start = str;
-
-		if (*start == '\0')
+		if (*str == '\0')
 			break;
 
-		if (*start == '"' || *start == '\'') {
-			str++;
-			bool esc = false;
-			while (*str != '\0' && (*str != *start || esc)) {
-				esc = *str == '\\';
-				str++;
-			}
-			start++;
+		const char *start = str;
+		bool esc = false;
+		char delim = 0;
 
-			if (*start == '\0')
-				break;
-		} else {
-			while (*str != '\0' && *str != ' ')
+		while (*str != '\0') {
+			if (esc) {
+				esc = false;
 				str++;
+				continue;
+			}
+
+			if ((esc = *str == '\\')) {
+				str++;
+				continue;
+			}
+
+			if (!delim && (*str == '"' || *str == '\''))
+				delim = *str;
+			else if (delim) {
+				if (*str == delim)
+					delim = 0;
+			} else if (*str == ' ')
+				break;
+
+			str++;
 		}
 
-		char *const stop = str;
+		char *stop = str;
 
-		tokens[found_tokens++] = start;
+		if (stop > start) {
+			size_t str_len = stop - start;
 
-		if (*stop == '\0')
+			if (str_len >= 2 && (*start == '"' || *start == '\'') &&
+				*start == start[str_len - 1]) {
+				start++;
+				stop--;
+				str_len -= 2;
+			}
+
+			if (str_len != 0) {
+				tokens[found_tokens++] = start;
+
+				if (*stop == '\0')
+					break;
+
+				*stop = '\0';
+			}
+		}
+
+		if (str != stop && *str == '\0')
 			break;
 
-		*stop = '\0';
 		str++;
 	}
 
