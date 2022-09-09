@@ -95,10 +95,17 @@
 #define TCLI_DEFAULT_ERROR_PROMPT (TCLI_COLOR_RED "> " TCLI_COLOR_DEFAULT)
 #endif
 
+#ifndef TCLI_SEARCH_COLOR
+/**
+ * Color used to color match part after cursor when searching.
+ */
+#define TCLI_SEARCH_COLOR TCLI_COLOR_BRIGHT_BLACK
+#endif
+
 typedef void (*tcli_out_fn_t)(void *arg, const char *str);
 typedef int (*tcli_exec_fn_t)(void *arg, int argc, const char **argv);
 typedef void (*tcli_compl_fn_t)(void *arg, int argc, const char **argv,
-								const char ** completions, size_t max_count,
+								const char **completions, size_t max_count,
 								size_t *count);
 typedef void (*tcli_sigint_fn_t)(void *arg);
 
@@ -159,6 +166,9 @@ typedef struct tcli_out_buf {
 typedef struct tcli_complete {
 	tcli_compl_fn_t complete;
 	bool active : 1;
+	bool selected : 1;
+	size_t index;
+	size_t cursor;
 } tcli_complete_t;
 
 typedef struct tcli {
