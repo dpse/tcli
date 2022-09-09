@@ -657,28 +657,30 @@ static void tcli_term_move_cursor(tcli_t *const tcli, int offset)
 {
 	TCLI_ASSERT(tcli);
 
-	if (offset == 0)
-		return;
-
-	const char code = offset > 0 ? 'C' : 'D';
+	const char code = offset >= 0 ? 'C' : 'D';
 
 	if (offset < 0)
 		offset = -offset;
 
-	char str[7];
-	char *c = str;
-	*c++ = '\033';
-	*c++ = '[';
-	if (offset > 1) {
-		const int len = tcli_itoa(offset, c);
-		assert(len <= 3);
-		c += len;
-	}
-	*c++ = code;
-	*c = '\0';
+	while (offset != 0) {
+		const int this_offset = offset > 999 ? 999 : offset;
+		offset -= this_offset;
 
-	assert(c - str <= sizeof(str));
-	tcli_out(tcli, str);
+		char str[7];
+		char *c = str;
+		*c++ = '\033';
+		*c++ = '[';
+		if (this_offset > 1) {
+			const int len = tcli_itoa(this_offset, c);
+			assert(len <= 3);
+			c += len;
+		}
+		*c++ = code;
+		*c = '\0';
+
+		assert(c - str <= sizeof(str));
+		tcli_out(tcli, str);
+	}
 }
 
 static inline void tcli_term_clear(tcli_t *const tcli)
@@ -756,7 +758,7 @@ static inline void tcli_term_cursor_down(tcli_t *const tcli)
 	tcli_out(tcli, "\033[B");
 }
 
-static void tcli_echo_out(tcli_t *const tcli, const size_t cursor)
+static void tcli_echo_out(tcli_t *const tcli, size_t cursor)
 {
 	TCLI_ASSERT(tcli);
 
@@ -765,7 +767,7 @@ static void tcli_echo_out(tcli_t *const tcli, const size_t cursor)
 		return;
 	}
 
-	for (size_t i = cursor; i < tcli->cmdline.len; i++)
+	while (cursor++ < tcli->cmdline.len)
 		tcli_out(tcli, "*");
 }
 
@@ -810,8 +812,7 @@ static void tcli_term_reprint_all(tcli_t *const tcli)
 		tcli_out(tcli, tcli->prompt);
 
 	tcli_echo_out(tcli, 0);
-	tcli_term_move_cursor(tcli,
-						  (int)tcli->cmdline.cursor - (int)tcli->cmdline.len);
+	tcli_term_move_cursor(tcli, tcli->cmdline.cursor - tcli->cmdline.len);
 }
 
 static size_t tcli_max_forward_len(const tcli_t *const tcli, const size_t len)
