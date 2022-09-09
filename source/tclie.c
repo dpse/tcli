@@ -102,7 +102,7 @@ static void tclie_print_str(tclie_t *const tclie, const char *const head_str,
 			tclie_out(tclie, " ");
 	}
 	if (color)
-		tclie_out(tclie, TCLI_COLOR_DEFAULT);
+		tclie_out(tclie, TCLI_FORMAT_RESET);
 	if (desc_str)
 		tclie_out(tclie, desc_str);
 	tclie_out(tclie, "\r\n");
