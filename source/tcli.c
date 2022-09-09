@@ -1,5 +1,6 @@
 #include "tcli.h"
 #include <assert.h>
+#include <limits.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -667,8 +668,11 @@ static void tcli_term_move_cursor(tcli_t *const tcli, int offset)
 	char *c = str;
 	*c++ = '\033';
 	*c++ = '[';
-	if (offset > 1)
-		c += tcli_itoa(offset, c);
+	if (offset > 1) {
+		const int len = tcli_itoa(offset, c);
+		assert(len <= 3);
+		c += len;
+	}
 	*c++ = code;
 	*c = '\0';
 
@@ -721,6 +725,8 @@ static inline void tcli_term_erase_all(tcli_t *const tcli)
 
 static inline void tcli_term_erase_line(tcli_t *const tcli)
 {
+	TCLI_ASSERT(tcli);
+	assert(tcli->cmdline.cursor <= (size_t)INT_MAX + 1);
 	tcli_term_move_cursor(tcli, -(int)tcli->cmdline.cursor);
 	tcli_term_cut(tcli);
 }
@@ -1092,6 +1098,7 @@ static void tcli_exec(tcli_t *const tcli)
 	const char *tokens[TCLI_MAX_TOKENS] = {NULL};
 	size_t count =
 		tcli_tokenize(tcli->cmdline.buf, tokens, TCLI_ARRAY_SIZE(tokens));
+	assert(count <= TCLI_MAX_TOKENS);
 
 	if (count != 0) {
 		tcli->executing = true;
