@@ -18,7 +18,8 @@ static_assert(TCLI_OUTPUT_BUF_LEN >= 0,
 #define TCLI_ASSERT(tcli)                                                      \
 	assert(tcli);                                                              \
 	assert((tcli)->cmdline.len <= TCLI_CMDLINE_MAX_LEN);                       \
-	assert((tcli)->cmdline.cursor <= (tcli)->cmdline.len)
+	assert((tcli)->cmdline.cursor <= (tcli)->cmdline.len);                     \
+	assert((tcli)->cmdline.buf[(tcli)->cmdline.len] == '\0')
 
 #if TCLI_HISTORY_BUF_LEN > 0
 #define TCLI_ASSERT_RB(rb)                                                     \
