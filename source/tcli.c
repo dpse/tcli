@@ -718,14 +718,14 @@ static void tcli_term_move(tcli_t *const tcli, const char code, size_t offset)
 }
 
 static inline void tcli_term_move_cursor_forward(tcli_t *const tcli,
-												  const size_t offset)
+												 const size_t offset)
 {
 	TCLI_ASSERT(tcli);
 	tcli_term_move(tcli, 'C', offset);
 }
 
 static inline void tcli_term_move_cursor_backward(tcli_t *const tcli,
-												   const size_t offset)
+												  const size_t offset)
 {
 	TCLI_ASSERT(tcli);
 	tcli_term_move(tcli, 'D', offset);
@@ -843,7 +843,7 @@ static void tcli_term_reprint_all(tcli_t *const tcli)
 	tcli_echo_out(tcli, 0);
 
 	tcli_term_move_cursor_backward(tcli,
-									tcli->cmdline.len - tcli->cmdline.cursor);
+								   tcli->cmdline.len - tcli->cmdline.cursor);
 }
 
 static size_t tcli_max_forward_len(const tcli_t *const tcli, const size_t len)
@@ -1029,7 +1029,7 @@ static void tcli_insert(tcli_t *const tcli, const char *const str, size_t len,
 	tcli->cmdline.cursor += len;
 	if (output) {
 		tcli_term_move_cursor_backward(tcli, tcli->cmdline.len -
-												  tcli->cmdline.cursor);
+												 tcli->cmdline.cursor);
 		tcli_flush(tcli);
 	}
 }
@@ -1292,7 +1292,8 @@ static void tcli_hist_navigate(tcli_t *const tcli, const tcli_hist_it_t mode)
 			tcli_erase_line(tcli);
 			tcli_hist_reset(tcli);
 			return;
-		}
+		} else
+			tcli->cmdline.cursor = tcli->cmdline.len = len;
 		tcli_hist_remove_line(tcli);
 	} else {
 		if (tcli_rb_at_head(&tcli->hist.rb))
@@ -1304,7 +1305,7 @@ static void tcli_hist_navigate(tcli_t *const tcli, const tcli_hist_it_t mode)
 		}
 	}
 
-	tcli->cmdline.len = len;
+	tcli->cmdline.cursor = tcli->cmdline.len = len;
 	tcli_reprint_all(tcli, len);
 }
 
@@ -1677,8 +1678,10 @@ static void tcli_complete(tcli_t *const tcli, const bool select)
 	assert(matches[0]);
 	assert(token && token_len != 0);
 	const bool single_match = match_count == 1;
-	tcli_complete_apply(tcli, token, token_len, matches[0], match_len,
-						single_match);
+
+	if (!tcli->complete.active)
+		tcli_complete_apply(tcli, token, token_len, matches[0], match_len,
+							single_match);
 
 	if (!single_match) {
 		if (select)
