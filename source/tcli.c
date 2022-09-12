@@ -1061,7 +1061,6 @@ static void tcli_delete(tcli_t *const tcli, size_t len, const bool output)
 	if ((len = tcli_max_forward_len(tcli, len)) == 0)
 		return;
 
-	// Same as delete but offset
 	memmove(tcli->cmdline.buf + tcli->cmdline.cursor,
 			tcli->cmdline.buf + tcli->cmdline.cursor + len,
 			tcli->cmdline.len - tcli->cmdline.cursor + 1);
@@ -1460,7 +1459,6 @@ static size_t tcli_complete_match_complete(tcli_t *const tcli,
 								completions, max_completions);
 	assert(completion_count <= max_completions);
 
-	// Validate completions
 	size_t valid_completion_count = 0;
 	for (size_t i = 0; i < completion_count; i++) {
 		if (!completions[i])
