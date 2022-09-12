@@ -187,7 +187,7 @@ static inline bool tcli_rb_at_head(tcli_rb_t *const rb)
 	return rb->index == 0;
 }
 
-static inline void tcli_rb_scan_backwards(tcli_rb_t *const rb)
+static inline void tcli_rb_scan_backward(tcli_rb_t *const rb)
 {
 	TCLI_ASSERT_RB(rb);
 
@@ -197,7 +197,7 @@ static inline void tcli_rb_scan_backwards(tcli_rb_t *const rb)
 	rb->pos--;
 }
 
-static inline void tcli_rb_scan_forwards(tcli_rb_t *const rb)
+static inline void tcli_rb_scan_forward(tcli_rb_t *const rb)
 {
 	TCLI_ASSERT_RB(rb);
 
@@ -256,7 +256,7 @@ static void tcli_rb_pop(tcli_rb_t *const rb)
 		tcli_rb_reset_pos(rb);
 }
 
-static size_t tcli_rb_move_backwards(tcli_rb_t *const rb, const size_t max_len)
+static size_t tcli_rb_move_backward(tcli_rb_t *const rb, const size_t max_len)
 {
 	TCLI_ASSERT_RB(rb);
 
@@ -265,9 +265,9 @@ static size_t tcli_rb_move_backwards(tcli_rb_t *const rb, const size_t max_len)
 
 	const size_t pos = rb->pos;
 
-	tcli_rb_scan_backwards(rb);
+	tcli_rb_scan_backward(rb);
 	assert(rb->buf[rb->pos] == '\0');
-	tcli_rb_scan_backwards(rb);
+	tcli_rb_scan_backward(rb);
 
 	size_t len = 0;
 	while (rb->buf[rb->pos] != '\0') {
@@ -281,13 +281,13 @@ static size_t tcli_rb_move_backwards(tcli_rb_t *const rb, const size_t max_len)
 		if (rb->pos == rb->tail)
 			break;
 
-		tcli_rb_scan_backwards(rb);
+		tcli_rb_scan_backward(rb);
 	}
 
 	assert(len != 0);
 
 	if (rb->pos != rb->tail)
-		tcli_rb_scan_forwards(rb);
+		tcli_rb_scan_forward(rb);
 
 	rb->index++;
 	return len;
@@ -301,7 +301,7 @@ static bool tcli_rb_peekcmp(tcli_rb_t *restrict const rb,
 
 	const size_t pos = rb->pos;
 	rb->pos = rb->head; // Always peek from head
-	const size_t l = tcli_rb_move_backwards(rb, len);
+	const size_t l = tcli_rb_move_backward(rb, len);
 
 	if (l == 0) {
 		rb->pos = pos;
@@ -316,7 +316,7 @@ static bool tcli_rb_peekcmp(tcli_rb_t *restrict const rb,
 				match = false;
 				break;
 			}
-			tcli_rb_scan_forwards(rb);
+			tcli_rb_scan_forward(rb);
 		}
 	}
 
@@ -374,7 +374,7 @@ static bool tcli_rb_previous(tcli_rb_t *restrict const rb, char *str,
 
 SCAN:;
 
-	const size_t l = tcli_rb_move_backwards(rb, 0);
+	const size_t l = tcli_rb_move_backward(rb, 0);
 
 	if (l == 0)
 		return false;
@@ -397,14 +397,14 @@ SCAN:;
 			}
 			if (++matched == match_len)
 				break;
-			tcli_rb_scan_forwards(rb);
+			tcli_rb_scan_forward(rb);
 		}
 		rb->pos = pos;
 	}
 
 	for (size_t i = 0; i < l; i++) {
 		*str++ = rb->buf[rb->pos];
-		tcli_rb_scan_forwards(rb);
+		tcli_rb_scan_forward(rb);
 	}
 	rb->pos = pos;
 
@@ -428,7 +428,7 @@ static bool tcli_rb_current(tcli_rb_t *restrict const rb, char *restrict str,
 	while (rb->buf[rb->pos] != '\0') {
 		*str++ = rb->buf[rb->pos];
 		l++;
-		tcli_rb_scan_forwards(rb);
+		tcli_rb_scan_forward(rb);
 	}
 	rb->pos = pos;
 
@@ -450,10 +450,10 @@ static bool tcli_rb_next(tcli_rb_t *restrict const rb, char *restrict str,
 		return false;
 
 	while (rb->buf[rb->pos] != '\0')
-		tcli_rb_scan_forwards(rb);
+		tcli_rb_scan_forward(rb);
 
 	assert(rb->buf[rb->pos] == '\0');
-	tcli_rb_scan_forwards(rb);
+	tcli_rb_scan_forward(rb);
 
 	assert(rb->index > 0);
 	rb->index--;
@@ -717,14 +717,14 @@ static void tcli_term_move(tcli_t *const tcli, const char code, size_t offset)
 	}
 }
 
-static inline void tcli_term_move_cursor_forwards(tcli_t *const tcli,
+static inline void tcli_term_move_cursor_forward(tcli_t *const tcli,
 												  const size_t offset)
 {
 	TCLI_ASSERT(tcli);
 	tcli_term_move(tcli, 'C', offset);
 }
 
-static inline void tcli_term_move_cursor_backwards(tcli_t *const tcli,
+static inline void tcli_term_move_cursor_backward(tcli_t *const tcli,
 												   const size_t offset)
 {
 	TCLI_ASSERT(tcli);
@@ -842,7 +842,7 @@ static void tcli_term_reprint_all(tcli_t *const tcli)
 
 	tcli_echo_out(tcli, 0);
 
-	tcli_term_move_cursor_backwards(tcli,
+	tcli_term_move_cursor_backward(tcli,
 									tcli->cmdline.len - tcli->cmdline.cursor);
 }
 
@@ -880,7 +880,7 @@ static void tcli_cursor_forward(tcli_t *const tcli, size_t len)
 		return;
 
 	tcli->cmdline.cursor += len;
-	tcli_term_move_cursor_forwards(tcli, len);
+	tcli_term_move_cursor_forward(tcli, len);
 	tcli_flush(tcli);
 }
 
@@ -892,7 +892,7 @@ static void tcli_cursor_backward(tcli_t *const tcli, size_t len)
 		return;
 
 	tcli->cmdline.cursor -= len;
-	tcli_term_move_cursor_backwards(tcli, len);
+	tcli_term_move_cursor_backward(tcli, len);
 	tcli_flush(tcli);
 }
 
@@ -956,7 +956,7 @@ static void tcli_reprint_line(tcli_t *const tcli, size_t new_len)
 	if (new_len > TCLI_CMDLINE_MAX_LEN)
 		new_len = TCLI_CMDLINE_MAX_LEN;
 
-	tcli_term_move_cursor_backwards(tcli, tcli->cmdline.cursor);
+	tcli_term_move_cursor_backward(tcli, tcli->cmdline.cursor);
 	tcli_term_cut(tcli);
 	tcli->cmdline.len = tcli->cmdline.cursor = new_len;
 	assert(tcli->cmdline.buf[tcli->cmdline.len] == '\0');
@@ -1028,7 +1028,7 @@ static void tcli_insert(tcli_t *const tcli, const char *const str, size_t len,
 		tcli_term_print_from_cursor(tcli, false, NULL);
 	tcli->cmdline.cursor += len;
 	if (output) {
-		tcli_term_move_cursor_backwards(tcli, tcli->cmdline.len -
+		tcli_term_move_cursor_backward(tcli, tcli->cmdline.len -
 												  tcli->cmdline.cursor);
 		tcli_flush(tcli);
 	}
@@ -1048,7 +1048,7 @@ static void tcli_backspace(tcli_t *const tcli, size_t len, const bool output)
 	tcli->cmdline.len -= len;
 	tcli->cmdline.cursor -= len;
 	if (output) {
-		tcli_term_move_cursor_backwards(tcli, len);
+		tcli_term_move_cursor_backward(tcli, len);
 		tcli_term_reprint_from_cursor(tcli, true, NULL);
 		tcli_flush(tcli);
 	}
@@ -1568,11 +1568,11 @@ static void tcli_complete_apply(tcli_t *const tcli, const char *const token,
 		tcli_insert(tcli, " ", 1, false);
 	}
 
-	tcli_term_move_cursor_backwards(tcli, pre_move);
+	tcli_term_move_cursor_backward(tcli, pre_move);
 	const size_t new_cursor = tcli->cmdline.cursor;
 	tcli->cmdline.cursor = cursor;
 	tcli_term_reprint_from_cursor(tcli, true, NULL);
-	tcli_term_move_cursor_forwards(tcli, post_move);
+	tcli_term_move_cursor_forward(tcli, post_move);
 	tcli->cmdline.cursor = new_cursor;
 }
 
