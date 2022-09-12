@@ -166,7 +166,7 @@ static size_t tcli_complete(void *const arg, const int argc,
 	assert(completions);
 	assert(match);
 
-	if (max_count == 0 || argc > 1)
+	if (max_count == 0 || match != argv[0])
 		return 0;
 
 	const size_t match_len = strlen(match);
