@@ -1533,7 +1533,7 @@ static size_t tcli_complete_match(tcli_t *const tcli, const char **const token,
 	}
 
 	// Restore splits
-	for (size_t i = 0; i < cursor; i++) {
+	for (size_t i = 0; i < tcli->cmdline.cursor; i++) {
 		if (tcli->cmdline.buf[i] == '\0')
 			tcli->cmdline.buf[i] = ' ';
 	}
