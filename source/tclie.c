@@ -122,10 +122,12 @@ static inline void tclie_print_cmd(tclie_t *const tclie,
 					flush);
 }
 
+#if TCLI_COMPLETE
 static void tclie_complete(const tclie_t *const tclie,
 						   const tclie_cmd_t *const cmds,
 						   const size_t cmd_count, const char *const match,
-						   const size_t match_len, const char **const completions,
+						   const size_t match_len,
+						   const char **const completions,
 						   const size_t max_count, size_t *const count)
 {
 	assert(tclie);
@@ -154,9 +156,9 @@ static void tclie_complete(const tclie_t *const tclie,
 }
 
 static size_t tcli_complete(void *const arg, const int argc,
-						  const char **const argv, const char * const match,
-						  const char **const completions, const size_t max_count
-						  )
+							const char **const argv, const char *const match,
+							const char **const completions,
+							const size_t max_count)
 {
 	assert(arg);
 	assert(argc > 0);
@@ -183,6 +185,7 @@ static size_t tcli_complete(void *const arg, const int argc,
 
 	return count;
 }
+#endif
 
 static bool tclie_exec(tclie_t *const tclie, const tclie_cmd_t *const cmds,
 					   const size_t cmd_count, void *const arg, const int argc,
@@ -366,8 +369,7 @@ static inline int tclie_login_begin(tclie_t *const tclie, const char *const str)
 }
 #endif
 
-static int tcli_exec(void *const arg, const int argc,
-					 const char **const argv)
+static int tcli_exec(void *const arg, const int argc, const char **const argv)
 {
 	assert(arg);
 	assert(argc >= 1);
@@ -479,8 +481,10 @@ void tclie_init(tclie_t *tclie, tclie_out_fn_t out, void *arg)
 
 	tcli_init(&tclie->tcli, tcli_output, tclie);
 	tcli_set_exec(&tclie->tcli, tcli_exec);
-	tcli_set_complete(&tclie->tcli, tcli_complete);
 	tcli_set_sigint(&tclie->tcli, tcli_sigint);
+#if TCLI_COMPLETE
+	tcli_set_complete(&tclie->tcli, tcli_complete);
+#endif
 }
 
 #if TCLIE_ENABLE_USERS

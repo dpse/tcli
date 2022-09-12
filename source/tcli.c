@@ -491,6 +491,7 @@ static int tcli_itoa(int n, char *const str)
 	return j;
 }
 
+#if TCLI_COMPLETE
 static size_t tcli_str_match(const char *restrict a, const char *restrict b,
 							 const size_t max_len)
 {
@@ -505,6 +506,7 @@ static size_t tcli_str_match(const char *restrict a, const char *restrict b,
 
 	return len;
 }
+#endif
 
 static size_t tcli_tokenize(char *str, const char **const tokens,
 							const size_t max_tokens)
@@ -1355,6 +1357,7 @@ static void tcli_convert_op(const char c, unsigned char *const op)
 	}
 }
 
+#if TCLI_COMPLETE
 static size_t tcli_complete_match_overlap_len(const char **const matches,
 											  const size_t count)
 {
@@ -1716,6 +1719,7 @@ static void tcli_complete_exit(tcli_t *const tcli, const char c)
 	tcli->complete.active = false;
 	tcli->complete.selected = false;
 }
+#endif
 
 void tcli_input_char(tcli_t *const tcli, char c)
 {
@@ -1729,19 +1733,27 @@ void tcli_input_char(tcli_t *const tcli, char c)
 
 	unsigned char op = TCLI_OP_NONE;
 
+#if TCLI_COMPLETE
 	tcli_complete_clear(tcli);
+#endif
+#if TCLI_HISTORY_BUF_LEN > 0
 	tcli_hist_exit_search_mode(tcli, c);
+#endif
 
 	if (tcli_unescape(tcli, c, &op) || tcli_newline(tcli, c)) {
+#if TCLI_COMPLETE
 		tcli_complete_exit(tcli, c);
+#endif
 		return;
 	}
 
 	if (op == TCLI_OP_NONE)
 		tcli_convert_op(c, &op);
 
+#if TCLI_COMPLETE
 	if (op != TCLI_OP_COMPLETE)
 		tcli_complete_exit(tcli, c);
+#endif
 
 	switch (op) {
 	case TCLI_OP_NONE:
@@ -1800,9 +1812,11 @@ void tcli_input_char(tcli_t *const tcli, char c)
 		tcli_hist_set_search_mode(tcli, false);
 		break;
 #endif
+#if TCLI_COMPLETE
 	case TCLI_OP_COMPLETE:
 		tcli_complete(tcli, true);
 		break;
+#endif
 	case TCLI_OP_CLEAR:
 		tcli_clear_screen(tcli);
 		break;
@@ -1873,6 +1887,7 @@ void tcli_set_exec(tcli_t *const tcli, tcli_exec_fn_t exec)
 	tcli->exec = exec;
 }
 
+#if TCLI_COMPLETE
 void tcli_set_complete(tcli_t *const tcli, tcli_compl_fn_t complete)
 {
 	if (!tcli)
@@ -1880,6 +1895,7 @@ void tcli_set_complete(tcli_t *const tcli, tcli_compl_fn_t complete)
 
 	tcli->complete.complete = complete;
 }
+#endif
 
 void tcli_set_sigint(tcli_t *const tcli, tcli_sigint_fn_t sigint)
 {
@@ -1964,8 +1980,10 @@ void tcli_log(tcli_t *const tcli, const char *const str)
 	tcli_out(tcli, str);
 	tcli_term_reprint_all(tcli);
 
+#if TCLI_COMPLETE
 	if (tcli->complete.active)
 		tcli_complete(tcli, false);
+#endif
 
 	tcli_flush(tcli);
 }

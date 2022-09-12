@@ -265,12 +265,16 @@ void tcli_set_arg(tcli_t *tcli, void *arg);
  */
 void tcli_set_echo(tcli_t *tcli, tcli_echo_mode_t mode);
 
+#if TCLI_COMPLETE
+
 /**
  * Set callback function for tab-completion.
  * @param tcli Instance pointer.
  * @param complete Callback function.
  */
 void tcli_set_complete(tcli_t *tcli, tcli_compl_fn_t complete);
+
+#endif
 
 /**
  * Set callback function for SIGINT (ctrl+c).
