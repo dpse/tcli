@@ -53,7 +53,7 @@
 
 #ifndef TCLI_MAX_TOKENS
 /**
- * The maximum number of tokens that can be processed on command execution.
+ * The maximum number of tokens that can be processed when tokenizing.
  */
 #define TCLI_MAX_TOKENS 8
 #endif
@@ -72,6 +72,13 @@
  * Set to zero to disable output buffering.
  */
 #define TCLI_OUTPUT_BUF_LEN 256
+#endif
+
+#ifndef TCLI_COMPLETE
+/**
+ * Enable or disable tab-completion.
+ */
+#define TCLI_COMPLETE 1
 #endif
 
 #ifndef TCLI_DEFAULT_PROMPT
@@ -95,24 +102,27 @@
 #define TCLI_DEFAULT_ERROR_PROMPT (TCLI_COLOR_RED "> " TCLI_COLOR_DEFAULT)
 #endif
 
-#ifndef TCLI_SEARCH_COLOR
+#ifndef TCLI_MATCH_COLOR
 /**
- * Color used to color match part after cursor when searching.
+ * Color used to color match during search and tab-completion.
  */
-#define TCLI_SEARCH_COLOR TCLI_COLOR_BRIGHT_BLACK
+#define TCLI_MATCH_COLOR TCLI_COLOR_BRIGHT_BLACK
 #endif
 
 typedef void (*tcli_out_fn_t)(void *arg, const char *str);
 typedef int (*tcli_exec_fn_t)(void *arg, int argc, const char **argv);
-typedef void (*tcli_compl_fn_t)(void *arg, int argc, const char **argv,
-								const char **completions, size_t max_count,
-								size_t *count);
 typedef void (*tcli_sigint_fn_t)(void *arg);
 
+#if TCLI_COMPLETE
+typedef size_t (*tcli_compl_fn_t)(void *arg, int argc, const char **argv,
+								  const char *token, const char **completions,
+								  size_t max_count);
+#endif
+
 typedef struct tcli_cmdline {
-	char buf[TCLI_CMDLINE_MAX_LEN + 1];
 	size_t len;
 	size_t cursor;
+	char buf[TCLI_CMDLINE_MAX_LEN + 1];
 } tcli_cmdline_t;
 
 typedef struct tcli_esc {
@@ -163,19 +173,20 @@ typedef struct tcli_out_buf {
 } tcli_out_buf_t;
 #endif
 
+#if TCLI_COMPLETE
 typedef struct tcli_complete {
 	tcli_compl_fn_t complete;
 	bool active : 1;
 	bool selected : 1;
-	size_t index;
 	size_t cursor;
+	size_t index;
 } tcli_complete_t;
+#endif
 
 typedef struct tcli {
 	tcli_cmdline_t cmdline;
 	tcli_out_fn_t out;
 	tcli_exec_fn_t exec;
-	tcli_complete_t complete;
 	tcli_sigint_fn_t sigint;
 	tcli_esc_t esc;
 	tcli_echo_t echo;
@@ -184,6 +195,9 @@ typedef struct tcli {
 #endif
 #if TCLI_OUTPUT_BUF_LEN > 0
 	tcli_out_buf_t out_buf;
+#endif
+#if TCLI_COMPLETE
+	tcli_complete_t complete;
 #endif
 	void *arg;
 	int res;

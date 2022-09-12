@@ -149,43 +149,39 @@ static void tclie_complete(const tclie_t *const tclie,
 		if (cmd_len < match_len)
 			continue;
 
-		if (cmd_len == match_len)
-			return;
-
 		completions[(*count)++] = cmd->name;
 	}
 }
 
-static void tcli_complete(void *const arg, const int argc,
-						  const char **const argv,
-						  const char **const completions, const size_t max_count,
-						  size_t *const count)
+static size_t tcli_complete(void *const arg, const int argc,
+						  const char **const argv, const char * const match,
+						  const char **const completions, const size_t max_count
+						  )
 {
 	assert(arg);
 	assert(argc > 0);
 	assert(argv);
 	assert(completions);
-	assert(count);
+	assert(match);
 
 	if (max_count == 0 || argc > 1)
-		return;
-
-	const char *const match = argv[argc - 1];
-	assert(match);
+		return 0;
 
 	const size_t match_len = strlen(match);
 
 	if (match_len == 0)
-		return;
+		return 0;
 
 	const tclie_t *const tclie = arg;
-	*count = 0;
+	size_t count = 0;
 
 	tclie_complete(tclie, tclie_internal_cmds,
 				   TCLIE_ARRAY_SIZE(tclie_internal_cmds), match, match_len,
-				   completions, max_count, count);
+				   completions, max_count, &count);
 	tclie_complete(tclie, tclie->cmd.cmds, tclie->cmd.count, match, match_len,
-				   completions, max_count, count);
+				   completions, max_count, &count);
+
+	return count;
 }
 
 static bool tclie_exec(tclie_t *const tclie, const tclie_cmd_t *const cmds,
