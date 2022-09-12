@@ -115,7 +115,7 @@ typedef void (*tcli_sigint_fn_t)(void *arg);
 
 #if TCLI_COMPLETE
 typedef size_t (*tcli_compl_fn_t)(void *arg, int argc, const char **argv,
-								  const char *token, const char **completions,
+								  const char *match, const char **completions,
 								  size_t max_count);
 #endif
 
