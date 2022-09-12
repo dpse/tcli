@@ -7,12 +7,9 @@
 
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
 
-static int echo(__attribute__((unused)) void *arg, int argc,
-				const char **argv);
-static int fail(__attribute__((unused)) void *arg,
-				__attribute__((unused)) int argc,
-				__attribute__((unused)) const char **argv);
-static void output(__attribute__((unused)) void *arg, const char *str);
+static int echo(void *arg, int argc, const char **argv);
+static int fail(void *arg, int argc, const char **argv);
+static void output(void *arg, const char *str);
 
 enum { USER_LEVEL_DEFAULT = 0, USER_LEVEL_DEBUG, USER_LEVEL_ADMIN };
 
@@ -22,8 +19,36 @@ static const tclie_user_t users[] = {{"debug", NULL, USER_LEVEL_DEBUG},
 #endif
 
 static const tclie_cmd_t cmds[] = {
-	{"echo", echo, USER_LEVEL_DEFAULT, 0, 1, "Echo input."},
-	{"fail", fail, USER_LEVEL_ADMIN, 1, 2, "A command that will fail."},
+	{"echo", echo, USER_LEVEL_DEFAULT,
+#if TCLIE_PATTERN_MATCH
+	 "echo ...",
+#endif
+	 "Echo input."},
+	{"fail", fail, USER_LEVEL_ADMIN,
+#if TCLIE_PATTERN_MATCH
+	 "fail ...",
+#endif
+	 "A command that will fail."},
+#if TCLIE_PATTERN_MATCH
+	{"reset", echo, USER_LEVEL_DEFAULT, "reset",
+	 "Single word command, must match exactly."},
+	{"config", echo, USER_LEVEL_DEFAULT, "config save",
+	 "Two word command, spaces around the words are ignored."},
+	{"can", echo, USER_LEVEL_DEFAULT, "can speed <rate>",
+	 "Two word command, with mandatory argument."},
+	{"set", echo, USER_LEVEL_DEFAULT, "set <attr> [<value>]",
+	 "One word command, with mandatory and optional argument."},
+	{"=", echo, USER_LEVEL_DEFAULT, "<reg> = <value>",
+	 "One word command ('=') embedded between mandatory arguments."},
+	{"when", echo, USER_LEVEL_DEFAULT, "when <reg> is <value> echo ...",
+	 "Three word command, with two mandatory arguments and arbitrary "
+	 "optional."},
+	{"or", echo, USER_LEVEL_DEFAULT, "or a|b|c",
+	 "Two word command, with mandatory argument selected from options."},
+	{"complex", echo, USER_LEVEL_DEFAULT,
+	 "complex {set|reset} [a|(b c)] 1|2 <var> [<opt>] end ...",
+	 "Complex example."},
+#endif
 };
 
 static bool quit = false;
@@ -68,26 +93,27 @@ int main(int argc, char **argv)
 	return 0;
 }
 
-static int echo(__attribute__((unused)) void *const arg, const int argc,
-				const char **const argv)
+static int echo(void *const arg, const int argc, const char **const argv)
 {
-	if (argc != 2)
+	if (argc <= 1)
 		return 0;
 
-	printf("%s\r\n", argv[1]);
+	printf("%s", argv[1]);
+	for (int i = 2; i < argc; i++) {
+		printf(" %s", argv[i]);
+	}
+	printf("\r\n");
+
 	return 0;
 }
 
-static int fail(__attribute__((unused)) void *const arg,
-				__attribute__((unused)) const int argc,
-				__attribute__((unused)) const char **const argv)
+static int fail(void *const arg, const int argc, const char **const argv)
 {
-	printf("Command failed...\n");
+	printf("Command failed...\r\n");
 	return -1;
 }
 
-static void output(__attribute__((unused)) void *const arg,
-				   const char *const str)
+static void output(void *const arg, const char *const str)
 {
 	printf("%s", str);
 }

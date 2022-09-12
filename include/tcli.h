@@ -55,7 +55,7 @@
 /**
  * The maximum number of tokens that can be processed when tokenizing.
  */
-#define TCLI_MAX_TOKENS 8
+#define TCLI_MAX_TOKENS 12
 #endif
 
 #ifndef TCLI_HISTORY_BUF_LEN

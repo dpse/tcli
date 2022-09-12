@@ -4,6 +4,41 @@
 
 #define TCLIE_ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
 
+#if TCLIE_PATTERN_MATCH
+typedef enum tclie_token_type {
+	TCLIE_TOKEN_UNKNOWN = 0,
+	TCLIE_TOKEN_EXACT,
+	TCLIE_TOKEN_WILDCARD,
+	TCLIE_TOKEN_MULTI_WILDCARD,
+	TCLIE_TOKEN_OPTIONAL,
+	TCLIE_TOKEN_REQUIRED,
+	TCLIE_TOKEN_COUNT
+} tclie_token_type_t;
+
+typedef enum tclie_token_combinator {
+	TCLIE_COMBINATOR_AND = 0,
+	TCLIE_COMBINATOR_OR,
+	TCLIE_COMBINATOR_COUNT
+} tclie_token_combinator_t;
+
+typedef struct tclie_token {
+	const char *str;
+	size_t len;
+	tclie_token_type_t type;
+} tclie_token_t;
+
+typedef struct tclie_token_delim {
+	char start;
+	char stop;
+	tclie_token_type_t type;
+} tclie_token_delim_t;
+
+static const tclie_token_delim_t tclie_token_delims[] = {
+	{'"', '"', TCLIE_TOKEN_EXACT},	  {'\'', '\'', TCLIE_TOKEN_EXACT},
+	{'<', '>', TCLIE_TOKEN_WILDCARD}, {'[', ']', TCLIE_TOKEN_OPTIONAL},
+	{'(', ')', TCLIE_TOKEN_REQUIRED}, {'{', '}', TCLIE_TOKEN_REQUIRED}};
+#endif
+
 static int tclie_cmd_help(void *arg, int argc, const char **argv);
 static int tclie_cmd_clear(void *arg, int argc, const char **argv);
 #if TCLIE_ENABLE_USERS
@@ -12,28 +47,300 @@ static int tclie_cmd_logout(void *arg, int argc, const char **argv);
 #endif
 
 static const tclie_cmd_t tclie_internal_cmds[] = {
-	{"help", tclie_cmd_help, 0, 0,
+	{"help", tclie_cmd_help,
 #if TCLIE_ENABLE_USERS
 	 0,
 #endif
+#if TCLIE_PATTERN_MATCH
+	 NULL,
+#endif
 	 "Print available commands."},
-	{"clear", tclie_cmd_clear, 0, 0,
+	{"clear", tclie_cmd_clear,
 #if TCLIE_ENABLE_USERS
 	 0,
+#endif
+#if TCLIE_PATTERN_MATCH
+	 NULL,
 #endif
 	 "Clear screen."},
 #if TCLIE_ENABLE_USERS
 #if TCLIE_ENABLE_USERNAMES
-	{"login", tclie_cmd_login, 0, 0, 1, "Login as user."},
-#else
-	{"login", tclie_cmd_login, 0, 0, 0, "Login using password."},
+	{"login", tclie_cmd_login, 0,
+#if TCLIE_PATTERN_MATCH
+	 "login [<username>]",
 #endif
-	{"logout", tclie_cmd_logout, 1, 0, 0, "Logout."},
+	 "Login as user."},
+#else
+	{"login", tclie_cmd_login, 0,
+#if TCLIE_PATTERN_MATCH
+	 NULL,
+#endif
+	 "Login using password."},
+#endif
+	{"logout", tclie_cmd_logout, 1,
+#if TCLIE_PATTERN_MATCH
+	 NULL,
+#endif
+	 "Logout."},
 #endif
 };
 
-static bool tclie_valid_cmd(const tclie_t *const tclie,
-							const tclie_cmd_t *const cmd)
+#if TCLIE_PATTERN_MATCH
+static inline bool tclie_is_space(const char c)
+{
+	return c == ' ' || c == '\t' || c == '\n' || c == '\r' || c == '\f' ||
+		   c == '\v';
+}
+
+static bool tclie_pattern_compare(const char *restrict target,
+								  size_t target_len,
+								  const char *restrict subject)
+{
+	assert(target);
+	assert(subject);
+	assert(target != subject);
+
+	while (target_len != 0 && *target != '\0' && *subject != '\0') {
+		if (*target++ != *subject++)
+			break;
+
+		target_len--;
+	}
+
+	return target_len == 0 && *subject == '\0';
+}
+
+static inline bool tclie_pattern_compare_token(const tclie_token_t *const token,
+											   const char *subject)
+{
+	assert(token);
+
+	return tclie_pattern_compare(token->str, token->len, subject);
+}
+
+static bool tclie_pattern_delim(const char start,
+								tclie_token_delim_t *const delim)
+{
+	assert(delim);
+
+	for (size_t i = 0; i < TCLIE_ARRAY_SIZE(tclie_token_delims); i++) {
+		if (start != tclie_token_delims[i].start)
+			continue;
+
+		*delim = tclie_token_delims[i];
+		return true;
+	}
+
+	return false;
+}
+
+static size_t tclie_pattern_tokenize(const char *str, const size_t len,
+									 tclie_token_t *const tokens,
+									 const size_t max_tokens,
+									 const tclie_token_combinator_t combinator)
+{
+	assert(str);
+	assert(tokens);
+	assert(combinator < TCLIE_COMBINATOR_COUNT);
+
+	const char *const str_max = str + len;
+	size_t found_tokens = 0;
+	struct {
+		bool active;
+		int count;
+		tclie_token_delim_t delim;
+	} delim = {0};
+
+	while (found_tokens < max_tokens && str < str_max) {
+		while (tclie_is_space(*str))
+			str++;
+
+		if (*str == '\0')
+			break;
+
+		bool esc = false;
+		const char *start = str;
+
+		while (*str != '\0' && str < str_max) {
+			if (esc) {
+				esc = false;
+				str++;
+				continue;
+			}
+
+			if ((esc = *str == '\\')) {
+				str++;
+				continue;
+			}
+
+			if (!delim.active && tclie_pattern_delim(*str, &delim.delim)) {
+				delim.active = true;
+				delim.count = 0;
+			}
+
+			if (delim.active) {
+				if (*str == delim.delim.stop)
+					delim.count--;
+				else if (*str == delim.delim.start)
+					delim.count++;
+
+				if (delim.count <= 0)
+					delim.active = false;
+			} else {
+				if (combinator == TCLIE_COMBINATOR_OR) {
+					if (*str == '|')
+						break;
+				} else if (tclie_is_space(*str))
+					break;
+			}
+
+			str++;
+		}
+
+		if (str > start) {
+			size_t str_len = str - start;
+
+			if (str_len >= 2 && tclie_pattern_delim(*start, &delim.delim) &&
+				start[str_len - 1] == delim.delim.stop) {
+				start++;
+				str_len -= 2;
+				tokens[found_tokens].type = delim.delim.type;
+			} else if (tclie_pattern_compare(start, str_len, "..."))
+				tokens[found_tokens].type = TCLIE_TOKEN_MULTI_WILDCARD;
+			else
+				tokens[found_tokens].type = TCLIE_TOKEN_UNKNOWN;
+
+			if (str_len != 0) {
+				tokens[found_tokens].str = start;
+				tokens[found_tokens].len = str_len;
+				found_tokens++;
+			}
+		}
+
+		if (*str == '\0')
+			break;
+
+		str++;
+	}
+
+	return found_tokens;
+}
+
+static inline size_t tclie_pattern_tokenize_token(
+	const tclie_token_t *const token, tclie_token_t *const tokens,
+	const size_t max_tokens, const tclie_token_combinator_t combinator)
+{
+	assert(token);
+	assert(tokens);
+
+	return tclie_pattern_tokenize(token->str, token->len, tokens, max_tokens,
+								  combinator);
+}
+
+static size_t
+tclie_pattern_reduce_token(const tclie_token_t *const token,
+						   tclie_token_t *const tokens, const size_t max_tokens,
+						   tclie_token_combinator_t *const combinator)
+{
+	assert(token);
+	assert(tokens);
+	assert(combinator);
+	assert(max_tokens != 0);
+
+	const tclie_token_combinator_t combinators[] = {TCLIE_COMBINATOR_AND,
+													TCLIE_COMBINATOR_OR};
+
+	for (size_t i = 0; i < TCLIE_ARRAY_SIZE(combinators); i++) {
+		const size_t count = tclie_pattern_tokenize_token(
+			token, tokens, max_tokens, combinators[i]);
+
+		if (count == 0 || count > 1 || token->type != tokens[0].type) {
+			*combinator = combinators[i];
+			return count;
+		}
+	}
+
+	*combinator = TCLIE_COMBINATOR_AND;
+	tokens[0].str = token->str;
+	tokens[0].len = token->len;
+	tokens[0].type = TCLIE_TOKEN_EXACT;
+	return 1;
+}
+
+static bool tclie_pattern_match_token(const tclie_token_t *restrict const token,
+									  const int argc,
+									  const char *restrict *const argv,
+									  int *const arg_index)
+{
+	assert(token);
+	assert(argv);
+	assert(arg_index);
+	assert(token->type < TCLIE_TOKEN_COUNT);
+
+	if (token->type == TCLIE_TOKEN_MULTI_WILDCARD) {
+		*arg_index = argc;
+		return true;
+	}
+
+	if (token->type == TCLIE_TOKEN_EXACT) {
+		if (*arg_index >= argc)
+			return false;
+		return tclie_pattern_compare_token(token, argv[(*arg_index)++]);
+	}
+
+	if (token->type == TCLIE_TOKEN_WILDCARD) {
+		if (*arg_index >= argc)
+			return false;
+		(*arg_index)++;
+		return true;
+	}
+
+	tclie_token_t tokens[TCLIE_PATTERN_MATCH_MAX_TOKENS] = {0};
+	tclie_token_combinator_t combinator = TCLIE_COMBINATOR_AND;
+	const size_t count = tclie_pattern_reduce_token(
+		token, tokens, TCLIE_ARRAY_SIZE(tokens), &combinator);
+
+	if (count == 0)
+		return false;
+
+	assert(combinator < TCLIE_COMBINATOR_COUNT);
+
+	for (size_t i = 0; i < count; i++) {
+		const int old_arg_index = *arg_index;
+		const bool match =
+			tclie_pattern_match_token(&tokens[i], argc, argv, arg_index);
+
+		if (!match)
+			*arg_index = old_arg_index;
+
+		if (combinator == TCLIE_COMBINATOR_OR) {
+			if (match)
+				return true;
+		} else if (!match)
+			return token->type == TCLIE_TOKEN_OPTIONAL;
+	}
+
+	return combinator == TCLIE_COMBINATOR_AND;
+}
+
+bool tclie_pattern_match(const char *restrict pattern, const int argc,
+						 const char *restrict *const argv)
+{
+	assert(argv);
+
+	if (!pattern)
+		return false;
+
+	const tclie_token_t token = {
+		.type = TCLIE_TOKEN_UNKNOWN, .str = pattern, .len = strlen(pattern)};
+	int arg_index = 0;
+	return tclie_pattern_match_token(&token, argc, argv, &arg_index) &&
+		   arg_index == argc;
+}
+#endif
+
+static inline bool tclie_valid_cmd(const tclie_t *const tclie,
+								   const tclie_cmd_t *const cmd)
 {
 	assert(tclie);
 	assert(cmd);
@@ -86,18 +393,23 @@ static inline void tclie_out_flush(tclie_t *const tclie, const char *const str)
 }
 
 static void tclie_print_str(tclie_t *const tclie, const char *const head_str,
-							const char *const color, const size_t pad,
+							const char *const color, size_t pad,
 							const char *const desc_str, const bool flush)
 {
 	assert(tclie);
-	assert(head_str);
+
+	pad += 2;
 
 	if (color)
 		tclie_out(tclie, color);
-	tclie_out(tclie, head_str);
+	if (head_str)
+		tclie_out(tclie, head_str);
 	if (desc_str) {
-		tclie_out(tclie, ": ");
-		size_t len = strlen(head_str);
+		size_t len = 0;
+		if (head_str) {
+			tclie_out(tclie, ": ");
+			len = 2 + strlen(head_str);
+		}
 		while (len++ < pad)
 			tclie_out(tclie, " ");
 	}
@@ -110,16 +422,19 @@ static void tclie_print_str(tclie_t *const tclie, const char *const head_str,
 		tclie_flush(tclie);
 }
 
-static inline void tclie_print_cmd(tclie_t *const tclie,
-								   const tclie_cmd_t *const cmd,
-								   const size_t pad, const bool flush)
+static void tclie_print_cmd(tclie_t *const tclie, const tclie_cmd_t *const cmd,
+							const size_t pad, const bool flush)
 {
 	assert(tclie);
 	assert(cmd);
 	assert(cmd->name);
 
 	tclie_print_str(tclie, cmd->name, TCLI_COLOR_MAGENTA, pad, cmd->desc,
-					flush);
+					flush && !cmd->pattern);
+
+	if (cmd->pattern)
+		tclie_print_str(tclie, NULL, TCLI_COLOR_BRIGHT_BLUE, pad, cmd->pattern,
+						flush);
 }
 
 #if TCLI_COMPLETE
@@ -204,7 +519,13 @@ static bool tclie_exec(tclie_t *const tclie, const tclie_cmd_t *const cmds,
 		if (!tclie_valid_cmd(tclie, cmd))
 			continue;
 
-		if (strcmp(argv[0], cmd->name) != 0)
+#if TCLIE_PATTERN_MATCH
+		if (cmd->pattern) {
+			if (!tclie_pattern_match(cmd->pattern, argc, argv))
+				continue;
+		} else
+#endif
+			if (strcmp(argv[0], cmd->name) != 0)
 			continue;
 
 		if (cmd->desc && argc >= 2) {
@@ -214,14 +535,6 @@ static bool tclie_exec(tclie_t *const tclie, const tclie_cmd_t *const cmds,
 				*res = 0;
 				return true;
 			}
-		}
-
-		if ((cmd->min_args >= 0 && argc < cmd->min_args + 1) ||
-			(cmd->max_args >= 0 && argc > cmd->max_args + 1)) {
-			tclie_print_str(tclie, "Invalid number of arguments", NULL, 0,
-							argv[0], true);
-			*res = -1;
-			return true;
 		}
 
 		if (tclie->pre_cmd)
@@ -268,6 +581,7 @@ static inline void tclie_login_proceed(tclie_login_t *const login,
 	assert(login);
 	assert(login->state >= TCLIE_LOGIN_IDLE &&
 		   login->state <= TCLIE_LOGIN_PASSWORD);
+	assert(state >= TCLIE_LOGIN_IDLE && state <= TCLIE_LOGIN_PASSWORD);
 
 	login->state = state;
 	login->attempt = 0;

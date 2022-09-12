@@ -24,6 +24,21 @@
 #define TCLIE_LOGIN_ATTEMPTS 3
 #endif
 
+#ifndef TCLIE_PATTERN_MATCH
+/**
+ * Disable/enable pattern matching.
+ */
+#define TCLIE_PATTERN_MATCH 1
+#endif
+
+#ifndef TCLIE_PATTERN_MATCH_MAX_TOKEN
+/**
+ * Maximum number of tokens to use for pattern matching tokenization. Required
+ * size depends on pattern complexities.
+ */
+#define TCLIE_PATTERN_MATCH_MAX_TOKENS TCLI_MAX_TOKENS
+#endif
+
 typedef tcli_out_fn_t tclie_out_fn_t;
 typedef tcli_sigint_fn_t tclie_sigint_fn_t;
 
@@ -31,20 +46,20 @@ typedef int (*tclie_cmd_fn_t)(void *arg, int argc, const char **argv);
 
 // Command definition
 typedef struct tclie_cmd {
-	const char *name;		   // Command
+	const char *name;  // Command
 	tclie_cmd_fn_t fn; // Callback function
 #if TCLIE_ENABLE_USERS
 	unsigned min_user_level; // Minimum user level required for execution
 #endif
-	int min_args;
-	int max_args;
+#if TCLIE_PATTERN_MATCH
+	const char *pattern;
+#endif
 	const char *desc; // Command description
 } tclie_cmd_t;
 
-typedef void (*tclie_pre_cmd_fn_t)(void *arg, int argc,
-								   const char **argv);
-typedef void (*tclie_post_cmd_fn_t)(void *arg, int argc,
-									const char **argv, int res);
+typedef void (*tclie_pre_cmd_fn_t)(void *arg, int argc, const char **argv);
+typedef void (*tclie_post_cmd_fn_t)(void *arg, int argc, const char **argv,
+									int res);
 
 typedef struct tclie_cmds {
 	const tclie_cmd_t *cmds;
@@ -57,7 +72,7 @@ typedef struct tclie_user {
 	const char *name; // Username
 #endif
 	const char *password; // Password
-	unsigned level; // User level used for restricting command access.
+	unsigned level;		  // User level used for restricting command access.
 } tclie_user_t;
 
 typedef enum tclie_login_state {

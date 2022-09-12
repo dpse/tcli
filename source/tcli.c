@@ -455,7 +455,7 @@ static bool tcli_rb_next(tcli_rb_t *restrict const rb, char *restrict str,
 	assert(rb->buf[rb->pos] == '\0');
 	tcli_rb_scan_forward(rb);
 
-	assert(rb->index > 0);
+	assert(rb->index != 0);
 	rb->index--;
 
 	return tcli_rb_current(rb, str, len);
