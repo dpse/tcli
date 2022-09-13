@@ -44,6 +44,20 @@ typedef tcli_sigint_fn_t tclie_sigint_fn_t;
 
 typedef int (*tclie_cmd_fn_t)(void *arg, int argc, const char **argv);
 
+#if TCLIE_PATTERN_MATCH
+typedef struct tclie_cmd_opt {
+	char short_opt;
+	const char *long_opt;
+	const char *desc;
+	const char *pattern;
+} tclie_cmd_opt_t;
+
+typedef struct tclie_cmd_opts {
+	const tclie_cmd_opt_t *option;
+	size_t count;
+} tclie_cmd_opts_t;
+#endif
+
 // Command definition
 typedef struct tclie_cmd {
 	const char *name;  // Command
@@ -51,10 +65,11 @@ typedef struct tclie_cmd {
 #if TCLIE_ENABLE_USERS
 	unsigned min_user_level; // Minimum user level required for execution
 #endif
+	const char *desc; // Command description
 #if TCLIE_PATTERN_MATCH
 	const char *pattern;
+	tclie_cmd_opts_t options;
 #endif
-	const char *desc; // Command description
 } tclie_cmd_t;
 
 typedef void (*tclie_pre_cmd_fn_t)(void *arg, int argc, const char **argv);

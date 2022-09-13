@@ -51,37 +51,28 @@ static const tclie_cmd_t tclie_internal_cmds[] = {
 #if TCLIE_ENABLE_USERS
 	 0,
 #endif
+	 "Print available commands.",
 #if TCLIE_PATTERN_MATCH
-	 NULL,
+	 "help [<command>]"
 #endif
-	 "Print available commands."},
+	},
 	{"clear", tclie_cmd_clear,
 #if TCLIE_ENABLE_USERS
 	 0,
 #endif
-#if TCLIE_PATTERN_MATCH
-	 NULL,
-#endif
 	 "Clear screen."},
 #if TCLIE_ENABLE_USERS
-#if TCLIE_ENABLE_USERNAMES
-	{"login", tclie_cmd_login, 0,
+	{"login", tclie_cmd_login, 0, "Login.",
 #if TCLIE_PATTERN_MATCH
-	 "login [<username>]",
+	 "login [<username>]"
 #endif
-	 "Login as user."},
-#else
-	{"login", tclie_cmd_login, 0,
-#if TCLIE_PATTERN_MATCH
-	 NULL,
-#endif
-	 "Login using password."},
-#endif
-	{"logout", tclie_cmd_logout, 1,
-#if TCLIE_PATTERN_MATCH
-	 NULL,
-#endif
-	 "Logout."},
+	},
+	{
+		"logout",
+		tclie_cmd_logout,
+		1,
+		"Logout.",
+	},
 #endif
 };
 
@@ -267,7 +258,85 @@ tclie_pattern_reduce_token(const tclie_token_t *const token,
 	return 1;
 }
 
+static bool tclie_pattern_match_token(const tclie_token_t *restrict token,
+									  const tclie_cmd_opts_t *options, int argc,
+									  const char *restrict *argv,
+									  int *arg_index);
+
+static bool tclie_pattern_match_options(const tclie_cmd_opts_t *const options,
+										const int argc,
+										const char *restrict *const argv,
+										int *const arg_index)
+{
+	assert(argv);
+	assert(arg_index);
+
+	if (!options || options->count == 0)
+		return true;
+
+	while (*arg_index < argc) {
+		const char *arg = argv[*arg_index];
+
+		if (*arg++ != '-')
+			return true;
+
+		const bool long_opt = *arg == '-';
+		if (long_opt)
+			arg++;
+
+		if (*arg == '\0')
+			return false;
+
+		bool consume = true;
+		while (long_opt || *arg != '\0') {
+			bool match = false;
+
+			for (size_t i = 0; i < options->count && !match; i++) {
+				const tclie_cmd_opt_t *const opt = &options->option[i];
+				assert(opt);
+
+				if (long_opt) {
+					if (strcmp(opt->long_opt, arg) != 0)
+						continue;
+				} else if (opt->short_opt != *arg)
+					continue;
+
+				match = true;
+
+				if (!opt->pattern)
+					break;
+
+				const tclie_token_t opt_token = {.type = TCLIE_TOKEN_UNKNOWN,
+												 .str = opt->pattern,
+												 .len = strlen(opt->pattern)};
+
+				const int old_arg_index = (*arg_index)++;
+				if (!tclie_pattern_match_token(&opt_token, options, argc, argv,
+											   arg_index)) {
+					*arg_index = old_arg_index;
+					return false;
+				}
+
+				consume = false;
+			}
+
+			if (!match)
+				return false;
+
+			if (long_opt)
+				break;
+
+			arg++;
+		}
+
+		if (consume)
+			(*arg_index)++;
+	}
+
+	return true;
+}
 static bool tclie_pattern_match_token(const tclie_token_t *restrict const token,
+									  const tclie_cmd_opts_t *const options,
 									  const int argc,
 									  const char *restrict *const argv,
 									  int *const arg_index)
@@ -276,6 +345,9 @@ static bool tclie_pattern_match_token(const tclie_token_t *restrict const token,
 	assert(argv);
 	assert(arg_index);
 	assert(token->type < TCLIE_TOKEN_COUNT);
+
+	if (!tclie_pattern_match_options(options, argc, argv, arg_index))
+		return false;
 
 	if (token->type == TCLIE_TOKEN_MULTI_WILDCARD) {
 		*arg_index = argc;
@@ -307,8 +379,8 @@ static bool tclie_pattern_match_token(const tclie_token_t *restrict const token,
 
 	for (size_t i = 0; i < count; i++) {
 		const int old_arg_index = *arg_index;
-		const bool match =
-			tclie_pattern_match_token(&tokens[i], argc, argv, arg_index);
+		const bool match = tclie_pattern_match_token(&tokens[i], options, argc,
+													 argv, arg_index);
 
 		if (!match)
 			*arg_index = old_arg_index;
@@ -323,7 +395,8 @@ static bool tclie_pattern_match_token(const tclie_token_t *restrict const token,
 	return combinator == TCLIE_COMBINATOR_AND;
 }
 
-bool tclie_pattern_match(const char *restrict pattern, const int argc,
+bool tclie_pattern_match(const char *restrict pattern,
+						 const tclie_cmd_opts_t *const options, const int argc,
 						 const char *restrict *const argv)
 {
 	assert(argv);
@@ -334,7 +407,7 @@ bool tclie_pattern_match(const char *restrict pattern, const int argc,
 	const tclie_token_t token = {
 		.type = TCLIE_TOKEN_UNKNOWN, .str = pattern, .len = strlen(pattern)};
 	int arg_index = 0;
-	return tclie_pattern_match_token(&token, argc, argv, &arg_index) &&
+	return tclie_pattern_match_token(&token, options, argc, argv, &arg_index) &&
 		   arg_index == argc;
 }
 #endif
@@ -521,7 +594,7 @@ static bool tclie_exec(tclie_t *const tclie, const tclie_cmd_t *const cmds,
 
 #if TCLIE_PATTERN_MATCH
 		if (cmd->pattern) {
-			if (!tclie_pattern_match(cmd->pattern, argc, argv))
+			if (!tclie_pattern_match(cmd->pattern, &cmd->options, argc, argv))
 				continue;
 		} else
 #endif

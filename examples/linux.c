@@ -18,36 +18,52 @@ static const tclie_user_t users[] = {{"debug", NULL, USER_LEVEL_DEBUG},
 									 {"admin", "12345", USER_LEVEL_ADMIN}};
 #endif
 
+static const tclie_cmd_opt_t options[] = {
+	{'v', "verbose", "Simple option."},
+	{'t', "test", "Simple option."},
+	{'r', "required", "Option with required argument.", "<arg>"},
+	{'o', "optional", "Option with optional argument.", "[a]"},
+};
+
 static const tclie_cmd_t cmds[] = {
-	{"echo", echo, USER_LEVEL_DEFAULT,
+	{"echo", echo, USER_LEVEL_DEFAULT, "Echo input.",
 #if TCLIE_PATTERN_MATCH
-	 "echo ...",
+	 "echo ..."
 #endif
-	 "Echo input."},
-	{"fail", fail, USER_LEVEL_ADMIN,
+	},
+	{"fail", fail, USER_LEVEL_ADMIN, "A command that will fail.",
 #if TCLIE_PATTERN_MATCH
-	 "fail ...",
+	 "fail ..."
 #endif
-	 "A command that will fail."},
+	},
 #if TCLIE_PATTERN_MATCH
-	{"reset", echo, USER_LEVEL_DEFAULT, "reset",
-	 "Single word command, must match exactly."},
-	{"config", echo, USER_LEVEL_DEFAULT, "config save",
-	 "Two word command, spaces around the words are ignored."},
-	{"can", echo, USER_LEVEL_DEFAULT, "can speed <rate>",
-	 "Two word command, with mandatory argument."},
-	{"set", echo, USER_LEVEL_DEFAULT, "set <attr> [<value>]",
-	 "One word command, with mandatory and optional argument."},
-	{"=", echo, USER_LEVEL_DEFAULT, "<reg> = <value>",
-	 "One word command ('=') embedded between mandatory arguments."},
-	{"when", echo, USER_LEVEL_DEFAULT, "when <reg> is <value> echo ...",
+	{"reset", echo, USER_LEVEL_DEFAULT,
+	 "Single word command, must match exactly.", "reset"},
+	{"config", echo, USER_LEVEL_DEFAULT,
+	 "Two word command, spaces around the words are ignored.", "config save"},
+	{"can", echo, USER_LEVEL_DEFAULT,
+	 "Two word command, with mandatory argument.", "can speed <rate>"},
+	{"set", echo, USER_LEVEL_DEFAULT,
+	 "One word command, with mandatory and optional argument.",
+	 "set <attr> [<value>]"},
+	{"=", echo, USER_LEVEL_DEFAULT,
+	 "One word command ('=') embedded between mandatory arguments.",
+	 "<reg> = <value>"},
+	{"when", echo, USER_LEVEL_DEFAULT,
 	 "Three word command, with two mandatory arguments and arbitrary "
-	 "optional."},
-	{"or", echo, USER_LEVEL_DEFAULT, "or a|b|c",
-	 "Two word command, with mandatory argument selected from options."},
-	{"complex", echo, USER_LEVEL_DEFAULT,
-	 "complex {set|reset} [a|(b c)] 1|2 <var> [<opt>] end ...",
-	 "Complex example."},
+	 "optional.",
+	 "when <reg> is <value> echo ..."},
+	{"or", echo, USER_LEVEL_DEFAULT,
+	 "Two word command, with mandatory argument selected from options.",
+	 "or a|b|c"},
+	{"complex", echo, USER_LEVEL_DEFAULT, "Complex example.",
+	 "complex {set|reset} [a|(b c)] 1|2 <var> [<opt>] end ..."},
+	{"options",
+	 echo,
+	 USER_LEVEL_DEFAULT,
+	 "Example with options.",
+	 "options <attr>",
+	 {options, ARRAY_SIZE(options)}},
 #endif
 };
 
