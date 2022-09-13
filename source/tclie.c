@@ -917,6 +917,17 @@ bool tclie_reg_cmds(tclie_t *tclie, const tclie_cmd_t *cmds, size_t count)
 	for (size_t i = 0; i < count; i++) {
 		if (!cmds[i].name || !cmds[i].fn)
 			return false;
+
+#if TCLIE_PATTERN_MATCH
+		if (cmds[i].options.count != 0 && !cmds[i].options.option)
+			return false;
+
+		for (size_t j = 0; j < cmds[i].options.count; j++) {
+			if (!cmds[i].options.option[j].short_opt &&
+				!cmds[i].options.option[j].long_opt)
+				return false;
+		}
+#endif
 	}
 
 	tclie->cmd.cmds = cmds;
