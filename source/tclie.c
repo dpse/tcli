@@ -862,6 +862,53 @@ unsigned tclie_get_user_level(const tclie_t *const tclie)
 }
 #endif
 
+static size_t tclie_calculate_padding(const tclie_t *const tclie,
+									  const tclie_cmd_t *const cmds,
+									  const size_t len, const char *const match,
+									  size_t pad)
+{
+	assert(tclie);
+	assert(cmds);
+
+	for (size_t i = 0; i < len; i++) {
+		if (!tclie_valid_cmd(tclie, &cmds[i]))
+			continue;
+
+		assert(cmds[i].name);
+		if (match && strcmp(cmds[i].name, match) != 0)
+			continue;
+
+		const size_t name_len = strlen(cmds[i].name);
+		if (name_len > pad)
+			pad = len;
+	}
+
+	return pad;
+}
+
+static void tclie_print_cmds(tclie_t *const tclie,
+							 const tclie_cmd_t *const cmds, const size_t len,
+							 const char *const match, const size_t pad,
+							 const bool flush)
+{
+	assert(tclie);
+	assert(cmds);
+
+	for (size_t i = 0; i < len; i++) {
+		if (!tclie_valid_cmd(tclie, &cmds[i]))
+			continue;
+
+		assert(cmds[i].name);
+		if (match && strcmp(cmds[i].name, match) != 0)
+			continue;
+
+		tclie_print_cmd(tclie, &cmds[i], pad, false);
+	}
+
+	if (flush)
+		tclie_flush(tclie);
+}
+
 static int tclie_cmd_help(void *arg, const int argc, const char **argv)
 {
 	assert(arg);
@@ -869,41 +916,21 @@ static int tclie_cmd_help(void *arg, const int argc, const char **argv)
 	assert(argv);
 	assert(argv[0]);
 
-	tclie_t *const tclie = arg;
+	const char *const match = argc > 1 ? argv[1] : NULL;
 
+	tclie_t *const tclie = arg;
 	size_t pad = 0;
 
-	for (size_t i = 0; i < TCLIE_ARRAY_SIZE(tclie_internal_cmds); i++) {
-		if (!tclie_valid_cmd(tclie, &tclie_internal_cmds[i]))
-			continue;
+	pad = tclie_calculate_padding(tclie, tclie_internal_cmds,
+								  TCLIE_ARRAY_SIZE(tclie_internal_cmds), match,
+								  pad);
+	pad = tclie_calculate_padding(tclie, tclie->cmd.cmds, tclie->cmd.count,
+								  match, pad);
 
-		assert(tclie_internal_cmds[i].name);
-		const size_t len = strlen(tclie_internal_cmds[i].name);
-		if (len > pad)
-			pad = len;
-	}
-
-	for (size_t i = 0; i < tclie->cmd.count; i++) {
-		if (!tclie_valid_cmd(tclie, &tclie->cmd.cmds[i]))
-			continue;
-
-		assert(tclie->cmd.cmds[i].name);
-		const size_t len = strlen(tclie->cmd.cmds[i].name);
-		if (len > pad)
-			pad = len;
-	}
-
-	for (size_t i = 0; i < TCLIE_ARRAY_SIZE(tclie_internal_cmds); i++) {
-		if (tclie_valid_cmd(tclie, &tclie_internal_cmds[i]))
-			tclie_print_cmd(tclie, &tclie_internal_cmds[i], pad, false);
-	}
-
-	for (size_t i = 0; i < tclie->cmd.count; i++) {
-		if (tclie_valid_cmd(tclie, &tclie->cmd.cmds[i]))
-			tclie_print_cmd(tclie, &tclie->cmd.cmds[i], pad, false);
-	}
-
-	tclie_flush(tclie);
+	tclie_print_cmds(tclie, tclie_internal_cmds,
+					 TCLIE_ARRAY_SIZE(tclie_internal_cmds), match, pad, false);
+	tclie_print_cmds(tclie, tclie->cmd.cmds, tclie->cmd.count, match, pad,
+					 true);
 
 	return 0;
 }
