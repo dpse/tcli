@@ -715,15 +715,6 @@ static bool tclie_exec(tclie_t *const tclie, const tclie_cmd_t *const cmds,
 			if (strcmp(argv[0], cmd->name) != 0)
 			continue;
 
-		if (cmd->desc && argc >= 2) {
-			assert(argv[1]);
-			if (strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0) {
-				tclie_print_cmd(tclie, cmd, 0, true);
-				*res = 0;
-				return true;
-			}
-		}
-
 		if (tclie->pre_cmd)
 			tclie->pre_cmd(tclie->arg, argc, argv);
 
