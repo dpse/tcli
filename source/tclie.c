@@ -515,9 +515,9 @@ static void tclie_print_cmd(tclie_t *const tclie, const tclie_cmd_t *const cmd,
 	for (size_t i = 0; i < cmd->options.count; i++) {
 		assert(cmd->options.option[i].short_opt ||
 			   cmd->options.option[i].long_opt);
-		size_t opt_len = cmd->options.option[i].short_opt ? 1 : 0;
+		size_t opt_len = cmd->options.option[i].short_opt ? 2 : 0;
 		if (cmd->options.option[i].long_opt)
-			opt_len += strlen(cmd->options.option[i].long_opt) +
+			opt_len += strlen(cmd->options.option[i].long_opt) + 2 +
 					   (cmd->options.option[i].short_opt ? 1 : 0);
 		if (cmd->options.option[i].pattern)
 			opt_len += strlen(cmd->options.option[i].pattern) + 1;
@@ -534,13 +534,14 @@ static void tclie_print_cmd(tclie_t *const tclie, const tclie_cmd_t *const cmd,
 		pad_len = 0;
 		tclie_out(tclie, TCLIE_OPTION_FORMAT);
 		if (cmd->options.option[i].short_opt) {
-			char buf[2];
-			buf[0] = cmd->options.option[i].short_opt;
-			buf[1] = '\0';
+			char buf[3];
+			buf[0] = '-';
+			buf[1] = cmd->options.option[i].short_opt;
+			buf[2] = '\0';
 			tclie_out(tclie, buf);
 			pad_len += 1;
 			if (cmd->options.option[i].long_opt) {
-				tclie_out(tclie, "|");
+				tclie_out(tclie, "|--");
 				pad_len += 1;
 			}
 		}
@@ -566,7 +567,7 @@ static void tclie_print_cmd(tclie_t *const tclie, const tclie_cmd_t *const cmd,
 		tclie_flush(tclie);
 
 #else
-	tclie_print_str(tclie, 0, cmd->name, TCLI_COLOR_MAGENTA, pad, cmd->desc,
+	tclie_print_str(tclie, 0, cmd->name, TCLIE_COMMAND_FORMAT, pad, cmd->desc,
 					flush);
 #endif
 }
@@ -824,7 +825,8 @@ static bool tclie_login_process(tclie_t *const tclie, const char *const str,
 PROMPT:
 	if (login->attempt++ >= TCLIE_LOGIN_ATTEMPTS) {
 		tclie_login_proceed(login, TCLIE_LOGIN_IDLE);
-		tclie_out_flush(tclie, "Failed!\r\n");
+		tclie_out_flush(tclie, TCLIE_FAILURE_FORMAT "Failed!" TCLI_FORMAT_RESET
+													"\r\n");
 		*res = -1;
 		return true;
 	}
@@ -838,7 +840,8 @@ LOGIN:
 	tclie_set_user_level(tclie, user->users[login->target_user].level);
 #endif
 	tclie_login_proceed(login, TCLIE_LOGIN_IDLE);
-	tclie_out_flush(tclie, "Success!\r\n");
+	tclie_out_flush(tclie,
+					TCLIE_SUCCESS_FORMAT "Success!" TCLI_FORMAT_RESET "\r\n");
 	*res = 0;
 	return true;
 }
@@ -883,7 +886,10 @@ static int tcli_exec(void *const arg, const int argc, const char **const argv)
 				   argv, &res))
 		return res;
 
-	tclie_print_str(tclie, 0, "Unknown command ", NULL, 0, argv[0], true);
+	tclie_out(tclie,
+			  "Unknown command or invalid syntax: " TCLIE_FAILURE_FORMAT);
+	tclie_out(tclie, argv[0]);
+	tclie_out_flush(tclie, TCLI_FORMAT_RESET "\r\n");
 	return -1;
 }
 

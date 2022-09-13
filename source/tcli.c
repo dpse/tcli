@@ -1330,7 +1330,7 @@ static void tcli_hist_search(tcli_t *const tcli)
 
 	if (tcli_rb_previous(&tcli->hist.rb, tcli->cmdline.buf, &tcli->cmdline.len,
 						 tcli->cmdline.buf, tcli->cmdline.cursor)) {
-		tcli_term_reprint_from_cursor(tcli, true, TCLI_MATCH_COLOR);
+		tcli_term_reprint_from_cursor(tcli, true, TCLI_MATCH_FORMAT);
 		tcli_flush(tcli);
 	}
 }
@@ -1631,9 +1631,7 @@ static void tcli_complete_print(tcli_t *const tcli,
 			i == tcli->complete.index && tcli->complete.selected;
 
 		if (selected) {
-			tcli_out(tcli, TCLI_BG_COLOR_WHITE);
-			if (match_len != 0)
-				tcli_out(tcli, TCLI_COLOR_BLACK);
+			tcli_out(tcli, TCLI_SELECTION_FORMAT);
 		}
 
 		char buf[2];
@@ -1641,7 +1639,7 @@ static void tcli_complete_print(tcli_t *const tcli,
 
 		while (*match != '\0') {
 			if (match == matches[i] + match_len)
-				tcli_out(tcli, TCLI_COLOR_BRIGHT_BLACK);
+				tcli_out(tcli, TCLI_MATCH_FORMAT);
 			buf[0] = *match++;
 			tcli_out(tcli, buf);
 		}

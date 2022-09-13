@@ -103,11 +103,15 @@
 #define TCLI_DEFAULT_ERROR_PROMPT (TCLI_COLOR_RED "> " TCLI_COLOR_DEFAULT)
 #endif
 
-#ifndef TCLI_MATCH_COLOR
+#ifndef TCLI_MATCH_FORMAT
 /**
- * Color used to color match during search and tab-completion.
+ * Format used for match during search and tab-completion.
  */
-#define TCLI_MATCH_COLOR TCLI_COLOR_BRIGHT_BLACK
+#define TCLI_MATCH_FORMAT TCLI_COLOR_BRIGHT_BLACK
+#endif
+
+#ifndef TCLI_SELECTION_FORMAT
+#define TCLI_SELECTION_FORMAT (TCLI_BG_COLOR_WHITE TCLI_COLOR_BLACK)
 #endif
 
 typedef void (*tcli_out_fn_t)(void *arg, const char *str);
