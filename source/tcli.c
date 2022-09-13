@@ -562,14 +562,12 @@ static size_t tcli_tokenize(char *str, const char **const tokens,
 				str_len -= 2;
 			}
 
-			if (str_len != 0) {
-				tokens[found_tokens++] = start;
+			tokens[found_tokens++] = start;
 
-				if (*stop == '\0')
-					break;
+			if (*stop == '\0')
+				break;
 
-				*stop = '\0';
-			}
+			*stop = '\0';
 		}
 
 		if (str != stop && *str == '\0')
@@ -835,7 +833,7 @@ static void tcli_term_reprint_all(tcli_t *const tcli)
 		tcli_out(tcli, tcli->hist.search_prompt);
 	else
 #endif
-	if (tcli->res != 0)
+		if (tcli->res != 0)
 		tcli_out(tcli, tcli->error_prompt);
 	else
 		tcli_out(tcli, tcli->prompt);
@@ -1617,7 +1615,9 @@ static void tcli_complete_print(tcli_t *const tcli,
 	for (size_t i = 0; i < match_count; i++) {
 		const char *match = matches[i];
 		assert(match);
-		assert(*match != '\0');
+
+		if(*match == '\0')
+			continue;
 
 		const bool selected =
 			i == tcli->complete.index && tcli->complete.selected;
