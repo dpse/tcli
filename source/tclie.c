@@ -502,12 +502,17 @@ static void tclie_print_cmd(tclie_t *const tclie, const tclie_cmd_t *const cmd,
 	assert(cmd);
 	assert(cmd->name);
 
+#if TCLIE_PATTERN_MATCH
 	tclie_print_str(tclie, cmd->name, TCLI_COLOR_MAGENTA, pad, cmd->desc,
 					flush && !cmd->pattern);
 
 	if (cmd->pattern)
 		tclie_print_str(tclie, NULL, TCLI_COLOR_BRIGHT_BLUE, pad, cmd->pattern,
 						flush);
+#else
+	tclie_print_str(tclie, cmd->name, TCLI_COLOR_MAGENTA, pad, cmd->desc,
+					flush);
+#endif
 }
 
 #if TCLI_COMPLETE

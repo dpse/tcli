@@ -18,12 +18,14 @@ static const tclie_user_t users[] = {{"debug", NULL, USER_LEVEL_DEBUG},
 									 {"admin", "12345", USER_LEVEL_ADMIN}};
 #endif
 
+#if TCLIE_PATTERN_MATCH
 static const tclie_cmd_opt_t options[] = {
 	{'v', "verbose", "Simple option."},
 	{'t', "test", "Simple option."},
 	{'r', "required", "Option with required argument.", "<arg>"},
 	{'o', "optional", "Option with optional argument.", "[a]"},
 };
+#endif
 
 static const tclie_cmd_t cmds[] = {
 	{"echo", echo, USER_LEVEL_DEFAULT, "Echo input.",
