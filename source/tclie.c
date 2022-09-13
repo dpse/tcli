@@ -635,7 +635,6 @@ static void tclie_complete(const tclie_t *const tclie,
 	assert(tclie);
 	assert(cmds);
 	assert(match);
-	assert(match_len > 0);
 	assert(completions);
 	assert(count);
 
@@ -668,22 +667,21 @@ static size_t tcli_complete(void *const arg, const int argc,
 	assert(completions);
 	assert(match);
 
-	if (max_count == 0 || match != argv[0])
-		return 0;
-
-	const size_t match_len = strlen(match);
-
-	if (match_len == 0)
+	if (max_count == 0)
 		return 0;
 
 	const tclie_t *const tclie = arg;
 	size_t count = 0;
 
-	tclie_complete(tclie, tclie_internal_cmds,
-				   TCLIE_ARRAY_SIZE(tclie_internal_cmds), match, match_len,
-				   completions, max_count, &count);
-	tclie_complete(tclie, tclie->cmd.cmds, tclie->cmd.count, match, match_len,
-				   completions, max_count, &count);
+	if (match == argv[0] ||
+		(argc >= 2 && match == argv[1] && strcmp(argv[0], "help") == 0)) {
+		const size_t match_len = strlen(match);
+		tclie_complete(tclie, tclie_internal_cmds,
+					   TCLIE_ARRAY_SIZE(tclie_internal_cmds), match, match_len,
+					   completions, max_count, &count);
+		tclie_complete(tclie, tclie->cmd.cmds, tclie->cmd.count, match,
+					   match_len, completions, max_count, &count);
+	}
 
 	return count;
 }
