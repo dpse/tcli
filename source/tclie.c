@@ -274,6 +274,8 @@ static bool tclie_pattern_match_options(const tclie_cmd_opts_t *const options,
 	if (!options || options->count == 0)
 		return true;
 
+	assert(options->option);
+
 	while (*arg_index < argc) {
 		const char *arg = argv[*arg_index];
 
