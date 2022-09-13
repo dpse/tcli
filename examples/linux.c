@@ -30,7 +30,11 @@ static const tclie_cmd_opt_t options[] = {
 #endif
 
 static const tclie_cmd_t cmds[] = {
-	{"exit", cmd_exit, USER_LEVEL_DEFAULT, "Exit application."},
+	{"exit", cmd_exit, USER_LEVEL_DEFAULT, "Exit application.",
+#if TCLIE_PATTERN_MATCH
+	 "exit|quit|q"
+#endif
+	},
 	{"echo", cmd_echo, USER_LEVEL_DEFAULT, "Echo input.",
 #if TCLIE_PATTERN_MATCH
 	 "echo ..."
