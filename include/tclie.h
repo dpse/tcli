@@ -39,6 +39,19 @@
 #define TCLIE_PATTERN_MATCH_MAX_TOKENS TCLI_MAX_TOKENS
 #endif
 
+#ifndef TCLIE_COMMAND_FORMAT
+#define TCLIE_COMMAND_FORMAT                                                   \
+	(TCLI_FORMAT_BOLD TCLI_FORMAT_UNDERLINE TCLI_COLOR_CYAN)
+#endif
+
+#ifndef TCLIE_USAGE_FORMAT
+#define TCLIE_USAGE_FORMAT (TCLI_COLOR_CYAN)
+#endif
+
+#ifndef TCLIE_OPTION_FORMAT
+#define TCLIE_OPTION_FORMAT (TCLI_FORMAT_ITALIC TCLI_COLOR_BRIGHT_CYAN)
+#endif
+
 typedef tcli_out_fn_t tclie_out_fn_t;
 typedef tcli_sigint_fn_t tclie_sigint_fn_t;
 

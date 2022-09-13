@@ -467,29 +467,28 @@ static inline void tclie_out_flush(tclie_t *const tclie, const char *const str)
 	tclie_flush(tclie);
 }
 
-static void tclie_print_str(tclie_t *const tclie, const char *const head_str,
-							const char *const color, size_t pad,
-							const char *const desc_str, const bool flush)
+static void tclie_print_str(tclie_t *const tclie, size_t pre_pad,
+							const char *const head_str, const char *const color,
+							const size_t pad, const char *const desc_str,
+							const bool flush)
 {
 	assert(tclie);
 
-	pad += 2;
-
+	while (pre_pad != 0) {
+		tclie_out(tclie, " ");
+		pre_pad--;
+	}
 	if (color)
 		tclie_out(tclie, color);
 	if (head_str)
 		tclie_out(tclie, head_str);
-	if (desc_str) {
-		size_t len = 0;
-		if (head_str) {
-			tclie_out(tclie, ": ");
-			len = 2 + strlen(head_str);
-		}
-		while (len++ < pad)
-			tclie_out(tclie, " ");
-	}
+	size_t pad_len = 0;
+	if (head_str && desc_str)
+		pad_len += strlen(head_str);
 	if (color)
 		tclie_out(tclie, TCLI_FORMAT_RESET);
+	while (pad_len++ < pad)
+		tclie_out(tclie, " ");
 	if (desc_str)
 		tclie_out(tclie, desc_str);
 	tclie_out(tclie, "\r\n");
@@ -505,16 +504,124 @@ static void tclie_print_cmd(tclie_t *const tclie, const tclie_cmd_t *const cmd,
 	assert(cmd->name);
 
 #if TCLIE_PATTERN_MATCH
-	tclie_print_str(tclie, cmd->name, TCLI_COLOR_MAGENTA, pad, cmd->desc,
-					flush && !cmd->pattern);
+	tclie_print_str(tclie, 0, cmd->name, TCLIE_COMMAND_FORMAT, pad, cmd->desc,
+					false);
 
 	if (cmd->pattern)
-		tclie_print_str(tclie, NULL, TCLI_COLOR_BRIGHT_BLUE, pad, cmd->pattern,
-						flush);
+		tclie_print_str(tclie, pad, cmd->pattern, TCLIE_USAGE_FORMAT, 0, NULL,
+						false);
+
+	size_t opt_pad = 0;
+	for (size_t i = 0; i < cmd->options.count; i++) {
+		assert(cmd->options.option[i].short_opt ||
+			   cmd->options.option[i].long_opt);
+		size_t opt_len = cmd->options.option[i].short_opt ? 1 : 0;
+		if (cmd->options.option[i].long_opt)
+			opt_len += strlen(cmd->options.option[i].long_opt) +
+					   (cmd->options.option[i].short_opt ? 1 : 0);
+		if (cmd->options.option[i].pattern)
+			opt_len += strlen(cmd->options.option[i].pattern) + 1;
+
+		if (opt_len > opt_pad)
+			opt_pad = opt_len;
+	}
+	opt_pad += 1;
+
+	for (size_t i = 0; i < cmd->options.count; i++) {
+		size_t pad_len = 0;
+		while (pad_len++ < pad)
+			tclie_out(tclie, " ");
+		pad_len = 0;
+		tclie_out(tclie, TCLIE_OPTION_FORMAT);
+		if (cmd->options.option[i].short_opt) {
+			char buf[2];
+			buf[0] = cmd->options.option[i].short_opt;
+			buf[1] = '\0';
+			tclie_out(tclie, buf);
+			pad_len += 1;
+			if (cmd->options.option[i].long_opt) {
+				tclie_out(tclie, "|");
+				pad_len += 1;
+			}
+		}
+		if (cmd->options.option[i].long_opt) {
+			tclie_out(tclie, cmd->options.option[i].long_opt);
+			pad_len += strlen(cmd->options.option[i].long_opt);
+		}
+		if (cmd->options.option[i].pattern) {
+			tclie_out(tclie, " ");
+			tclie_out(tclie, cmd->options.option[i].pattern);
+			pad_len += strlen(cmd->options.option[i].pattern) + 1;
+		}
+		tclie_out(tclie, TCLI_FORMAT_RESET);
+		if (cmd->options.option[i].desc) {
+			while (pad_len++ < opt_pad)
+				tclie_out(tclie, " ");
+			tclie_out(tclie, cmd->options.option[i].desc);
+		}
+		tclie_out(tclie, "\r\n");
+	}
+
+	if (flush)
+		tclie_flush(tclie);
+
 #else
-	tclie_print_str(tclie, cmd->name, TCLI_COLOR_MAGENTA, pad, cmd->desc,
+	tclie_print_str(tclie, 0, cmd->name, TCLI_COLOR_MAGENTA, pad, cmd->desc,
 					flush);
 #endif
+}
+
+static size_t tclie_calculate_padding(const tclie_t *const tclie,
+									  const tclie_cmd_t *const cmds,
+									  const size_t len, const char *const match,
+									  size_t pad)
+{
+	assert(tclie);
+	assert(cmds);
+
+	for (size_t i = 0; i < len; i++) {
+		if (!tclie_valid_cmd(tclie, &cmds[i]))
+			continue;
+
+		assert(cmds[i].name);
+		if (match && strcmp(cmds[i].name, match) != 0)
+			continue;
+
+		const size_t name_len = strlen(cmds[i].name);
+		if (name_len > pad)
+			pad = name_len;
+	}
+
+	return pad;
+}
+
+static void tclie_print_cmds(tclie_t *const tclie,
+							 const tclie_cmd_t *const cmds, const size_t len,
+							 const char *const match, const size_t pad,
+							 const bool flush)
+{
+	assert(tclie);
+	assert(cmds);
+
+	bool printed = false;
+
+	for (size_t i = 0; i < len; i++) {
+		if (!tclie_valid_cmd(tclie, &cmds[i]))
+			continue;
+
+		assert(cmds[i].name);
+		if (match && strcmp(cmds[i].name, match) != 0)
+			continue;
+
+		if (printed)
+			tclie_out(tclie, "\r\n");
+
+		tclie_print_cmd(tclie, &cmds[i], pad, false);
+		printed = true;
+	}
+
+	if (flush)
+		tclie_flush(tclie);
 }
 
 #if TCLI_COMPLETE
@@ -787,7 +894,7 @@ static int tcli_exec(void *const arg, const int argc, const char **const argv)
 				   argv, &res))
 		return res;
 
-	tclie_print_str(tclie, "Unknown command", NULL, 0, argv[0], true);
+	tclie_print_str(tclie, 0, "Unknown command", NULL, 0, argv[0], true);
 	return -1;
 }
 
@@ -953,53 +1060,6 @@ unsigned tclie_get_user_level(const tclie_t *const tclie)
 }
 #endif
 
-static size_t tclie_calculate_padding(const tclie_t *const tclie,
-									  const tclie_cmd_t *const cmds,
-									  const size_t len, const char *const match,
-									  size_t pad)
-{
-	assert(tclie);
-	assert(cmds);
-
-	for (size_t i = 0; i < len; i++) {
-		if (!tclie_valid_cmd(tclie, &cmds[i]))
-			continue;
-
-		assert(cmds[i].name);
-		if (match && strcmp(cmds[i].name, match) != 0)
-			continue;
-
-		const size_t name_len = strlen(cmds[i].name);
-		if (name_len > pad)
-			pad = len;
-	}
-
-	return pad;
-}
-
-static void tclie_print_cmds(tclie_t *const tclie,
-							 const tclie_cmd_t *const cmds, const size_t len,
-							 const char *const match, const size_t pad,
-							 const bool flush)
-{
-	assert(tclie);
-	assert(cmds);
-
-	for (size_t i = 0; i < len; i++) {
-		if (!tclie_valid_cmd(tclie, &cmds[i]))
-			continue;
-
-		assert(cmds[i].name);
-		if (match && strcmp(cmds[i].name, match) != 0)
-			continue;
-
-		tclie_print_cmd(tclie, &cmds[i], pad, false);
-	}
-
-	if (flush)
-		tclie_flush(tclie);
-}
-
 static int tclie_cmd_help(void *arg, const int argc, const char **argv)
 {
 	assert(arg);
@@ -1018,6 +1078,7 @@ static int tclie_cmd_help(void *arg, const int argc, const char **argv)
 	pad = tclie_calculate_padding(tclie, tclie->cmd.cmds, tclie->cmd.count,
 								  match, pad);
 
+	pad += 1;
 	tclie_print_cmds(tclie, tclie_internal_cmds,
 					 TCLIE_ARRAY_SIZE(tclie_internal_cmds), match, pad, false);
 	tclie_print_cmds(tclie, tclie->cmd.cmds, tclie->cmd.count, match, pad,
