@@ -7,8 +7,10 @@
 
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
 
-static int echo(void *arg, int argc, const char **argv);
-static int fail(void *arg, int argc, const char **argv);
+static int cmd_echo(void *arg, int argc, const char **argv);
+static int cmd_fail(void *arg, int argc, const char **argv);
+static int cmd_exit(void *arg, int argc, const char **argv);
+
 static void output(void *arg, const char *str);
 
 enum { USER_LEVEL_DEFAULT = 0, USER_LEVEL_DEBUG, USER_LEVEL_ADMIN };
@@ -28,40 +30,41 @@ static const tclie_cmd_opt_t options[] = {
 #endif
 
 static const tclie_cmd_t cmds[] = {
-	{"echo", echo, USER_LEVEL_DEFAULT, "Echo input.",
+	{"exit", cmd_exit, USER_LEVEL_DEFAULT, "Exit application."},
+	{"echo", cmd_echo, USER_LEVEL_DEFAULT, "Echo input.",
 #if TCLIE_PATTERN_MATCH
 	 "echo ..."
 #endif
 	},
-	{"fail", fail, USER_LEVEL_ADMIN, "A command that will fail.",
+	{"fail", cmd_fail, USER_LEVEL_ADMIN, "A command that will fail.",
 #if TCLIE_PATTERN_MATCH
 	 "fail ..."
 #endif
 	},
 #if TCLIE_PATTERN_MATCH
-	{"reset", echo, USER_LEVEL_DEFAULT,
+	{"reset", cmd_echo, USER_LEVEL_DEFAULT,
 	 "Single word command, must match exactly.", "reset"},
-	{"config", echo, USER_LEVEL_DEFAULT,
+	{"config", cmd_echo, USER_LEVEL_DEFAULT,
 	 "Two word command, spaces around the words are ignored.", "config save"},
-	{"can", echo, USER_LEVEL_DEFAULT,
+	{"can", cmd_echo, USER_LEVEL_DEFAULT,
 	 "Two word command, with mandatory argument.", "can speed <rate>"},
-	{"set", echo, USER_LEVEL_DEFAULT,
+	{"set", cmd_echo, USER_LEVEL_DEFAULT,
 	 "One word command, with mandatory and optional argument.",
 	 "set <attr> [<value>]"},
-	{"=", echo, USER_LEVEL_DEFAULT,
+	{"=", cmd_echo, USER_LEVEL_DEFAULT,
 	 "One word command ('=') embedded between mandatory arguments.",
 	 "<reg> = <value>"},
-	{"when", echo, USER_LEVEL_DEFAULT,
+	{"when", cmd_echo, USER_LEVEL_DEFAULT,
 	 "Three word command, with two mandatory arguments and arbitrary "
 	 "optional.",
 	 "when <reg> is <value> echo ..."},
-	{"or", echo, USER_LEVEL_DEFAULT,
+	{"or", cmd_echo, USER_LEVEL_DEFAULT,
 	 "Two word command, with mandatory argument selected from options.",
 	 "or a|b|c"},
-	{"complex", echo, USER_LEVEL_DEFAULT, "Complex example.",
+	{"complex", cmd_echo, USER_LEVEL_DEFAULT, "Complex example.",
 	 "complex {set|reset} [a|(b c)] 1|2 <var> [<opt>] end ..."},
 	{"options",
-	 echo,
+	 cmd_echo,
 	 USER_LEVEL_DEFAULT,
 	 "Example with options.",
 	 "options <attr>",
@@ -111,7 +114,7 @@ int main(int argc, char **argv)
 	return 0;
 }
 
-static int echo(void *const arg, const int argc, const char **const argv)
+static int cmd_echo(void *const arg, const int argc, const char **const argv)
 {
 	if (argc <= 1)
 		return 0;
@@ -125,10 +128,16 @@ static int echo(void *const arg, const int argc, const char **const argv)
 	return 0;
 }
 
-static int fail(void *const arg, const int argc, const char **const argv)
+static int cmd_fail(void *const arg, const int argc, const char **const argv)
 {
 	printf("Command failed...\r\n");
 	return -1;
+}
+
+static int cmd_exit(void *const arg, const int argc, const char **const argv)
+{
+	quit = true;
+	return 0;
 }
 
 static void output(void *const arg, const char *const str)
