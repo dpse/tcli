@@ -894,7 +894,7 @@ static int tcli_exec(void *const arg, const int argc, const char **const argv)
 				   argv, &res))
 		return res;
 
-	tclie_print_str(tclie, 0, "Unknown command", NULL, 0, argv[0], true);
+	tclie_print_str(tclie, 0, "Unknown command ", NULL, 0, argv[0], true);
 	return -1;
 }
 
