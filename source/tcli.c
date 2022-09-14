@@ -1737,9 +1737,9 @@ static void tcli_complete_exit(tcli_t *const tcli, const char c)
 
 	if (tcli->complete.selected && tcli->esc.esc && c == TCLI_ESC) {
 		assert(tcli->complete.cursor <= tcli->cmdline.cursor);
-		tcli_cursor_backward(tcli,
-							 tcli->cmdline.cursor - tcli->complete.cursor);
-		tcli_delete(tcli, TCLI_CMDLINE_MAX_LEN, true);
+		const size_t len = tcli->cmdline.cursor - tcli->complete.cursor;
+		tcli_cursor_backward(tcli, len);
+		tcli_delete(tcli, len, true);
 	}
 
 	tcli->complete.active = false;
