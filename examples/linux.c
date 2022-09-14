@@ -2,6 +2,7 @@
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <termios.h>
 #include <unistd.h>
 
@@ -125,7 +126,11 @@ static int cmd_echo(void *const arg, const int argc, const char **const argv)
 	if (argc <= 1)
 		return 0;
 
-	printf("%s", argv[1]);
+	if (strcmp(argv[0], "echo") != 0)
+		printf("%s %s", argv[0], argv[1]);
+	else
+		printf("%s", argv[1]);
+
 	for (int i = 2; i < argc; i++) {
 		printf(" %s", argv[i]);
 	}
