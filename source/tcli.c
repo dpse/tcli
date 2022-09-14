@@ -1415,11 +1415,10 @@ tcli_complete_match_tokenize(tcli_t *const tcli, const size_t cursor,
 
 	if (tcli->complete.empty && space_before_cursor &&
 		token_count < max_tokens) {
-		// Special case: add empty token
 		*token = tokens[token_count++] = &tcli->cmdline.buf[cursor];
 		assert(*token >= tcli->cmdline.buf);
-		assert(tcli->cmdline.len >= (*token - tcli->cmdline.buf));
-		*token_len = tcli->cmdline.len - (*token - tcli->cmdline.buf);
+		assert(tcli->cmdline.cursor >= (*token - tcli->cmdline.buf));
+		*token_len = tcli->cmdline.cursor - (*token - tcli->cmdline.buf);
 	} else {
 		// Find the token we are completing
 		*token = NULL;
@@ -1452,8 +1451,8 @@ tcli_complete_match_tokenize(tcli_t *const tcli, const size_t cursor,
 			*token_len = end_token - *token;
 		} else {
 			assert(*token >= tcli->cmdline.buf);
-			assert(tcli->cmdline.len >= (*token - tcli->cmdline.buf));
-			*token_len = tcli->cmdline.len - (*token - tcli->cmdline.buf);
+			assert(tcli->cmdline.cursor >= (*token - tcli->cmdline.buf));
+			*token_len = tcli->cmdline.cursor - (*token - tcli->cmdline.buf);
 		}
 
 		assert(*token_len != 0);
@@ -1556,7 +1555,7 @@ static size_t tcli_complete_match(tcli_t *const tcli, const char **const token,
 	}
 
 	// Restore splits
-	for (size_t i = 0; i < tcli->cmdline.cursor; i++) {
+	for (size_t i = 0; i < tcli->cmdline.len; i++) {
 		if (tcli->cmdline.buf[i] == '\0')
 			tcli->cmdline.buf[i] = ' ';
 	}
@@ -1620,7 +1619,8 @@ static void tcli_complete_select(tcli_t *const tcli, const char *const token,
 
 	assert(tcli->complete.index < match_count);
 	const char *const match = matches[tcli->complete.index];
-	tcli_complete_apply(tcli, token, token_len, match, strlen(match), true);
+	tcli_complete_apply(tcli, token, token_len, match, strlen(match),
+						tcli->complete.space);
 }
 
 static void tcli_complete_print(tcli_t *const tcli,
@@ -1701,9 +1701,14 @@ static void tcli_complete(tcli_t *const tcli, const bool select)
 	assert(token);
 	const bool single_match = match_count == 1;
 
-	if (!tcli->complete.active)
+	if (!tcli->complete.active) {
+		tcli->complete.space =
+			single_match ||
+			(tcli->cmdline.cursor + 1 < tcli->cmdline.len &&
+			 tcli->cmdline.buf[tcli->cmdline.cursor + 1] == ' ');
 		tcli_complete_apply(tcli, token, token_len, matches[0], match_len,
-							single_match);
+							tcli->complete.space);
+	}
 
 	if (!single_match) {
 		if (select)
@@ -1745,6 +1750,7 @@ static void tcli_complete_exit(tcli_t *const tcli, const char c)
 	tcli->complete.active = false;
 	tcli->complete.selected = false;
 	tcli->complete.empty = false;
+	tcli->complete.space = false;
 }
 #endif
 

@@ -184,6 +184,7 @@ typedef struct tcli_complete {
 	bool active : 1;
 	bool selected : 1;
 	bool empty : 1;
+	bool space : 1;
 	size_t cursor;
 	size_t index;
 } tcli_complete_t;
