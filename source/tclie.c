@@ -53,7 +53,7 @@ static const tclie_cmd_t tclie_internal_cmds[] = {
 #endif
 	 "Print available commands.",
 #if TCLIE_PATTERN_MATCH
-	 "help [<command>]"
+	 "help [<command>] ..."
 #endif
 	},
 	{"clear", tclie_cmd_clear,
@@ -601,39 +601,9 @@ static size_t tclie_calculate_padding(const tclie_t *const tclie,
 	return pad;
 }
 
-static size_t tclie_print_cmds(tclie_t *const tclie,
-							   const tclie_cmd_t *const cmds, const size_t len,
-							   const char *const match, const size_t match_len,
-							   const size_t pad, const bool flush)
-{
-	assert(tclie);
-	assert(cmds);
-
-	size_t count = 0;
-
-	for (size_t i = 0; i < len; i++) {
-		if (!tclie_valid_cmd(tclie, &cmds[i]))
-			continue;
-
-		assert(cmds[i].name);
-		if (match && strncmp(cmds[i].name, match, match_len) != 0)
-			continue;
-
-		if (count != 0)
-			tclie_out(tclie, "\r\n");
-
-		tclie_print_cmd(tclie, &cmds[i], pad, false);
-		count++;
-	}
-
-	if (flush)
-		tclie_flush(tclie);
-
-	return count;
-}
-
 static bool tclie_compare_args(const char *str, const int argc,
 							   const char *const *const argv,
+							   const bool match_all, const bool partial,
 							   const char **const partial_match,
 							   const char **const partial_arg)
 {
@@ -647,9 +617,11 @@ static bool tclie_compare_args(const char *str, const int argc,
 		const char *const start = str;
 
 		while (*str != '\0' && !tclie_is_space(*str)) {
-			if (*arg == '\0' && partial_match && partial_arg) {
-				*partial_match = start;
-				*partial_arg = argv[i];
+			if (*arg == '\0' && partial && (!match_all || i + 1 == argc)) {
+				if (partial_match)
+					*partial_match = start;
+				if (partial_arg)
+					*partial_arg = argv[i];
 				return true;
 			}
 
@@ -661,11 +633,13 @@ static bool tclie_compare_args(const char *str, const int argc,
 			return false;
 
 		if (*str == '\0') {
-			if (*arg == '\0' && partial_match && partial_arg) {
-				*partial_match = start;
-				*partial_arg = argv[i];
+			if (*arg == '\0' && partial && (!match_all || i + 1 == argc)) {
+				if (partial_match)
+					*partial_match = start;
+				if (partial_arg)
+					*partial_arg = argv[i];
 			}
-			return true;
+			return !match_all || i + 1 == argc;
 		}
 
 		while (tclie_is_space(*str))
@@ -678,6 +652,45 @@ static bool tclie_compare_args(const char *str, const int argc,
 	}
 
 	return false;
+}
+
+static size_t tclie_print_cmds(tclie_t *const tclie,
+							   const tclie_cmd_t *const cmds, const size_t len,
+							   const int argc, const char *const *argv,
+							   const char *const match, const size_t match_len,
+							   const size_t pad, const bool flush)
+{
+	assert(tclie);
+	assert(cmds);
+	assert(argc == 0 || argv);
+
+	size_t count = 0;
+
+	for (size_t i = 0; i < len; i++) {
+		if (!tclie_valid_cmd(tclie, &cmds[i]))
+			continue;
+
+		assert(cmds[i].name);
+
+		if (match && strncmp(cmds[i].name, match, match_len) != 0)
+			continue;
+
+		if (!match && argc != 0 && argv &&
+			!tclie_compare_args(cmds[i].name, argc, argv, true, true, NULL,
+								NULL))
+			continue;
+
+		if (count != 0)
+			tclie_out(tclie, "\r\n");
+
+		tclie_print_cmd(tclie, &cmds[i], pad, false);
+		count++;
+	}
+
+	if (flush)
+		tclie_flush(tclie);
+
+	return count;
 }
 
 #if TCLI_COMPLETE
@@ -708,8 +721,8 @@ static void tclie_complete(
 		const char *partial_arg = NULL;
 
 		if (!full_match) {
-			if (!tclie_compare_args(cmd->name, argc, argv, &partial_match,
-									&partial_arg))
+			if (!tclie_compare_args(cmd->name, argc, argv, false, true,
+									&partial_match, &partial_arg))
 				continue;
 
 			if (!(partial_match && partial_arg))
@@ -781,7 +794,8 @@ static bool tclie_exec(tclie_t *const tclie, const tclie_cmd_t *const cmds,
 				continue;
 		} else {
 #endif
-			if (!tclie_compare_args(cmd->name, argc, argv, NULL, NULL))
+			if (!tclie_compare_args(cmd->name, argc, argv, false, false, NULL,
+									NULL))
 				continue;
 #if TCLIE_PATTERN_MATCH
 		}
@@ -1135,7 +1149,7 @@ static int tclie_cmd_help(void *arg, const int argc, const char **argv)
 	assert(argv);
 	assert(argv[0]);
 
-	const char *const match = argc > 1 ? argv[1] : NULL;
+	const char *const match = argc == 2 ? argv[1] : NULL;
 	const size_t match_len = match ? strlen(match) : 0;
 	tclie_t *const tclie = arg;
 	size_t pad = 0;
@@ -1147,12 +1161,13 @@ static int tclie_cmd_help(void *arg, const int argc, const char **argv)
 								  match, match_len, pad);
 
 	pad += 1;
+	const char *const *argv1 = argc > 1 ? &argv[1] : NULL;
 	if (tclie_print_cmds(tclie, tclie_internal_cmds,
-						 TCLIE_ARRAY_SIZE(tclie_internal_cmds), match,
-						 match_len, pad, false) != 0)
+						 TCLIE_ARRAY_SIZE(tclie_internal_cmds), argc - 1, argv1,
+						 match, match_len, pad, false) != 0)
 		tclie_out(tclie, "\r\n");
-	tclie_print_cmds(tclie, tclie->cmd.cmds, tclie->cmd.count, match, match_len,
-					 pad, true);
+	tclie_print_cmds(tclie, tclie->cmd.cmds, tclie->cmd.count, argc - 1, argv1,
+					 match, match_len, pad, true);
 
 	return 0;
 }
