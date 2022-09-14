@@ -575,7 +575,7 @@ static void tclie_print_cmd(tclie_t *const tclie, const tclie_cmd_t *const cmd,
 static size_t tclie_calculate_padding(const tclie_t *const tclie,
 									  const tclie_cmd_t *const cmds,
 									  const size_t len, const char *const match,
-									  size_t pad)
+									  const size_t match_len, size_t pad)
 {
 	assert(tclie);
 	assert(cmds);
@@ -585,7 +585,7 @@ static size_t tclie_calculate_padding(const tclie_t *const tclie,
 			continue;
 
 		assert(cmds[i].name);
-		if (match && strcmp(cmds[i].name, match) != 0)
+		if (match && strncmp(cmds[i].name, match, match_len) != 0)
 			continue;
 
 		const size_t name_len = strlen(cmds[i].name);
@@ -598,8 +598,8 @@ static size_t tclie_calculate_padding(const tclie_t *const tclie,
 
 static void tclie_print_cmds(tclie_t *const tclie,
 							 const tclie_cmd_t *const cmds, const size_t len,
-							 const char *const match, const size_t pad,
-							 const bool flush)
+							 const char *const match, const size_t match_len,
+							 const size_t pad, const bool flush)
 {
 	assert(tclie);
 	assert(cmds);
@@ -611,7 +611,7 @@ static void tclie_print_cmds(tclie_t *const tclie,
 			continue;
 
 		assert(cmds[i].name);
-		if (match && strcmp(cmds[i].name, match) != 0)
+		if (match && strncmp(cmds[i].name, match, match_len) != 0)
 			continue;
 
 		if (printed)
@@ -1063,21 +1063,22 @@ static int tclie_cmd_help(void *arg, const int argc, const char **argv)
 	assert(argv[0]);
 
 	const char *const match = argc > 1 ? argv[1] : NULL;
-
+	const size_t match_len = match ? strlen(match) : 0;
 	tclie_t *const tclie = arg;
 	size_t pad = 0;
 
 	pad = tclie_calculate_padding(tclie, tclie_internal_cmds,
 								  TCLIE_ARRAY_SIZE(tclie_internal_cmds), match,
-								  pad);
+								  match_len, pad);
 	pad = tclie_calculate_padding(tclie, tclie->cmd.cmds, tclie->cmd.count,
-								  match, pad);
+								  match, match_len, pad);
 
 	pad += 1;
 	tclie_print_cmds(tclie, tclie_internal_cmds,
-					 TCLIE_ARRAY_SIZE(tclie_internal_cmds), match, pad, false);
-	tclie_print_cmds(tclie, tclie->cmd.cmds, tclie->cmd.count, match, pad,
-					 true);
+					 TCLIE_ARRAY_SIZE(tclie_internal_cmds), match, match_len,
+					 pad, false);
+	tclie_print_cmds(tclie, tclie->cmd.cmds, tclie->cmd.count, match, match_len,
+					 pad, true);
 
 	return 0;
 }
