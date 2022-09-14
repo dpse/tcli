@@ -601,15 +601,15 @@ static size_t tclie_calculate_padding(const tclie_t *const tclie,
 	return pad;
 }
 
-static void tclie_print_cmds(tclie_t *const tclie,
-							 const tclie_cmd_t *const cmds, const size_t len,
-							 const char *const match, const size_t match_len,
-							 const size_t pad, const bool flush)
+static size_t tclie_print_cmds(tclie_t *const tclie,
+							   const tclie_cmd_t *const cmds, const size_t len,
+							   const char *const match, const size_t match_len,
+							   const size_t pad, const bool flush)
 {
 	assert(tclie);
 	assert(cmds);
 
-	bool printed = false;
+	size_t count = 0;
 
 	for (size_t i = 0; i < len; i++) {
 		if (!tclie_valid_cmd(tclie, &cmds[i]))
@@ -619,15 +619,17 @@ static void tclie_print_cmds(tclie_t *const tclie,
 		if (match && strncmp(cmds[i].name, match, match_len) != 0)
 			continue;
 
-		if (printed)
+		if (count != 0)
 			tclie_out(tclie, "\r\n");
 
 		tclie_print_cmd(tclie, &cmds[i], pad, false);
-		printed = true;
+		count++;
 	}
 
 	if (flush)
 		tclie_flush(tclie);
+
+	return count;
 }
 
 static bool tclie_compare_args(const char *str, const int argc,
@@ -1145,9 +1147,10 @@ static int tclie_cmd_help(void *arg, const int argc, const char **argv)
 								  match, match_len, pad);
 
 	pad += 1;
-	tclie_print_cmds(tclie, tclie_internal_cmds,
-					 TCLIE_ARRAY_SIZE(tclie_internal_cmds), match, match_len,
-					 pad, false);
+	if (tclie_print_cmds(tclie, tclie_internal_cmds,
+						 TCLIE_ARRAY_SIZE(tclie_internal_cmds), match,
+						 match_len, pad, false) != 0)
+		tclie_out(tclie, "\r\n");
 	tclie_print_cmds(tclie, tclie->cmd.cmds, tclie->cmd.count, match, match_len,
 					 pad, true);
 
