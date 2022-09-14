@@ -1408,11 +1408,18 @@ tcli_complete_match_tokenize(tcli_t *const tcli, const size_t cursor,
 	if (token_count == 0)
 		return 0;
 
-	if (!tcli->complete.selected && space_before_cursor &&
+	assert(!(tcli->complete.selected && !tcli->complete.active));
+	if (!tcli->complete.active && space_before_cursor &&
+		token_count < max_tokens)
+		tcli->complete.empty = true;
+
+	if (tcli->complete.empty && space_before_cursor &&
 		token_count < max_tokens) {
 		// Special case: add empty token
 		*token = tokens[token_count++] = &tcli->cmdline.buf[cursor];
-		*token_len = 0;
+		assert(*token >= tcli->cmdline.buf);
+		assert(tcli->cmdline.len >= (*token - tcli->cmdline.buf));
+		*token_len = tcli->cmdline.len - (*token - tcli->cmdline.buf);
 	} else {
 		// Find the token we are completing
 		*token = NULL;
@@ -1429,10 +1436,20 @@ tcli_complete_match_tokenize(tcli_t *const tcli, const size_t cursor,
 		if (!(*token))
 			return 0;
 
-		assert(match_index < token_count);
-		if (match_index + 1 < token_count) {
-			assert(tokens[match_index + 1]);
-			*token_len = tokens[match_index + 1] - *token;
+		const char *end_token = NULL;
+		size_t end_index = token_count;
+		while (end_index > match_index + 1) {
+			const char *const t = tokens[--end_index];
+			assert(t);
+			if (tcli->cmdline.buf + cursor >= t) {
+				end_token = t;
+				break;
+			}
+		}
+
+		if (end_token) {
+			assert(end_token > *token);
+			*token_len = end_token - *token;
 		} else {
 			assert(*token >= tcli->cmdline.buf);
 			assert(tcli->cmdline.len >= (*token - tcli->cmdline.buf));
@@ -1442,6 +1459,7 @@ tcli_complete_match_tokenize(tcli_t *const tcli, const size_t cursor,
 		assert(*token_len != 0);
 	}
 
+	assert(*token);
 	return token_count;
 }
 
@@ -1726,6 +1744,7 @@ static void tcli_complete_exit(tcli_t *const tcli, const char c)
 
 	tcli->complete.active = false;
 	tcli->complete.selected = false;
+	tcli->complete.empty = false;
 }
 #endif
 
