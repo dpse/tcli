@@ -1400,13 +1400,11 @@ tcli_complete_match_tokenize(tcli_t *const tcli, const size_t cursor,
 
 	assert(cursor <= tcli->cmdline.len && cursor <= tcli->cmdline.cursor);
 	const bool space_before_cursor =
-		cursor != 0 && tcli->cmdline.buf[cursor - 1] == ' ';
+		tcli->cmdline.len == 0 ||
+		(cursor != 0 && tcli->cmdline.buf[cursor - 1] == ' ');
 
 	size_t token_count = tcli_tokenize(tcli->cmdline.buf, tokens, max_tokens);
 	assert(token_count <= max_tokens);
-
-	if (token_count == 0)
-		return 0;
 
 	assert(!(tcli->complete.selected && !tcli->complete.active));
 	if (!tcli->complete.active && space_before_cursor &&
@@ -1677,7 +1675,7 @@ static void tcli_complete(tcli_t *const tcli, const bool select)
 {
 	TCLI_ASSERT(tcli);
 
-	if (tcli->cmdline.len == 0 || tcli->cmdline.len == TCLI_CMDLINE_MAX_LEN)
+	if (tcli->cmdline.len == TCLI_CMDLINE_MAX_LEN)
 		return;
 
 	if (tcli->echo.mode != TCLI_ECHO_ON)
