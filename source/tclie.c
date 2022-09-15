@@ -33,6 +33,24 @@ typedef struct tclie_token_delim {
 	tclie_token_type_t type;
 } tclie_token_delim_t;
 
+typedef struct tclie_pattern_param {
+	const tclie_cmd_opts_t *const options;
+	const int argc;
+	const char **const argv;
+	int *const arg_index;
+#if TCLI_COMPLETE
+	struct {
+		const char *match;
+		const size_t match_len;
+		const char **const completions;
+		const size_t max_count;
+		size_t *const count;
+		char *const buf;
+		size_t *const buf_len;
+	} complete;
+#endif
+} tclie_pattern_param_t;
+
 static const tclie_token_delim_t tclie_token_delims[] = {
 	{'"', '"', TCLIE_TOKEN_EXACT},	  {'\'', '\'', TCLIE_TOKEN_EXACT},
 	{'<', '>', TCLIE_TOKEN_WILDCARD}, {'[', ']', TCLIE_TOKEN_OPTIONAL},
@@ -263,26 +281,22 @@ tclie_pattern_reduce_token(const tclie_token_t *const token,
 	return 1;
 }
 
-static bool tclie_pattern_match_token(const tclie_token_t *restrict token,
-									  const tclie_cmd_opts_t *options, int argc,
-									  const char *restrict *argv,
-									  int *arg_index);
+static bool tclie_pattern_match_token(const tclie_token_t *token,
+									  tclie_pattern_param_t *p);
 
-static bool tclie_pattern_match_options(const tclie_cmd_opts_t *const options,
-										const int argc,
-										const char *restrict *const argv,
-										int *const arg_index)
+static bool tclie_pattern_match_options(tclie_pattern_param_t *const p)
 {
-	assert(argv);
-	assert(arg_index);
+	assert(p);
+	assert(p->argc == 0 || p->argv);
+	assert(p->arg_index);
 
-	if (!options || options->count == 0)
+	if (!p->options || p->options->count == 0)
 		return true;
 
-	assert(options->option);
+	assert(p->options->option);
 
-	while (*arg_index < argc) {
-		const char *arg = argv[*arg_index];
+	while (*p->arg_index < p->argc) {
+		const char *arg = p->argv[*p->arg_index];
 
 		if (*arg++ != '-')
 			return true;
@@ -298,8 +312,8 @@ static bool tclie_pattern_match_options(const tclie_cmd_opts_t *const options,
 		while (long_opt || *arg != '\0') {
 			bool match = false;
 
-			for (size_t i = 0; i < options->count && !match; i++) {
-				const tclie_cmd_opt_t *const opt = &options->option[i];
+			for (size_t i = 0; i < p->options->count && !match; i++) {
+				const tclie_cmd_opt_t *const opt = &p->options->option[i];
 				assert(opt);
 
 				if (long_opt) {
@@ -317,10 +331,9 @@ static bool tclie_pattern_match_options(const tclie_cmd_opts_t *const options,
 												 .str = opt->pattern,
 												 .len = strlen(opt->pattern)};
 
-				const int old_arg_index = (*arg_index)++;
-				if (!tclie_pattern_match_token(&opt_token, options, argc, argv,
-											   arg_index)) {
-					*arg_index = old_arg_index;
+				const int old_arg_index = (*p->arg_index)++;
+				if (!tclie_pattern_match_token(&opt_token, p)) {
+					*p->arg_index = old_arg_index;
 					return false;
 				}
 
@@ -337,40 +350,89 @@ static bool tclie_pattern_match_options(const tclie_cmd_opts_t *const options,
 		}
 
 		if (consume)
-			(*arg_index)++;
+			(*p->arg_index)++;
 	}
 
 	return true;
 }
-static bool tclie_pattern_match_token(const tclie_token_t *restrict const token,
-									  const tclie_cmd_opts_t *const options,
-									  const int argc,
-									  const char *restrict *const argv,
-									  int *const arg_index)
+
+#if TCLI_COMPLETE
+static void tclie_pattern_match_complete(const tclie_token_t *const token,
+										 tclie_pattern_param_t *const p,
+										 bool match)
 {
 	assert(token);
-	assert(argv);
-	assert(arg_index);
+	assert(p);
+	assert(p->argc == 0 || p->argv);
+	assert(p->arg_index);
 	assert(token->type < TCLIE_TOKEN_COUNT);
 
-	if (!tclie_pattern_match_options(options, argc, argv, arg_index))
+	if (!p->complete.match)
+		return;
+
+	if (!p->complete.completions || !p->complete.count ||
+		*p->complete.count >= p->complete.max_count)
+		return;
+
+	if (*p->arg_index >= p->argc)
+		return;
+
+	if (p->complete.match != p->argv[(*p->arg_index)])
+		return;
+
+	assert(p->complete.buf && p->complete.buf_len);
+
+	if (*p->complete.buf_len + token->len + 1 > TCLIE_PATTEN_MATCH_BUF_LEN)
+		return;
+
+	if (!match)
+		match = tcli_str_match(token->str, p->complete.match,
+							   p->complete.match_len) == p->complete.match_len;
+
+	if (!match)
+		return;
+
+	strncpy(p->complete.buf + *p->complete.buf_len, token->str, token->len);
+	p->complete.buf[*p->complete.buf_len + token->len] = '\0';
+	p->complete.completions[(*p->complete.count)++] =
+		&p->complete.buf[*p->complete.buf_len];
+	*p->complete.buf_len += token->len + 1;
+}
+#endif
+
+static bool tclie_pattern_match_token(const tclie_token_t *const token,
+									  tclie_pattern_param_t *const p)
+{
+	assert(token);
+	assert(p);
+	assert(p->argc == 0 || p->argv);
+	assert(p->arg_index);
+	assert(token->type < TCLIE_TOKEN_COUNT);
+
+	if (!tclie_pattern_match_options(p))
 		return false;
 
 	if (token->type == TCLIE_TOKEN_MULTI_WILDCARD) {
-		*arg_index = argc;
+		*p->arg_index = p->argc;
 		return true;
 	}
 
 	if (token->type == TCLIE_TOKEN_EXACT) {
-		if (*arg_index >= argc)
+		if (*p->arg_index >= p->argc)
 			return false;
-		return tclie_pattern_compare_token(token, argv[(*arg_index)++]);
+		const bool match =
+			tclie_pattern_compare_token(token, p->argv[(*p->arg_index)]);
+#if TCLI_COMPLETE
+		tclie_pattern_match_complete(token, p, match);
+#endif
+		(*p->arg_index)++;
+		return match;
 	}
 
 	if (token->type == TCLIE_TOKEN_WILDCARD) {
-		if (*arg_index >= argc)
+		if (*p->arg_index >= p->argc)
 			return false;
-		(*arg_index)++;
+		(*p->arg_index)++;
 		return true;
 	}
 
@@ -385,12 +447,11 @@ static bool tclie_pattern_match_token(const tclie_token_t *restrict const token,
 	assert(combinator < TCLIE_COMBINATOR_COUNT);
 
 	for (size_t i = 0; i < count; i++) {
-		const int old_arg_index = *arg_index;
-		const bool match = tclie_pattern_match_token(&tokens[i], options, argc,
-													 argv, arg_index);
+		const int old_arg_index = *p->arg_index;
+		const bool match = tclie_pattern_match_token(&tokens[i], p);
 
 		if (!match)
-			*arg_index = old_arg_index;
+			*p->arg_index = old_arg_index;
 
 		if (combinator == TCLIE_COMBINATOR_OR) {
 			if (match)
@@ -402,11 +463,17 @@ static bool tclie_pattern_match_token(const tclie_token_t *restrict const token,
 	return combinator == TCLIE_COMBINATOR_AND;
 }
 
-bool tclie_pattern_match(const char *restrict pattern,
-						 const tclie_cmd_opts_t *const options, const int argc,
-						 const char *restrict *const argv)
+static bool tclie_pattern_match(tclie_t *const tclie, const char *pattern,
+								const tclie_cmd_opts_t *const options,
+								const int argc, const char **const argv,
+								const char *const match, const size_t match_len,
+								const char **const completions,
+								const size_t max_count, size_t *const count)
 {
-	assert(argv);
+	assert(tclie);
+	assert(argc == 0 || argv);
+	assert(match_len == 0 || match);
+	assert(max_count == 0 || (completions && count));
 
 	if (!pattern)
 		return false;
@@ -414,8 +481,23 @@ bool tclie_pattern_match(const char *restrict pattern,
 	const tclie_token_t token = {
 		.type = TCLIE_TOKEN_UNKNOWN, .str = pattern, .len = strlen(pattern)};
 	int arg_index = 0;
-	return tclie_pattern_match_token(&token, options, argc, argv, &arg_index) &&
-		   arg_index == argc;
+	tclie_pattern_param_t p = {
+		.options = options,
+		.argc = argc,
+		.argv = argv,
+		.arg_index = &arg_index,
+#if TCLI_COMPLETE
+		.complete.match = match,
+		.complete.match_len = match_len,
+		.complete.completions = completions,
+		.complete.max_count = max_count,
+		.complete.count = count,
+		.complete.buf = tclie->complete.buf,
+		.complete.buf_len = &tclie->complete.buf_len
+#endif
+	};
+
+	return tclie_pattern_match_token(&token, &p) && arg_index == argc;
 }
 #endif
 
@@ -694,11 +776,12 @@ static size_t tclie_print_cmds(tclie_t *const tclie,
 }
 
 #if TCLI_COMPLETE
-static void tclie_complete(
-	const tclie_t *const tclie, const tclie_cmd_t *const cmds,
-	const size_t cmd_count, const int argc, const char *const *const argv,
-	const char *const match, const size_t match_len, const bool match_name,
-	const char **const completions, const size_t max_count, size_t *const count)
+static void tclie_complete(tclie_t *const tclie, const tclie_cmd_t *const cmds,
+						   const size_t cmd_count, const int argc,
+						   const char **const argv, const char *const match,
+						   const size_t match_len, const bool match_name,
+						   const char **const completions,
+						   const size_t max_count, size_t *const count)
 {
 	assert(tclie);
 	assert(cmds);
@@ -714,8 +797,17 @@ static void tclie_complete(
 		if (!tclie_valid_cmd(tclie, cmd))
 			continue;
 
+#if TCLIE_PATTERN_MATCH
+		const size_t old_count = *count;
+		tclie_pattern_match(tclie, cmd->pattern, &cmd->options, argc, argv,
+							match, match_len, completions, max_count, count);
+
+		if (old_count != *count)
+			continue;
+#endif
+
 		bool full_match =
-			(match == argv[0] || match_name) &&
+			(match_name || match == argv[0]) &&
 			tcli_str_match(match, cmd->name, match_len) == match_len;
 		const char *partial_match = NULL;
 		const char *partial_arg = NULL;
@@ -755,7 +847,10 @@ static size_t tcli_complete(void *const arg, const int argc,
 	if (max_count == 0)
 		return 0;
 
-	const tclie_t *const tclie = arg;
+	tclie_t *const tclie = arg;
+#if TCLIE_PATTERN_MATCH
+	tclie->complete.buf_len = 0;
+#endif
 	size_t count = 0;
 	const bool match_name =
 		argc >= 2 && match == argv[1] && strcmp(argv[0], "help") == 0;
@@ -790,7 +885,8 @@ static bool tclie_exec(tclie_t *const tclie, const tclie_cmd_t *const cmds,
 
 #if TCLIE_PATTERN_MATCH
 		if (cmd->pattern) {
-			if (!tclie_pattern_match(cmd->pattern, &cmd->options, argc, argv))
+			if (!tclie_pattern_match(tclie, cmd->pattern, &cmd->options, argc,
+									 argv, NULL, 0, NULL, 0, NULL))
 				continue;
 		} else {
 #endif

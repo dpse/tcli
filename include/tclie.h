@@ -39,6 +39,10 @@
 #define TCLIE_PATTERN_MATCH_MAX_TOKENS TCLI_MAX_TOKENS
 #endif
 
+#ifndef TCLIE_PATTEN_MATCH_BUF_LEN
+#define TCLIE_PATTEN_MATCH_BUF_LEN 64
+#endif
+
 #ifndef TCLIE_SUCCESS_FORMAT
 #define TCLIE_SUCCESS_FORMAT TCLI_COLOR_GREEN
 #endif
@@ -146,6 +150,12 @@ typedef struct tclie {
 	tclie_post_cmd_fn_t post_cmd;
 	tclie_sigint_fn_t sigint;
 	void *arg;
+#if TCLIE_PATTERN_MATCH && TCLI_COMPLETE
+	struct {
+		char buf[TCLIE_PATTEN_MATCH_BUF_LEN];
+		size_t buf_len;
+	} complete;
+#endif
 } tclie_t;
 
 /**
