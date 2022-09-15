@@ -281,6 +281,117 @@ tclie_pattern_reduce_token(const tclie_token_t *const token,
 	return 1;
 }
 
+#if TCLI_COMPLETE
+static bool tclie_pattern_match_can_complete(tclie_pattern_param_t *const p)
+{
+	assert(p);
+	assert(p->argc == 0 || p->argv);
+	assert(p->complete.match_len == 0 || p->complete.match);
+
+	if (!p->complete.match)
+		return false;
+
+	if (!p->complete.completions || !p->complete.count ||
+		*p->complete.count >= p->complete.max_count)
+		return false;
+
+	return true;
+}
+
+static void tclie_pattern_match_complete(const char *const str,
+										 const size_t len,
+										 tclie_pattern_param_t *const p,
+										 bool match, const char *const prefix)
+{
+	assert(str);
+	assert(p);
+	assert(p->argc == 0 || p->argv);
+	assert(p->complete.match_len == 0 || p->complete.match);
+
+	if (len == 0 || !tclie_pattern_match_can_complete(p))
+		return;
+
+	assert(p->complete.buf && p->complete.buf_len);
+	const size_t prefix_len = prefix ? strlen(prefix) : 0;
+
+	if (!match && prefix_len > p->complete.match_len)
+		return;
+
+	if (*p->complete.buf_len + prefix_len + len + 1 >
+		TCLIE_PATTEN_MATCH_BUF_LEN)
+		return;
+
+	if (!match) {
+		assert(prefix_len <= p->complete.match_len);
+		match =
+			(!prefix || tcli_str_match(prefix, p->complete.match, prefix_len) ==
+							prefix_len) &&
+			prefix_len + tcli_str_match(str, p->complete.match + prefix_len,
+										p->complete.match_len - prefix_len) ==
+				p->complete.match_len;
+	}
+
+	if (!match)
+		return;
+
+	if (prefix)
+		strncpy(p->complete.buf + *p->complete.buf_len, prefix, prefix_len);
+	strncpy(p->complete.buf + *p->complete.buf_len + prefix_len, str, len);
+	p->complete.buf[*p->complete.buf_len + prefix_len + len] = '\0';
+	p->complete.completions[(*p->complete.count)++] =
+		&p->complete.buf[*p->complete.buf_len];
+	*p->complete.buf_len += prefix_len + len + 1;
+}
+
+static void tclie_pattern_match_complete_token(const tclie_token_t *const token,
+											   tclie_pattern_param_t *const p,
+											   bool match)
+{
+	assert(token);
+	assert(p);
+	assert(p->argc == 0 || p->argv);
+
+	if (*p->arg_index >= p->argc)
+		return;
+
+	if (p->complete.match != p->argv[(*p->arg_index)])
+		return;
+
+	return tclie_pattern_match_complete(token->str, token->len, p, match, NULL);
+}
+
+static void tclie_pattern_match_complete_options(tclie_pattern_param_t *const p)
+{
+	assert(p);
+	assert(p->argc == 0 || p->argv);
+	assert(p->complete.match_len == 0 || p->complete.match);
+
+	if (!p->options || p->options->count == 0)
+		return;
+
+	if (!tclie_pattern_match_can_complete(p))
+		return;
+
+	for (size_t i = 0; i < p->options->count; i++) {
+		const tclie_cmd_opt_t *const opt = &p->options->option[i];
+		assert(opt);
+
+		const bool match = p->complete.match_len == 0;
+
+		if (opt->short_opt) {
+			const char str[2] = {opt->short_opt, '\0'};
+			tclie_pattern_match_complete(str, 2, p, match, "-");
+		}
+
+		if (opt->long_opt) {
+			tclie_pattern_match_complete(opt->long_opt, strlen(opt->long_opt),
+										 p, match, "--");
+		}
+	}
+}
+
+#endif
+
 static bool tclie_pattern_match_token(const tclie_token_t *token,
 									  tclie_pattern_param_t *p);
 
@@ -356,50 +467,6 @@ static bool tclie_pattern_match_options(tclie_pattern_param_t *const p)
 	return true;
 }
 
-#if TCLI_COMPLETE
-static void tclie_pattern_match_complete(const tclie_token_t *const token,
-										 tclie_pattern_param_t *const p,
-										 bool match)
-{
-	assert(token);
-	assert(p);
-	assert(p->argc == 0 || p->argv);
-	assert(p->arg_index);
-	assert(token->type < TCLIE_TOKEN_COUNT);
-
-	if (!p->complete.match)
-		return;
-
-	if (!p->complete.completions || !p->complete.count ||
-		*p->complete.count >= p->complete.max_count)
-		return;
-
-	if (*p->arg_index >= p->argc)
-		return;
-
-	if (p->complete.match != p->argv[(*p->arg_index)])
-		return;
-
-	assert(p->complete.buf && p->complete.buf_len);
-
-	if (*p->complete.buf_len + token->len + 1 > TCLIE_PATTEN_MATCH_BUF_LEN)
-		return;
-
-	if (!match)
-		match = tcli_str_match(token->str, p->complete.match,
-							   p->complete.match_len) == p->complete.match_len;
-
-	if (!match)
-		return;
-
-	strncpy(p->complete.buf + *p->complete.buf_len, token->str, token->len);
-	p->complete.buf[*p->complete.buf_len + token->len] = '\0';
-	p->complete.completions[(*p->complete.count)++] =
-		&p->complete.buf[*p->complete.buf_len];
-	*p->complete.buf_len += token->len + 1;
-}
-#endif
-
 static bool tclie_pattern_match_token(const tclie_token_t *const token,
 									  tclie_pattern_param_t *const p)
 {
@@ -423,7 +490,7 @@ static bool tclie_pattern_match_token(const tclie_token_t *const token,
 		const bool match =
 			tclie_pattern_compare_token(token, p->argv[(*p->arg_index)]);
 #if TCLI_COMPLETE
-		tclie_pattern_match_complete(token, p, match);
+		tclie_pattern_match_complete_token(token, p, match);
 #endif
 		(*p->arg_index)++;
 		return match;
@@ -497,7 +564,9 @@ static bool tclie_pattern_match(tclie_t *const tclie, const char *pattern,
 #endif
 	};
 
-	return tclie_pattern_match_token(&token, &p) && arg_index == argc;
+	const bool matches = tclie_pattern_match_token(&token, &p);
+	tclie_pattern_match_complete_options(&p);
+	return matches && arg_index == argc;
 }
 #endif
 

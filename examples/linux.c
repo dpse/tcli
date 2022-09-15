@@ -25,8 +25,8 @@ static const tclie_user_t users[] = {{"debug", NULL, USER_LEVEL_DEBUG},
 static const tclie_cmd_opt_t options[] = {
 	{'v', "verbose", "Simple option."},
 	{'t', "test", "Simple option."},
-	{'r', "required", "Option with required argument.", "<arg>"},
-	{'o', "optional", "Option with optional argument.", "[a]"},
+	{'r', "required", "Option with required argument.", "arg"},
+	{'o', "optional", "Option with optional argument.", "[arg]"},
 };
 #endif
 
@@ -74,7 +74,7 @@ static const tclie_cmd_t cmds[] = {
 	 cmd_echo,
 	 USER_LEVEL_DEFAULT,
 	 "Example with options.",
-	 "options <attr>",
+	 "options [optional] <attr>",
 	 {options, ARRAY_SIZE(options)}},
 #endif
 };
