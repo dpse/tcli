@@ -1698,12 +1698,17 @@ static void tcli_complete(tcli_t *const tcli, const bool select)
 	const bool single_match = match_count == 1;
 
 	if (!tcli->complete.active) {
-		tcli->complete.space =
-			single_match ||
+		const bool space_at_cursor =
+			(tcli->cmdline.cursor < tcli->cmdline.len &&
+			 tcli->cmdline.buf[tcli->cmdline.cursor] == ' ') ||
 			(tcli->cmdline.cursor + 1 < tcli->cmdline.len &&
 			 tcli->cmdline.buf[tcli->cmdline.cursor + 1] == ' ');
+		tcli->complete.space =
+			tcli->cmdline.cursor == tcli->cmdline.len || !space_at_cursor;
 		tcli_complete_apply(tcli, token, token_len, matches[0], match_len,
-							tcli->complete.space);
+							single_match ||
+								(!space_at_cursor &&
+								 tcli->cmdline.cursor != tcli->cmdline.len));
 	}
 
 	if (!single_match) {
