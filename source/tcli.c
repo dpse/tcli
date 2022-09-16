@@ -1452,8 +1452,6 @@ tcli_complete_match_tokenize(tcli_t *const tcli, const size_t cursor,
 			assert(tcli->cmdline.cursor >= (*token - tcli->cmdline.buf));
 			*token_len = tcli->cmdline.cursor - (*token - tcli->cmdline.buf);
 		}
-
-		assert(*token_len != 0);
 	}
 
 	assert(*token);
