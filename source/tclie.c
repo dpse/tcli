@@ -501,13 +501,9 @@ tclie_pattern_match_tokens(const tclie_token_t *const tokens,
 		bool match = tclie_pattern_match_token(&tokens[i], p);
 
 		if (match && combinator == TCLIE_COMBINATOR_AND &&
-			tokens[i].type == TCLIE_TOKEN_OPTIONAL) {
-			for (size_t j = i + 1; j < count; j++) {
-				if (!tclie_pattern_match_token(&tokens[j], p)) {
-					match = false;
-					break;
-				}
-			}
+			tokens[i].type == TCLIE_TOKEN_OPTIONAL && i + 1 < count) {
+			match = tclie_pattern_match_tokens(&tokens[i + 1], count - i - 1, p,
+											   combinator);
 		}
 
 		if (!match)
