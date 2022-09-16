@@ -46,8 +46,8 @@ static const tclie_cmd_t cmds[] = {
 	 "fail ..."
 #endif
 	},
-	{"set one", cmd_echo, USER_LEVEL_DEFAULT, "Subcommand example."},
-	{"set other", cmd_echo, USER_LEVEL_DEFAULT, "Subcommand example."},
+	{"sub one", cmd_echo, USER_LEVEL_DEFAULT, "Subcommand example."},
+	{"sub other", cmd_echo, USER_LEVEL_DEFAULT, "Subcommand example."},
 #if TCLIE_PATTERN_MATCH
 	{"reset", cmd_echo, USER_LEVEL_DEFAULT,
 	 "Single word command, must match exactly.", "reset"},
