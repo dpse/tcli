@@ -40,27 +40,45 @@
 #endif
 
 #ifndef TCLIE_PATTEN_MATCH_BUF_LEN
+/**
+ * Size of static buffer used to store tab-completions matches from patterns.
+ */
 #define TCLIE_PATTEN_MATCH_BUF_LEN 64
 #endif
 
 #ifndef TCLIE_SUCCESS_FORMAT
+/**
+ * Format for success output messages.
+ */
 #define TCLIE_SUCCESS_FORMAT TCLI_COLOR_GREEN
 #endif
 
 #ifndef TCLIE_FAILURE_FORMAT
+/**
+ * Format for failure output messages.
+ */
 #define TCLIE_FAILURE_FORMAT TCLI_COLOR_RED
 #endif
 
 #ifndef TCLIE_COMMAND_FORMAT
+/**
+ * Format used when listing command names in help command.
+ */
 #define TCLIE_COMMAND_FORMAT                                                   \
 	(TCLI_FORMAT_BOLD TCLI_FORMAT_UNDERLINE TCLI_COLOR_CYAN)
 #endif
 
 #ifndef TCLIE_USAGE_FORMAT
+/**
+ * Format used when listing usage patterns in help command.
+ */
 #define TCLIE_USAGE_FORMAT (TCLI_COLOR_CYAN)
 #endif
 
 #ifndef TCLIE_OPTION_FORMAT
+/**
+ * Format used when listing command options in help command.
+ */
 #define TCLIE_OPTION_FORMAT (TCLI_FORMAT_ITALIC TCLI_COLOR_CYAN)
 #endif
 

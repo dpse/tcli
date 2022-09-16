@@ -111,6 +111,9 @@
 #endif
 
 #ifndef TCLI_SELECTION_FORMAT
+/**
+ * Format used for selectable matches during tab-completion.
+ */
 #define TCLI_SELECTION_FORMAT (TCLI_BG_COLOR_WHITE TCLI_COLOR_BLACK)
 #endif
 
