@@ -39,16 +39,16 @@ help command is called.
 
 The following syntax can be used in patterns:
 
-| Pattern                          | Description                                     |
-|----------------------------------|-------------------------------------------------|
-| `abc`                            | Matches `abc`.                                  |
-| `"a b"` or `'a b'`                | Matches `a b` including whitespace.                      |
-| `[abc]`                          | Optionally matches `abc`.                       |
-| `a&#124;b&#124;cd`               | Matches `a`, `b` or `cd`.                       |
-| `<abc>`                          | Wildcard; matches any word.                     |
-| `[<abc>]`                        | Optional wildcard; optionally matches any word. |
-| `a&#124;(b c)` or `a&#124;{b c}` | Matches `a` or `b c`.                           |
-| `...`                            | Matches none or all remaining tokens.           |
+| Pattern | Description                                    |
+|----|------------------------------------------------|
+| `abc` | Matches `abc`.                                 |
+| `"a b"` or `'a b'` | Matches `a b` including whitespace.            |
+| `[abc]` | Optionally matches `abc`.                      |
+| `a\|b\|cd`                  | Matches `a`, `b` or `cd`.                      |
+| `<abc>` | Wildcard; matches any word.                    |
+| `[<abc>]` | Optional wildcard; optionally matches any word. |
+| `a\|(b c)` or `a\|{b c}`                             | Matches `a` or `b c`.                         |
+| `...` | Matches none or all remaining tokens.          |
 
 The pattern matching system currently only supports matching word-tokens (i.e. no matches inside words).
 
