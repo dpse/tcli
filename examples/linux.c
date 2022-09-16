@@ -74,7 +74,7 @@ static const tclie_cmd_t cmds[] = {
 	 cmd_echo,
 	 USER_LEVEL_DEFAULT,
 	 "Example with options.",
-	 "options [optional] <attr>",
+	 "options [stuff] <attr>",
 	 {options, ARRAY_SIZE(options)}},
 #endif
 };
