@@ -1769,7 +1769,10 @@ void tcli_input_char(tcli_t *const tcli, char c)
 	tcli_hist_exit_search_mode(tcli, c);
 #endif
 
-	if (tcli_unescape(tcli, c, &op) || tcli_newline(tcli, c)) {
+	if (tcli_unescape(tcli, c, &op))
+		return;
+
+	if (tcli_newline(tcli, c)) {
 #if TCLI_COMPLETE
 		tcli_complete_exit(tcli, c);
 #endif
