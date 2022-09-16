@@ -148,24 +148,25 @@ static bool tclie_pattern_delim(const char start,
 	return false;
 }
 
-static size_t tclie_pattern_tokenize(const char *str, const size_t len,
-									 tclie_token_t *const tokens,
-									 const size_t max_tokens,
-									 const tclie_token_combinator_t combinator)
+static bool tclie_pattern_tokenize(const char *str, const size_t len,
+								   tclie_token_t *const tokens,
+								   const size_t max_tokens,
+								   const tclie_token_combinator_t combinator,
+								   size_t *const count)
 {
 	assert(str);
 	assert(tokens);
 	assert(combinator < TCLIE_COMBINATOR_COUNT);
+	assert(count);
 
 	const char *const str_max = str + len;
-	size_t found_tokens = 0;
 	struct {
 		bool active;
 		int count;
 		tclie_token_delim_t delim;
 	} delim = {0};
 
-	while (found_tokens < max_tokens && str < str_max) {
+	while (str < str_max) {
 		while (tclie_is_space(*str))
 			str++;
 
@@ -214,20 +215,23 @@ static size_t tclie_pattern_tokenize(const char *str, const size_t len,
 		if (str > start) {
 			size_t str_len = str - start;
 
+			if (*count >= max_tokens)
+				return false;
+
 			if (str_len >= 2 && tclie_pattern_delim(*start, &delim.delim) &&
 				start[str_len - 1] == delim.delim.stop) {
 				start++;
 				str_len -= 2;
-				tokens[found_tokens].type = delim.delim.type;
+				tokens[*count].type = delim.delim.type;
 			} else if (tclie_pattern_compare(start, str_len, "..."))
-				tokens[found_tokens].type = TCLIE_TOKEN_MULTI_WILDCARD;
+				tokens[*count].type = TCLIE_TOKEN_MULTI_WILDCARD;
 			else
-				tokens[found_tokens].type = TCLIE_TOKEN_UNKNOWN;
+				tokens[*count].type = TCLIE_TOKEN_UNKNOWN;
 
 			if (str_len != 0) {
-				tokens[found_tokens].str = start;
-				tokens[found_tokens].len = str_len;
-				found_tokens++;
+				tokens[*count].str = start;
+				tokens[*count].len = str_len;
+				(*count)++;
 			}
 		}
 
@@ -237,48 +241,57 @@ static size_t tclie_pattern_tokenize(const char *str, const size_t len,
 		str++;
 	}
 
-	return found_tokens;
+	return true;
 }
 
-static inline size_t tclie_pattern_tokenize_token(
+static inline bool tclie_pattern_tokenize_token(
 	const tclie_token_t *const token, tclie_token_t *const tokens,
-	const size_t max_tokens, const tclie_token_combinator_t combinator)
+	const size_t max_tokens, const tclie_token_combinator_t combinator,
+	size_t *const count)
 {
 	assert(token);
-	assert(tokens);
 
 	return tclie_pattern_tokenize(token->str, token->len, tokens, max_tokens,
-								  combinator);
+								  combinator, count);
 }
 
-static size_t
+static bool
 tclie_pattern_reduce_token(const tclie_token_t *const token,
 						   tclie_token_t *const tokens, const size_t max_tokens,
-						   tclie_token_combinator_t *const combinator)
+						   tclie_token_combinator_t *const combinator,
+						   size_t *const count)
 {
 	assert(token);
 	assert(tokens);
 	assert(combinator);
-	assert(max_tokens != 0);
+	assert(count);
 
 	const tclie_token_combinator_t combinators[] = {TCLIE_COMBINATOR_AND,
 													TCLIE_COMBINATOR_OR};
 
 	for (size_t i = 0; i < TCLIE_ARRAY_SIZE(combinators); i++) {
-		const size_t count = tclie_pattern_tokenize_token(
-			token, tokens, max_tokens, combinators[i]);
+		size_t token_count = 0;
+		if (!tclie_pattern_tokenize_token(token, tokens, max_tokens,
+										  combinators[i], &token_count))
+			return false;
 
-		if (count == 0 || count > 1 || token->type != tokens[0].type) {
+		if (token_count == 0 || token_count > 1 ||
+			token->type != tokens[0].type) {
 			*combinator = combinators[i];
-			return count;
+			*count = token_count;
+			return true;
 		}
 	}
+
+	if (max_tokens == 0)
+		return false;
 
 	*combinator = TCLIE_COMBINATOR_AND;
 	tokens[0].str = token->str;
 	tokens[0].len = token->len;
 	tokens[0].type = TCLIE_TOKEN_EXACT;
-	return 1;
+	*count = 1;
+	return true;
 }
 
 #if TCLI_COMPLETE
@@ -384,87 +397,151 @@ static void tclie_pattern_match_complete_options(tclie_pattern_param_t *const p)
 		}
 
 		if (opt->long_opt) {
+			const bool long_match = match || (p->complete.match_len == 1 &&
+											  *p->complete.match == '-');
 			tclie_pattern_match_complete(opt->long_opt, strlen(opt->long_opt),
-										 p, match, "--");
+										 p, long_match, "--");
 		}
 	}
 }
 
 #endif
 
-static bool tclie_pattern_match_token(const tclie_token_t *token,
-									  tclie_pattern_param_t *p);
-
-static bool tclie_pattern_match_options(tclie_pattern_param_t *const p)
+static bool tclie_pattern_tokenize_options(tclie_pattern_param_t *const p,
+										   tclie_token_t *const tokens,
+										   const size_t max_tokens,
+										   size_t *const count)
 {
 	assert(p);
 	assert(p->argc == 0 || p->argv);
 	assert(p->arg_index);
+	assert(tokens);
+	assert(count);
 
 	if (!p->options || p->options->count == 0)
 		return true;
 
 	assert(p->options->option);
 
-	while (*p->arg_index < p->argc) {
-		const char *arg = p->argv[*p->arg_index];
+	if (*p->arg_index >= p->argc)
+		return true;
 
-		if (*arg++ != '-')
-			return true;
+	const char *arg = p->argv[*p->arg_index];
 
-		const bool long_opt = *arg == '-';
-		if (long_opt)
-			arg++;
+	if (*arg++ != '-')
+		return true;
 
-		if (*arg == '\0')
-			return false;
+	const bool long_opt = *arg == '-';
+	if (long_opt)
+		arg++;
 
-		bool consume = true;
-		while (long_opt || *arg != '\0') {
-			bool match = false;
+	if (*arg == '\0')
+		return true;
 
-			for (size_t i = 0; i < p->options->count && !match; i++) {
-				const tclie_cmd_opt_t *const opt = &p->options->option[i];
-				assert(opt);
+	const size_t old_count = *count;
+	while (*arg != '\0') {
+		bool match = false;
 
-				if (long_opt) {
-					if (strcmp(opt->long_opt, arg) != 0)
-						continue;
-				} else if (opt->short_opt != *arg)
+		for (size_t i = 0; i < p->options->count && !match; i++) {
+			const tclie_cmd_opt_t *const opt = &p->options->option[i];
+			assert(opt);
+
+			if (long_opt) {
+				if (strcmp(opt->long_opt, arg) != 0)
 					continue;
+			} else if (opt->short_opt != *arg)
+				continue;
 
-				match = true;
+			match = true;
 
-				if (!opt->pattern)
-					break;
-
-				const tclie_token_t opt_token = {.type = TCLIE_TOKEN_UNKNOWN,
-												 .str = opt->pattern,
-												 .len = strlen(opt->pattern)};
-
-				const int old_arg_index = (*p->arg_index)++;
-				if (!tclie_pattern_match_token(&opt_token, p)) {
-					*p->arg_index = old_arg_index;
-					return false;
-				}
-
-				consume = false;
-			}
-
-			if (!match)
-				return false;
-
-			if (long_opt)
+			if (!opt->pattern)
 				break;
 
-			arg++;
+			if (*count >= max_tokens)
+				return false;
+
+			tokens[*count].type = TCLIE_TOKEN_UNKNOWN;
+			tokens[*count].str = opt->pattern;
+			tokens[*count].len = strlen(opt->pattern);
+			(*count)++;
 		}
 
-		if (consume)
-			(*p->arg_index)++;
+		if (!match) {
+			*count = old_count;
+			return true;
+		}
+
+		if (long_opt)
+			break;
+
+		arg++;
 	}
 
+	(*p->arg_index)++;
 	return true;
+}
+
+static bool tclie_pattern_match_token(const tclie_token_t *token,
+									  tclie_pattern_param_t *p);
+
+static bool
+tclie_pattern_match_tokens(const tclie_token_t *const tokens,
+						   const size_t count, tclie_pattern_param_t *const p,
+						   const tclie_token_combinator_t combinator)
+{
+	assert(tokens);
+	assert(p);
+	assert(combinator < TCLIE_COMBINATOR_COUNT);
+
+	if (count == 0)
+		return false;
+
+	for (size_t i = 0; i < count; i++) {
+		const int old_arg_index = *p->arg_index;
+		bool match = tclie_pattern_match_token(&tokens[i], p);
+
+		if (match && combinator == TCLIE_COMBINATOR_AND &&
+			tokens[i].type == TCLIE_TOKEN_OPTIONAL) {
+			for (size_t j = i + 1; j < count; j++) {
+				if (!tclie_pattern_match_token(&tokens[j], p)) {
+					match = false;
+					break;
+				}
+			}
+		}
+
+		if (!match)
+			*p->arg_index = old_arg_index;
+
+		if (tokens[i].type == TCLIE_TOKEN_OPTIONAL ||
+			combinator == TCLIE_COMBINATOR_OR) {
+			if (match)
+				return true;
+		} else if (!match)
+			return false;
+	}
+
+	return combinator == TCLIE_COMBINATOR_AND;
+}
+
+static bool tclie_pattern_match_options(tclie_token_t *const tokens,
+										const size_t max_tokens,
+										tclie_pattern_param_t *const p)
+{
+	assert(tokens);
+	assert(p);
+
+	size_t count = 0;
+
+	if (!tclie_pattern_tokenize_options(p, tokens, max_tokens, &count))
+		return false;
+
+	assert(count <= max_tokens);
+
+	if (count == 0)
+		return true;
+
+	return tclie_pattern_match_tokens(tokens, count, p, TCLIE_COMBINATOR_AND);
 }
 
 static bool tclie_pattern_match_token(const tclie_token_t *const token,
@@ -476,7 +553,10 @@ static bool tclie_pattern_match_token(const tclie_token_t *const token,
 	assert(p->arg_index);
 	assert(token->type < TCLIE_TOKEN_COUNT);
 
-	if (!tclie_pattern_match_options(p))
+	tclie_token_t tokens[TCLIE_PATTERN_MATCH_MAX_TOKENS] = {0};
+
+	// Match options at start
+	if (!tclie_pattern_match_options(tokens, TCLIE_ARRAY_SIZE(tokens), p))
 		return false;
 
 	if (token->type == TCLIE_TOKEN_MULTI_WILDCARD) {
@@ -487,47 +567,51 @@ static bool tclie_pattern_match_token(const tclie_token_t *const token,
 	if (token->type == TCLIE_TOKEN_EXACT) {
 		if (*p->arg_index >= p->argc)
 			return false;
+
 		const bool match =
 			tclie_pattern_compare_token(token, p->argv[(*p->arg_index)]);
 #if TCLI_COMPLETE
 		tclie_pattern_match_complete_token(token, p, match);
 #endif
+		if (!match)
+			return false;
+
 		(*p->arg_index)++;
-		return match;
+		goto MATCH_OPTIONS;
 	}
 
 	if (token->type == TCLIE_TOKEN_WILDCARD) {
 		if (*p->arg_index >= p->argc)
 			return false;
+
 		(*p->arg_index)++;
-		return true;
+		goto MATCH_OPTIONS;
 	}
 
-	tclie_token_t tokens[TCLIE_PATTERN_MATCH_MAX_TOKENS] = {0};
+	size_t count = 0;
 	tclie_token_combinator_t combinator = TCLIE_COMBINATOR_AND;
-	const size_t count = tclie_pattern_reduce_token(
-		token, tokens, TCLIE_ARRAY_SIZE(tokens), &combinator);
+
+	if (!tclie_pattern_reduce_token(token, tokens, TCLIE_ARRAY_SIZE(tokens),
+									&combinator, &count))
+		return false;
+
+	assert(count <= TCLIE_ARRAY_SIZE(tokens));
 
 	if (count == 0)
 		return false;
 
 	assert(combinator < TCLIE_COMBINATOR_COUNT);
 
-	for (size_t i = 0; i < count; i++) {
-		const int old_arg_index = *p->arg_index;
-		const bool match = tclie_pattern_match_token(&tokens[i], p);
+	if (!tclie_pattern_match_tokens(tokens, count, p, combinator))
+		return false;
 
-		if (!match)
-			*p->arg_index = old_arg_index;
+	// Match options at end
 
-		if (combinator == TCLIE_COMBINATOR_OR) {
-			if (match)
-				return true;
-		} else if (!match)
-			return token->type == TCLIE_TOKEN_OPTIONAL;
-	}
+MATCH_OPTIONS:
+	if (!tclie_pattern_match_options(tokens, TCLIE_ARRAY_SIZE(tokens), p))
+		return false;
 
-	return combinator == TCLIE_COMBINATOR_AND;
+	return true;
 }
 
 static bool tclie_pattern_match(tclie_t *const tclie, const char *pattern,
@@ -565,7 +649,8 @@ static bool tclie_pattern_match(tclie_t *const tclie, const char *pattern,
 	};
 
 	const bool matches = tclie_pattern_match_token(&token, &p);
-	tclie_pattern_match_complete_options(&p);
+	if (arg_index != 0)
+		tclie_pattern_match_complete_options(&p);
 	return matches && arg_index == argc;
 }
 #endif
