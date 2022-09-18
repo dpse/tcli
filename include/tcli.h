@@ -186,7 +186,6 @@ typedef struct tcli_complete {
 	tcli_compl_fn_t complete;
 	bool active : 1;
 	bool selected : 1;
-	bool empty : 1;
 	bool space : 1;
 	size_t cursor;
 	size_t index;
