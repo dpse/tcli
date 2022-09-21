@@ -131,9 +131,9 @@ static int cmd_echo(void *const arg, const int argc, const char **const argv)
 	else
 		printf("%s", argv[1]);
 
-	for (int i = 2; i < argc; i++) {
+	for (int i = 2; i < argc; i++)
 		printf(" %s", argv[i]);
-	}
+
 	printf("\r\n");
 
 	return 0;
