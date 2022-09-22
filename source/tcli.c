@@ -492,12 +492,14 @@ static int tcli_itoa(int n, char *const str)
 }
 
 #if TCLI_COMPLETE
-size_t tcli_str_match(const char *restrict const a,
-					  const char *restrict const b, const size_t max_len)
+size_t tcli_str_match(const char *const a, const char *const b,
+					  const size_t max_len)
 {
 	assert(a);
 	assert(b);
-	assert(a != b);
+
+	if (a == b)
+		return strnlen(a, max_len);
 
 	size_t len = 0;
 	while (len < max_len && a[len] != '\0' && b[len] != '\0' &&

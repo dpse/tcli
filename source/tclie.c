@@ -106,13 +106,15 @@ static inline bool tclie_is_space(const char c)
 }
 
 #if TCLIE_PATTERN_MATCH
-static bool tclie_pattern_compare(const char *restrict target,
+static bool tclie_pattern_compare(const char *target,
 								  size_t target_len,
-								  const char *restrict subject)
+								  const char *subject)
 {
 	assert(target);
 	assert(subject);
-	assert(target != subject);
+
+	if (target == subject)
+		return true;
 
 	while (target_len != 0 && *target != '\0' && *subject != '\0') {
 		if (*target++ != *subject++)
