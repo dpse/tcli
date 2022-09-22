@@ -647,8 +647,12 @@ static bool tclie_pattern_match(tclie_t *const tclie, const char *pattern,
 	};
 
 	const bool matches = tclie_pattern_match_token(&token, &p);
+
+#if TCLI_COMPLETE
 	if (arg_index != 0)
 		tclie_pattern_match_complete_options(&p);
+#endif
+
 	return matches && arg_index == argc;
 }
 #endif
