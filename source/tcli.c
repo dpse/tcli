@@ -1572,15 +1572,18 @@ static bool tcli_newline(tcli_t *const tcli, const char c)
 {
 	TCLI_ASSERT(tcli);
 
-	if (c != TCLI_CR && c != TCLI_LF) {
+	if (c != TCLI_CR && c != TCLI_LF && c != TCLI_NUL) {
 		tcli->last_endl = 0;
 		return false;
 	}
 
-	tcli->last_endl = c;
-
-	if (tcli->last_endl == (c == TCLI_CR ? TCLI_LF : TCLI_CR))
+	if ((tcli->last_endl == TCLI_CR && (c == TCLI_LF || c == TCLI_NUL)) ||
+		(tcli->last_endl == TCLI_LF && c == TCLI_CR)) {
+		tcli->last_endl = 0;
 		return true;
+	}
+
+	tcli->last_endl = c;
 
 #if TCLI_HISTORY_BUF_LEN > 0
 	tcli_hist_reset(tcli);
