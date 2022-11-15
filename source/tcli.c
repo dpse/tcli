@@ -1888,7 +1888,7 @@ void tcli_set_hist(tcli_t *const tcli, const tcli_history_mode_t mode)
 }
 #endif
 
-void tcli_set_out(tcli_t *const tcli, tcli_out_fn_t out)
+void tcli_set_out(tcli_t *const tcli, const tcli_out_fn_t out)
 {
 	if (!tcli)
 		return;
@@ -1896,7 +1896,7 @@ void tcli_set_out(tcli_t *const tcli, tcli_out_fn_t out)
 	tcli->out = out;
 }
 
-void tcli_set_exec(tcli_t *const tcli, tcli_exec_fn_t exec)
+void tcli_set_exec(tcli_t *const tcli, const tcli_exec_fn_t exec)
 {
 	if (!tcli)
 		return;
@@ -1905,7 +1905,7 @@ void tcli_set_exec(tcli_t *const tcli, tcli_exec_fn_t exec)
 }
 
 #if TCLI_COMPLETE
-void tcli_set_complete(tcli_t *const tcli, tcli_compl_fn_t complete)
+void tcli_set_complete(tcli_t *const tcli, const tcli_compl_fn_t complete)
 {
 	if (!tcli)
 		return;
@@ -1914,7 +1914,7 @@ void tcli_set_complete(tcli_t *const tcli, tcli_compl_fn_t complete)
 }
 #endif
 
-void tcli_set_sigint(tcli_t *const tcli, tcli_sigint_fn_t sigint)
+void tcli_set_sigint(tcli_t *const tcli, const tcli_sigint_fn_t sigint)
 {
 	if (!tcli)
 		return;
@@ -1964,7 +1964,7 @@ void tcli_set_search_prompt(tcli_t *const tcli, const char *const search_prompt)
 }
 #endif
 
-void tcli_init(tcli_t *const tcli, tcli_out_fn_t out, void *const arg)
+void tcli_init(tcli_t *const tcli, const tcli_out_fn_t out, void *const arg)
 {
 	if (!tcli)
 		return;
