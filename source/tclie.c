@@ -372,7 +372,7 @@ static void tclie_pattern_match_complete_token(const tclie_token_t *const token,
 	if (p->complete.match != p->argv[(*p->arg_index)])
 		return;
 
-	return tclie_pattern_match_complete(token->str, token->len, p, match, NULL);
+	tclie_pattern_match_complete(token->str, token->len, p, match, NULL);
 }
 
 static void tclie_pattern_match_complete_options(tclie_pattern_param_t *const p)
