@@ -556,13 +556,12 @@ static size_t tcli_tokenize(char *str, const char **const tokens,
 		char *stop = str;
 
 		if (stop > start) {
-			size_t str_len = stop - start;
+			const size_t str_len = stop - start;
 
 			if (str_len >= 2 && (*start == '"' || *start == '\'') &&
 				*start == start[str_len - 1]) {
 				start++;
 				stop--;
-				str_len -= 2;
 			}
 
 			tokens[found_tokens++] = start;
