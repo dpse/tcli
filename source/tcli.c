@@ -467,7 +467,7 @@ static int tcli_itoa(int n, char *const str)
 	assert(str);
 
 	n = n < -999 ? -999 : (n > 999 ? 999 : n);
-	char tmp[4];
+	char tmp[4] = {0};
 	int i = 0;
 
 	if (n < 0) {
