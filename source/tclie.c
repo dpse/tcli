@@ -65,31 +65,46 @@ static int tclie_cmd_logout(void *arg, int argc, const char **argv);
 #endif
 
 static const tclie_cmd_t tclie_internal_cmds[] = {
-	{"help", tclie_cmd_help,
+	{"help",
+	 tclie_cmd_help,
 #if TCLIE_ENABLE_USERS
 	 0,
 #endif
 	 "Print available commands.",
 #if TCLIE_PATTERN_MATCH
-	 "help [<command>] ..."
+	 "help [<command>] ...",
+	 {0}
 #endif
 	},
-	{"clear", tclie_cmd_clear,
+	{"clear",
+	 tclie_cmd_clear,
 #if TCLIE_ENABLE_USERS
 	 0,
 #endif
-	 "Clear screen."},
-#if TCLIE_ENABLE_USERS
-	{"login", tclie_cmd_login, 0, "Login.",
+	 "Clear screen.",
 #if TCLIE_PATTERN_MATCH
-	 "login [<username>]"
+	 NULL,
+	 {0}
 #endif
 	},
-	{
-		"logout",
-		tclie_cmd_logout,
-		1,
-		"Logout.",
+#if TCLIE_ENABLE_USERS
+	{"login",
+	 tclie_cmd_login,
+	 0,
+	 "Login.",
+#if TCLIE_PATTERN_MATCH
+	 "login [<username>]",
+	 {0}
+#endif
+	},
+	{"logout",
+	 tclie_cmd_logout,
+	 1,
+	 "Logout.",
+#if TCLIE_PATTERN_MATCH
+	 NULL,
+	 {0}
+#endif
 	},
 #endif
 };
