@@ -1969,7 +1969,7 @@ void tcli_init(tcli_t *const tcli, const tcli_out_fn_t out, void *const arg)
 	if (!tcli)
 		return;
 
-	memset(tcli, 0, sizeof(tcli_t));
+	*tcli = (const tcli_t){0};
 
 	tcli_set_out(tcli, out);
 	tcli_set_exec(tcli, NULL);

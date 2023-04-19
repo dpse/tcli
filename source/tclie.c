@@ -1307,7 +1307,7 @@ void tclie_init(tclie_t *const tclie, const tclie_out_fn_t out, void *const arg)
 	if (!tclie)
 		return;
 
-	memset(tclie, 0, sizeof(tclie_t));
+	*tclie = (const tclie_t){0};
 
 	tclie_set_out(tclie, out);
 	tclie_set_arg(tclie, arg);
