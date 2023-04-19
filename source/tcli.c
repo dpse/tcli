@@ -471,12 +471,12 @@ static int tcli_itoa(int n, char *const str)
 	int i = 0;
 
 	if (n < 0) {
-		assert(i >= 0 && i < sizeof(tmp));
+		assert(i >= 0 && i < (int)sizeof(tmp));
 		tmp[i++] = '-';
 	}
 
 	while (n != 0) {
-		assert(i >= 0 && i < sizeof(tmp));
+		assert(i >= 0 && i < (int)sizeof(tmp));
 		tmp[i++] = (char)('0' + (n % 10));
 		n /= 10;
 	}
@@ -712,7 +712,7 @@ static void tcli_term_move(tcli_t *const tcli, const char code, size_t offset)
 		*c++ = code;
 		*c = '\0';
 
-		assert(c - str <= sizeof(str));
+		assert(c - str <= (int)sizeof(str));
 		tcli_out(tcli, str);
 	}
 }
@@ -1176,7 +1176,8 @@ tcli_complete_match_tokenize(tcli_t *const tcli, const size_t cursor,
 			*token_len = end_token - *token;
 		} else if (tcli->cmdline.buf + cursor <= *token + strlen(*token)) {
 			assert(*token >= tcli->cmdline.buf);
-			assert(tcli->cmdline.cursor >= (*token - tcli->cmdline.buf));
+			assert(tcli->cmdline.cursor >=
+				   (size_t)(*token - tcli->cmdline.buf));
 			*token_len = tcli->cmdline.cursor - (*token - tcli->cmdline.buf);
 		} else
 			*token = NULL;
