@@ -483,7 +483,7 @@ static int tcli_itoa(int n, char *const str)
 
 	int j = 0;
 	while (j < i) {
-		assert(i - j - 1 >= 0 && i - j - 1 < sizeof(tmp));
+		assert(i - j - 1 >= 0 && i - j - 1 < (int)sizeof(tmp));
 		str[j] = tmp[i - j - 1];
 		j++;
 	}
