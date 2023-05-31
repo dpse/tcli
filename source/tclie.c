@@ -72,7 +72,7 @@ static const tclie_cmd_t tclie_internal_cmds[] = {
 #endif
 	 "Print available commands.",
 #if TCLIE_PATTERN_MATCH
-	 "help [<command>] ...",
+	 "help|? [<command>] ...",
 	 {0}
 #endif
 	},
