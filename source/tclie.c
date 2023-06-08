@@ -1024,7 +1024,8 @@ static size_t tcli_complete(void *const arg, const int argc,
 #endif
 	size_t count = 0;
 	const bool match_name =
-		argc >= 2 && match == argv[1] && strcmp(argv[0], "help") == 0;
+		argc >= 2 && match == argv[1] &&
+		(strcmp(argv[0], "help") == 0 || strcmp(argv[0], "?") == 0);
 
 	const size_t match_len = strlen(match);
 	tclie_complete(tclie, tclie_internal_cmds,
