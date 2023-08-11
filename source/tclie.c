@@ -121,8 +121,7 @@ static inline bool tclie_is_space(const char c)
 }
 
 #if TCLIE_PATTERN_MATCH
-static bool tclie_pattern_compare(const char *target,
-								  size_t target_len,
+static bool tclie_pattern_compare(const char *target, size_t target_len,
 								  const char *subject)
 {
 	assert(target);
@@ -180,6 +179,7 @@ static bool tclie_pattern_tokenize(const char *str, const size_t len,
 	struct {
 		bool active;
 		int count;
+		int total_count;
 		tclie_token_delim_t delim;
 	} delim = {0};
 
@@ -208,6 +208,7 @@ static bool tclie_pattern_tokenize(const char *str, const size_t len,
 			if (!delim.active && tclie_pattern_delim(*str, &delim.delim)) {
 				delim.active = true;
 				delim.count = 0;
+				delim.total_count++;
 			}
 
 			if (delim.active) {
@@ -235,7 +236,8 @@ static bool tclie_pattern_tokenize(const char *str, const size_t len,
 			if (*count >= max_tokens)
 				return false;
 
-			if (str_len >= 2 && tclie_pattern_delim(*start, &delim.delim) &&
+			if (str_len >= 2 && delim.total_count == 1 &&
+				tclie_pattern_delim(*start, &delim.delim) &&
 				start[str_len - 1] == delim.delim.stop) {
 				start++;
 				str_len -= 2;
