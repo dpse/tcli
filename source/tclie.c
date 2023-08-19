@@ -177,10 +177,10 @@ static bool tclie_pattern_tokenize(const char *str, const size_t len,
 
 	const char *const str_max = str + len;
 	struct {
-		bool active;
 		int count;
 		int total_count;
 		tclie_token_delim_t delim;
+		bool active : 1;
 	} delim = {0};
 
 	while (str < str_max) {
