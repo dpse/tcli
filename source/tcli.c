@@ -372,7 +372,7 @@ static bool tcli_rb_previous(tcli_rb_t *restrict const rb, char *str,
 	assert(str);
 	assert(len);
 
-SCAN:;
+SCAN:
 
 	const size_t l = tcli_rb_move_backward(rb, 0);
 
