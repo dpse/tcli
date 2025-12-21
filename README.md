@@ -10,7 +10,7 @@ Typical applications would e.g. be to provide a simple CLI over a serial line or
 - No dynamic allocations.
 - Configurable prompt(s).
 - Output buffering.
-- Command history in ringbuffer.
+- Command history in a ring buffer.
 - Backwards history search.
 - Tab-completion.
 - Custom SIGINT handler.
@@ -85,7 +85,7 @@ tclie_reg_users(&tclie, users, 2);
 ```c
 int echo(void * arg, int argc, const char ** argv)
 {
-    if(argc > 1)
+    if (argc > 1)
         printf("%s\r\n", argv[1]);
     
     return 0;
