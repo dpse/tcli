@@ -1446,14 +1446,15 @@ static int tclie_cmd_help(void *const arg, const int argc,
 	return 0;
 }
 
-static int tclie_cmd_clear(void *const arg,
-						   __attribute__((unused)) const int argc,
-						   __attribute__((unused)) const char **const argv)
+static int tclie_cmd_clear(void *const arg, const int argc,
+						   const char **const argv)
 {
 	assert(arg);
 	assert(argc >= 1);
 	assert(argv);
 	assert(argv[0]);
+	(void)argc;
+	(void)argv;
 
 	tclie_t *const tclie = arg;
 	tclie_clear_screen(tclie);
@@ -1473,14 +1474,15 @@ static int tclie_cmd_login(void *const arg, const int argc,
 	return tclie_login_begin(tclie, argc == 2 ? argv[1] : NULL);
 }
 
-static int tclie_cmd_logout(void *const arg,
-							__attribute__((unused)) const int argc,
-							__attribute__((unused)) const char **const argv)
+static int tclie_cmd_logout(void *const arg, const int argc,
+							const char **const argv)
 {
 	assert(arg);
 	assert(argc >= 1);
 	assert(argv);
 	assert(argv[0]);
+	(void)argc;
+	(void)argv;
 
 	tclie_t *const tclie = arg;
 	tclie_set_user_level(tclie, 0);
