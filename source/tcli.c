@@ -473,6 +473,7 @@ static int tcli_itoa(int n, char *const str)
 	if (n < 0) {
 		assert(i >= 0 && i < (int)sizeof(tmp));
 		tmp[i++] = '-';
+		n = -n;
 	}
 
 	while (n != 0) {
