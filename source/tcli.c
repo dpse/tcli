@@ -657,7 +657,10 @@ int tcli_out_vprintf(tcli_t *const tcli, char *const buf, size_t len,
 		return 0;
 
 	const int count = vsnprintf(buf, len, format, arg);
-	tcli_out(tcli, buf);
+
+	if (count > 0)
+		tcli_out(tcli, buf);
+
 	return count;
 }
 
@@ -2016,7 +2019,10 @@ int tcli_log_vprintf(tcli_t *const tcli, char *const buf, size_t len,
 		return 0;
 
 	const int count = vsnprintf(buf, len, format, arg);
-	tcli_log(tcli, buf);
+
+	if (count > 0)
+		tcli_log(tcli, buf);
+
 	return count;
 }
 
