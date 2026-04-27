@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.22)
 set(CMAKE_C_STANDARD 11)
 project(tcli C)
-add_definitions(-Wall)
+add_compile_options(-Wall -Wextra)
 
 include_directories(include)
 add_library(tcli source/tcli.c source/tclie.c)
