@@ -466,9 +466,9 @@ static bool tclie_pattern_tokenize_options(tclie_pattern_param_t *const p,
 			assert(opt);
 
 			if (long_opt) {
-				if (strcmp(opt->long_opt, arg) != 0)
+				if (!opt->long_opt || strcmp(opt->long_opt, arg) != 0)
 					continue;
-			} else if (opt->short_opt != *arg)
+			} else if (!opt->short_opt || opt->short_opt != *arg)
 				continue;
 
 			match = true;
