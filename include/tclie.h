@@ -39,11 +39,11 @@
 #define TCLIE_PATTERN_MATCH_MAX_TOKENS TCLI_MAX_TOKENS
 #endif
 
-#ifndef TCLIE_PATTEN_MATCH_BUF_LEN
+#ifndef TCLIE_PATTERN_MATCH_BUF_LEN
 /**
  * Size of static buffer used to store tab-completions matches from patterns.
  */
-#define TCLIE_PATTEN_MATCH_BUF_LEN 64
+#define TCLIE_PATTERN_MATCH_BUF_LEN 64
 #endif
 
 #ifndef TCLIE_SUCCESS_FORMAT
@@ -170,7 +170,7 @@ typedef struct tclie {
 	void *arg;
 #if TCLIE_PATTERN_MATCH && TCLI_COMPLETE
 	struct {
-		char buf[TCLIE_PATTEN_MATCH_BUF_LEN];
+		char buf[TCLIE_PATTERN_MATCH_BUF_LEN];
 		size_t buf_len;
 	} complete;
 #endif

@@ -350,7 +350,7 @@ static void tclie_pattern_match_complete(const char *const str,
 		return;
 
 	if (*p->complete.buf_len + prefix_len + len + 1 >
-		TCLIE_PATTEN_MATCH_BUF_LEN)
+		TCLIE_PATTERN_MATCH_BUF_LEN)
 		return;
 
 	if (!match) {
