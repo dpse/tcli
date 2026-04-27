@@ -31,7 +31,7 @@
 #define TCLIE_PATTERN_MATCH 1
 #endif
 
-#ifndef TCLIE_PATTERN_MATCH_MAX_TOKEN
+#ifndef TCLIE_PATTERN_MATCH_MAX_TOKENS
 /**
  * Maximum number of tokens to use for pattern matching tokenization. Required
  * size depends on pattern complexities.
