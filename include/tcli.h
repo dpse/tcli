@@ -213,7 +213,7 @@ typedef struct tcli {
 	const char *prompt;
 	const char *error_prompt;
 	char last_endl;
-	volatile bool executing : 1;
+	volatile bool executing;
 } tcli_t;
 
 /**
