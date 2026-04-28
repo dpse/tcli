@@ -27,6 +27,8 @@ static const tclie_cmd_opt_t options[] = {
 	{'t', "test", "Simple option."},
 	{'r', "required", "Option with required argument.", "arg"},
 	{'o', "optional", "Option with optional argument.", "[arg]"},
+	{'s', NULL, "Option with short option only.", NULL},
+	{0, "long", "Option with long option only.", NULL},
 };
 #endif
 
