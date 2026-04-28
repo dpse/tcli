@@ -775,12 +775,14 @@ static void tclie_print_cmd(tclie_t *const tclie, const tclie_cmd_t *const cmd,
 	for (size_t i = 0; i < cmd->options.count; i++) {
 		assert(cmd->options.option[i].short_opt ||
 			   cmd->options.option[i].long_opt);
-		size_t opt_len = cmd->options.option[i].short_opt ? 2 : 0;
+		size_t opt_len = 0;
+		if (cmd->options.option[i].short_opt)
+			opt_len += 2;
 		if (cmd->options.option[i].long_opt)
-			opt_len += strlen(cmd->options.option[i].long_opt) + 2 +
-					   (cmd->options.option[i].short_opt ? 1 : 0);
+			opt_len += (cmd->options.option[i].short_opt ? 1 : 0) + 2 +
+					   strlen(cmd->options.option[i].long_opt);
 		if (cmd->options.option[i].pattern)
-			opt_len += strlen(cmd->options.option[i].pattern) + 1;
+			opt_len += 1 + strlen(cmd->options.option[i].pattern);
 
 		if (opt_len > opt_pad)
 			opt_pad = opt_len;
@@ -799,20 +801,21 @@ static void tclie_print_cmd(tclie_t *const tclie, const tclie_cmd_t *const cmd,
 			buf[1] = cmd->options.option[i].short_opt;
 			buf[2] = '\0';
 			tclie_out(tclie, buf);
-			pad_len += 1;
-			if (cmd->options.option[i].long_opt) {
-				tclie_out(tclie, "|--");
-				pad_len += 1;
-			}
+			pad_len += 2;
 		}
 		if (cmd->options.option[i].long_opt) {
+			if (cmd->options.option[i].short_opt) {
+				tclie_out(tclie, "|");
+				pad_len += 1;
+			}
+			tclie_out(tclie, "--");
 			tclie_out(tclie, cmd->options.option[i].long_opt);
-			pad_len += strlen(cmd->options.option[i].long_opt);
+			pad_len += 2 + strlen(cmd->options.option[i].long_opt);
 		}
 		if (cmd->options.option[i].pattern) {
 			tclie_out(tclie, " ");
 			tclie_out(tclie, cmd->options.option[i].pattern);
-			pad_len += strlen(cmd->options.option[i].pattern) + 1;
+			pad_len += 1 + strlen(cmd->options.option[i].pattern);
 		}
 		tclie_out(tclie, TCLI_FORMAT_RESET);
 		if (cmd->options.option[i].desc) {
