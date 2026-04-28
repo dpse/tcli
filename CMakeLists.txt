@@ -1,10 +1,19 @@
 cmake_minimum_required(VERSION 3.22)
-set(CMAKE_C_STANDARD 11)
 project(tcli C)
-add_compile_options(-Wall -Wextra)
 
-include_directories(include)
-add_library(tcli source/tcli.c source/tclie.c)
+option(TCLI_BUILD_EXAMPLES "Build TinyCLI examples" ${PROJECT_IS_TOP_LEVEL})
 
-add_executable(example_linux examples/linux.c)
-target_link_libraries(example_linux tcli)
+add_library(tcli STATIC source/tcli.c source/tclie.c)
+add_library(tcli::tcli ALIAS tcli)
+
+target_include_directories(tcli PUBLIC include)
+target_compile_features(tcli PUBLIC c_std_11)
+
+if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(tcli PRIVATE -Wall -Wextra)
+endif()
+
+if(TCLI_BUILD_EXAMPLES)
+    add_executable(example_linux examples/linux.c)
+    target_link_libraries(example_linux PRIVATE tcli::tcli)
+endif()
