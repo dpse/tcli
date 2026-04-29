@@ -357,6 +357,11 @@ static bool tcli_rb_push(tcli_rb_t *restrict const rb, const char *restrict str,
 
 	// Reset scan position
 	rb->buf[rb->head++] = '\0';
+
+	// Check for wrap
+	if (rb->head >= TCLI_ARRAY_SIZE(rb->buf))
+		rb->head = 0;
+
 	rb->count += len + 1;
 
 	if (move_pos)
