@@ -1,9 +1,3 @@
-// Shared command setup used by every TinyCLI example. Each example provides
-// platform-specific implementations of the three callbacks declared at the
-// bottom of this file (echo, fail, exit). The user table, option list, and
-// command table are identical across examples so behaviour matches between
-// platforms.
-
 #ifndef EXAMPLE_CMDS_H
 #define EXAMPLE_CMDS_H
 
