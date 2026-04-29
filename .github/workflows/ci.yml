@@ -1,0 +1,74 @@
+name: CI
+
+on:
+  push:
+    branches: [master, develop]
+  pull_request:
+    branches: [master, develop]
+
+jobs:
+  build-and-test:
+    name: Build & Test (GCC)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Configure
+        env:
+          CC: gcc
+        run: cmake -S . -B build -DTCLI_BUILD_TESTS=ON -DTCLI_BUILD_EXAMPLES=ON -DTCLI_WERROR=ON
+
+      - name: Build
+        run: cmake --build build --parallel
+
+      - name: Run tests
+        run: ctest --test-dir build --output-on-failure
+
+  sanitizers:
+    name: Clang + ASan + UBSan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Configure
+        env:
+          CC: clang
+          CFLAGS: -fsanitize=address,undefined -fno-omit-frame-pointer -g
+          LDFLAGS: -fsanitize=address,undefined
+        run: cmake -S . -B build -DTCLI_BUILD_TESTS=ON -DTCLI_BUILD_EXAMPLES=ON -DTCLI_WERROR=ON
+
+      - name: Build
+        run: cmake --build build --parallel
+
+      - name: Run tests
+        env:
+          UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=1
+          ASAN_OPTIONS: detect_leaks=1:halt_on_error=1
+        run: ctest --test-dir build --output-on-failure
+
+  fuzz-smoke:
+    name: libFuzzer smoke (${{ matrix.harness }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        harness: [fuzz_stateless, fuzz_stateful]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Configure
+        env:
+          CC: clang
+        run: cmake -S . -B build -DTCLI_BUILD_FUZZERS=ON
+
+      - name: Build
+        run: cmake --build build --parallel
+
+      - name: Run fuzzer (60s)
+        run: ./build/fuzz/${{ matrix.harness }} -max_total_time=60 -print_final_stats=1
