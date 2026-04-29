@@ -341,7 +341,7 @@ void tclie_log(tclie_t *tclie, const char *str);
  * @return Same as C99 vsnprintf: would-be length, or -1 on error.
  */
 int tclie_log_vprintf(tclie_t *tclie, char *buf, size_t len, const char *format,
-					  va_list arg);
+					  va_list arg) TCLI_PRINTF_FORMAT(4, 0);
 
 /**
  * Logs formatted data without disturbing the current prompt.
@@ -353,7 +353,7 @@ int tclie_log_vprintf(tclie_t *tclie, char *buf, size_t len, const char *format,
  * @return Same as C99 vsnprintf: would-be length, or -1 on error.
  */
 int tclie_log_printf(tclie_t *tclie, char *buf, size_t len, const char *format,
-					 ...);
+					 ...) TCLI_PRINTF_FORMAT(4, 5);
 
 /**
  * Flushes output buffer (if used).
@@ -380,7 +380,7 @@ void tclie_out(tclie_t *tclie, const char *str);
  * @return Same as C99 vsnprintf: would-be length, or -1 on error.
  */
 int tclie_out_vprintf(tclie_t *tclie, char *buf, size_t len, const char *format,
-					  va_list arg);
+					  va_list arg) TCLI_PRINTF_FORMAT(4, 0);
 
 /**
  * Outputs formatted data through the instance output callback function. May be
@@ -393,7 +393,7 @@ int tclie_out_vprintf(tclie_t *tclie, char *buf, size_t len, const char *format,
  * @return Same as C99 vsnprintf: would-be length, or -1 on error.
  */
 int tclie_out_printf(tclie_t *tclie, char *buf, size_t len, const char *format,
-					 ...);
+					 ...) TCLI_PRINTF_FORMAT(4, 5);
 
 /**
  * Clears the current screen output.

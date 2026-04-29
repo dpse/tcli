@@ -10,6 +10,13 @@
 extern "C" {
 #endif
 
+#if defined(__GNUC__) || defined(__clang__)
+#define TCLI_PRINTF_FORMAT(fmt_idx, args_idx)                                  \
+	__attribute__((format(printf, fmt_idx, args_idx)))
+#else
+#define TCLI_PRINTF_FORMAT(fmt_idx, args_idx)
+#endif
+
 #define TCLI_COLOR_BLACK "\033[30m"
 #define TCLI_COLOR_RED "\033[31m"
 #define TCLI_COLOR_GREEN "\033[32m"
@@ -346,7 +353,7 @@ void tcli_log(tcli_t *tcli, const char *str);
  * @return Same as C99 vsnprintf: would-be length, or -1 on error.
  */
 int tcli_log_vprintf(tcli_t *tcli, char *buf, size_t len, const char *format,
-					 va_list arg);
+					 va_list arg) TCLI_PRINTF_FORMAT(4, 0);
 
 /**
  * Logs formatted data without disturbing the current prompt.
@@ -358,7 +365,7 @@ int tcli_log_vprintf(tcli_t *tcli, char *buf, size_t len, const char *format,
  * @return Same as C99 vsnprintf: would-be length, or -1 on error.
  */
 int tcli_log_printf(tcli_t *tcli, char *buf, size_t len, const char *format,
-					...);
+					...) TCLI_PRINTF_FORMAT(4, 5);
 
 /**
  * Flushes output buffer (if used).
@@ -385,7 +392,7 @@ void tcli_out(tcli_t *tcli, const char *str);
  * @return Same as C99 vsnprintf: would-be length, or -1 on error.
  */
 int tcli_out_vprintf(tcli_t *tcli, char *buf, size_t len, const char *format,
-					 va_list arg);
+					 va_list arg) TCLI_PRINTF_FORMAT(4, 0);
 
 /**
  * Outputs formatted data through the instance output callback function. May be
@@ -398,7 +405,7 @@ int tcli_out_vprintf(tcli_t *tcli, char *buf, size_t len, const char *format,
  * @return Same as C99 vsnprintf: would-be length, or -1 on error.
  */
 int tcli_out_printf(tcli_t *tcli, char *buf, size_t len, const char *format,
-					...);
+					...) TCLI_PRINTF_FORMAT(4, 5);
 
 /**
  * Clears the current screen output.
