@@ -10,8 +10,8 @@ static_assert(TCLI_MAX_TOKENS > 0,
 			  "Maximum number of tokens must be at least one.");
 static_assert(TCLI_HISTORY_BUF_LEN >= 0,
 			  "History buffer length must be at least zero.");
-static_assert(TCLI_OUTPUT_BUF_LEN >= 0,
-			  "Output buffer length must be at least zero.");
+static_assert(TCLI_OUTPUT_BUF_LEN == 0 || TCLI_OUTPUT_BUF_LEN >= 2,
+			  "Output buffer length must be 0 (disabled) or at least 2.");
 
 #define TCLI_ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
 
