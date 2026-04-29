@@ -501,9 +501,6 @@ size_t tcli_str_match(const char *const a, const char *const b,
 	assert(a);
 	assert(b);
 
-	if (a == b)
-		return strnlen(a, max_len);
-
 	size_t len = 0;
 	while (len < max_len && a[len] != '\0' && b[len] != '\0' &&
 		   a[len] == b[len])
