@@ -1542,16 +1542,28 @@ static bool tcli_unescape(tcli_t *const tcli, const char c,
 		return true;
 	}
 
+	// CSI parameter (0x30-0x3F) and intermediate (0x20-0x2F) bytes per ECMA-48:
+	// silently consume; only a final byte (0x40-0x7E) terminates the sequence.
+	if (tcli->esc.code != TCLI_ESC_NONE && (unsigned char)c >= 0x20 &&
+		(unsigned char)c < 0x40)
+		return true;
+
+	bool match = false;
 	for (size_t i = 0; i < TCLI_ARRAY_SIZE(esc_table); i++) {
 		if (c != esc_table[i].match || tcli->esc.code != esc_table[i].esc)
 			continue;
 
 		*op = esc_table[i].op;
+		match = true;
 		break;
 	}
 
 	tcli->esc.code = TCLI_ESC_NONE;
-	return (tcli->esc.esc = false);
+	tcli->esc.esc = false;
+
+	// Unrecognized final byte: consume to avoid leak. Control bytes (<0x20)
+	// fall through to normal processing per ECMA-48.
+	return !match && (unsigned char)c >= 0x20;
 }
 
 static void tcli_exec(tcli_t *const tcli)
