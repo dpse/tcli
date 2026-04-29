@@ -270,7 +270,7 @@ void tclie_set_pre_cmd(tclie_t *tclie, tclie_pre_cmd_fn_t pre_cmd);
 /**
  * Set post-command callback function to be called after command execution.
  * @param tclie Instance pointer.
- * @param pre_cmd Callback function.
+ * @param post_cmd Callback function.
  */
 void tclie_set_post_cmd(tclie_t *tclie, tclie_post_cmd_fn_t post_cmd);
 
@@ -331,26 +331,26 @@ unsigned tclie_get_user_level(const tclie_t *tclie);
 void tclie_log(tclie_t *tclie, const char *str);
 
 /**
- * Logs formatted data from variable argument list without disturbing the
+ * Logs formatted data from a variable argument list without disturbing the
  * current prompt.
  * @param tclie Instance pointer.
  * @param buf Buffer to hold formatted data.
  * @param len Buffer length.
  * @param format Format string.
  * @param arg Variable arguments list.
- * @return On success, the total number of characters written, else -1.
+ * @return Same as C99 vsnprintf: would-be length, or -1 on error.
  */
 int tclie_log_vprintf(tclie_t *tclie, char *buf, size_t len, const char *format,
 					  va_list arg);
 
 /**
- * Logs formatted string without disturbing the current prompt.
+ * Logs formatted data without disturbing the current prompt.
  * @param tclie Instance pointer.
  * @param buf Buffer to hold formatted data.
  * @param len Buffer length.
  * @param format Format string.
  * @param ... Arguments depending on format string.
- * @return On success, the total number of characters written, else -1.
+ * @return Same as C99 vsnprintf: would-be length, or -1 on error.
  */
 int tclie_log_printf(tclie_t *tclie, char *buf, size_t len, const char *format,
 					 ...);
@@ -370,27 +370,27 @@ void tclie_flush(tclie_t *tclie);
 void tclie_out(tclie_t *tclie, const char *str);
 
 /**
- * Outputs data from variable argument list without disturbing the
- * current prompt. May be buffered.
+ * Outputs formatted data from a variable argument list through the instance
+ * output callback function. May be buffered.
  * @param tclie Instance pointer.
  * @param buf Buffer to hold formatted data.
  * @param len Buffer length.
  * @param format Format string.
  * @param arg Variable arguments list.
- * @return On success, the total number of characters written, else -1.
+ * @return Same as C99 vsnprintf: would-be length, or -1 on error.
  */
 int tclie_out_vprintf(tclie_t *tclie, char *buf, size_t len, const char *format,
 					  va_list arg);
 
 /**
- * Outputs formatted string without disturbing the current prompt. May be
+ * Outputs formatted data through the instance output callback function. May be
  * buffered.
  * @param tclie Instance pointer.
  * @param buf Buffer to hold formatted data.
  * @param len Buffer length.
  * @param format Format string.
  * @param ... Arguments depending on format string.
- * @return On success, the total number of characters written, else -1.
+ * @return Same as C99 vsnprintf: would-be length, or -1 on error.
  */
 int tclie_out_printf(tclie_t *tclie, char *buf, size_t len, const char *format,
 					 ...);
