@@ -2,3 +2,9 @@
 cmake-build-*/
 build/
 
+# libFuzzer artifacts
+crash-*
+leak-*
+slow-unit-*
+oom-*
+timeout-*

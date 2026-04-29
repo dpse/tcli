@@ -3,6 +3,7 @@ project(tcli C)
 
 option(TCLI_BUILD_EXAMPLES "Build TinyCLI examples" ${PROJECT_IS_TOP_LEVEL})
 option(TCLI_BUILD_TESTS "Build TinyCLI unit tests" ${PROJECT_IS_TOP_LEVEL})
+option(TCLI_BUILD_FUZZERS "Build TinyCLI libFuzzer harnesses (Clang only)" OFF)
 option(TCLI_WERROR "Treat compiler warnings as errors" OFF)
 
 add_library(tcli STATIC source/tcli.c source/tclie.c)
@@ -38,4 +39,8 @@ endif()
 if(TCLI_BUILD_TESTS)
     enable_testing()
     add_subdirectory(tests)
+endif()
+
+if(TCLI_BUILD_FUZZERS)
+    add_subdirectory(fuzz)
 endif()
