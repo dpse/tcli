@@ -30,6 +30,6 @@ if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
 endif()
 
 if(TCLI_BUILD_EXAMPLES)
-    add_executable(example_linux examples/linux.c)
+    add_executable(example_linux examples/linux/main.c)
     target_link_libraries(example_linux PRIVATE tcli::tcli)
 endif()
