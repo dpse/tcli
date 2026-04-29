@@ -10,6 +10,11 @@
 extern "C" {
 #endif
 
+#define TCLI_VERSION_MAJOR 1
+#define TCLI_VERSION_MINOR 0
+#define TCLI_VERSION_PATCH 0
+#define TCLI_VERSION_STR "1.0.0"
+
 #if defined(__GNUC__) || defined(__clang__)
 #define TCLI_PRINTF_FORMAT(fmt_idx, args_idx)                                  \
 	__attribute__((format(printf, fmt_idx, args_idx)))

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.22)
-project(tcli C)
+project(tcli VERSION 1.0.0 LANGUAGES C)
 
 option(TCLI_BUILD_EXAMPLES "Build TinyCLI examples" ${PROJECT_IS_TOP_LEVEL})
 option(TCLI_BUILD_TESTS "Build TinyCLI unit tests" ${PROJECT_IS_TOP_LEVEL})
