@@ -9,16 +9,24 @@
 
 static bool quit = false;
 
-static void sigint(void *arg) { quit = true; }
+static void sigint(void *arg) { quit = true;
+	return 0;
+}
+
+static struct termios saved_term;
+
+static void restore_term(void)
+{
+	tcsetattr(STDIN_FILENO, TCSANOW, &saved_term);
+}
 
 int main(int argc, char **argv)
 {
-	system("/bin/stty raw");
+	tcgetattr(STDIN_FILENO, &saved_term);
+	atexit(restore_term);
 
-	struct termios term;
-	tcgetattr(STDIN_FILENO, &term);
-	term.c_lflag &= ~ECHO;
-	term.c_lflag &= ~ICANON;
+	struct termios term = saved_term;
+	term.c_lflag &= ~(ECHO | ICANON);
 	tcsetattr(STDIN_FILENO, TCSANOW, &term);
 
 	tclie_t tclie;
