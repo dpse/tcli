@@ -833,6 +833,7 @@ static inline void tcli_term_reprint_from_cursor(tcli_t *const tcli,
 static void tcli_term_reprint_all(tcli_t *const tcli)
 {
 	TCLI_ASSERT(tcli);
+
 	tcli_term_return_cut(tcli);
 
 #if TCLI_HISTORY_BUF_LEN > 0
