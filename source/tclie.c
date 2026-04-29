@@ -647,19 +647,18 @@ static bool tclie_pattern_match(tclie_t *const tclie, const char *pattern,
 	const tclie_token_t token = {
 		.type = TCLIE_TOKEN_UNKNOWN, .str = pattern, .len = strlen(pattern)};
 	int arg_index = 0;
-	tclie_pattern_param_t p = {
-		.options = options,
-		.argc = argc,
-		.argv = argv,
-		.arg_index = &arg_index,
+	tclie_pattern_param_t p = {.options = options,
+							   .argc = argc,
+							   .argv = argv,
+							   .arg_index = &arg_index,
 #if TCLI_COMPLETE
-		.complete.match = match,
-		.complete.match_len = match_len,
-		.complete.completions = completions,
-		.complete.max_count = max_count,
-		.complete.count = count,
-		.complete.buf = tclie->complete.buf,
-		.complete.buf_len = &tclie->complete.buf_len
+							   .complete.match = match,
+							   .complete.match_len = match_len,
+							   .complete.completions = completions,
+							   .complete.max_count = max_count,
+							   .complete.count = count,
+							   .complete.buf = tclie->complete.buf,
+							   .complete.buf_len = &tclie->complete.buf_len
 #endif
 	};
 
