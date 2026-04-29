@@ -23,7 +23,7 @@ if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
         -Wstrict-prototypes
         -Wmissing-prototypes
         -Wcast-qual
-        -Wimplicit-fallthrough=3
+        -Wimplicit-fallthrough
         -Wnull-dereference
     )
     if(TCLI_WERROR)
