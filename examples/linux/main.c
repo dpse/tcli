@@ -9,7 +9,52 @@
 
 static bool quit = false;
 
-static void sigint(void *arg) { quit = true;
+static void output(void *arg, const char *str)
+{
+	(void)arg;
+	printf("%s", str);
+}
+
+static void sigint(void *arg)
+{
+	(void)arg;
+	quit = true;
+}
+
+int example_cmd_echo(void *const arg, const int argc, const char **const argv)
+{
+	(void)arg;
+
+	if (argc <= 1)
+		return 0;
+
+	if (strcmp(argv[0], "echo") != 0)
+		printf("%s %s", argv[0], argv[1]);
+	else
+		printf("%s", argv[1]);
+
+	for (int i = 2; i < argc; i++)
+		printf(" %s", argv[i]);
+
+	printf("\r\n");
+	return 0;
+}
+
+int example_cmd_fail(void *const arg, const int argc, const char **const argv)
+{
+	(void)arg;
+	(void)argc;
+	(void)argv;
+	printf("Command failed...\r\n");
+	return -1;
+}
+
+int example_cmd_exit(void *const arg, const int argc, const char **const argv)
+{
+	(void)arg;
+	(void)argc;
+	(void)argv;
+	quit = true;
 	return 0;
 }
 
@@ -22,6 +67,9 @@ static void restore_term(void)
 
 int main(int argc, char **argv)
 {
+	(void)argc;
+	(void)argv;
+
 	tcgetattr(STDIN_FILENO, &saved_term);
 	atexit(restore_term);
 
@@ -32,9 +80,9 @@ int main(int argc, char **argv)
 	tclie_t tclie;
 	tclie_init(&tclie, output, NULL);
 #if TCLIE_ENABLE_USERS
-	assert(tclie_reg_users(&tclie, users, ARRAY_SIZE(users)));
+	assert(tclie_reg_users(&tclie, example_users, EXAMPLE_USERS_COUNT));
 #endif
-	assert(tclie_reg_cmds(&tclie, cmds, ARRAY_SIZE(cmds)));
+	assert(tclie_reg_cmds(&tclie, example_cmds, EXAMPLE_CMDS_COUNT));
 	tclie_set_sigint(&tclie, sigint);
 
 	int counter = 0;
@@ -55,39 +103,4 @@ int main(int argc, char **argv)
 
 	printf("\r\nExiting...");
 	return 0;
-}
-
-static int cmd_echo(void *const arg, const int argc, const char **const argv)
-{
-	if (argc <= 1)
-		return 0;
-
-	if (strcmp(argv[0], "echo") != 0)
-		printf("%s %s", argv[0], argv[1]);
-	else
-		printf("%s", argv[1]);
-
-	for (int i = 2; i < argc; i++)
-		printf(" %s", argv[i]);
-
-	printf("\r\n");
-
-	return 0;
-}
-
-static int cmd_fail(void *const arg, const int argc, const char **const argv)
-{
-	printf("Command failed...\r\n");
-	return -1;
-}
-
-static int cmd_exit(void *const arg, const int argc, const char **const argv)
-{
-	quit = true;
-	return 0;
-}
-
-static void output(void *const arg, const char *const str)
-{
-	printf("%s", str);
 }
