@@ -55,8 +55,8 @@ static const tclie_cmd_opt_t example_options[] = {
 #endif
 
 static const tclie_cmd_t example_cmds[] = {
-	{"exit", example_cmd_exit, EXAMPLE_LEVEL(USER_LEVEL_DEFAULT)
-	 "Exit application.",
+	{"exit", example_cmd_exit,
+	 EXAMPLE_LEVEL(USER_LEVEL_DEFAULT) "Exit application.",
 #if TCLIE_PATTERN_MATCH
 	 "exit|quit|q"
 #endif
@@ -66,41 +66,53 @@ static const tclie_cmd_t example_cmds[] = {
 	 "echo ..."
 #endif
 	},
-	{"fail", example_cmd_fail, EXAMPLE_LEVEL(USER_LEVEL_ADMIN)
-	 "A command that will fail.",
+	{"fail", example_cmd_fail,
+	 EXAMPLE_LEVEL(USER_LEVEL_ADMIN) "A command that will fail.",
 #if TCLIE_PATTERN_MATCH
 	 "fail ..."
 #endif
 	},
-	{"sub one", example_cmd_echo, EXAMPLE_LEVEL(USER_LEVEL_DEFAULT)
-	 "Subcommand example."},
-	{"sub other", example_cmd_echo, EXAMPLE_LEVEL(USER_LEVEL_DEFAULT)
-	 "Subcommand example."},
+	{"sub one", example_cmd_echo,
+	 EXAMPLE_LEVEL(USER_LEVEL_DEFAULT) "Subcommand example."},
+	{"sub other", example_cmd_echo,
+	 EXAMPLE_LEVEL(USER_LEVEL_DEFAULT) "Subcommand example."},
 #if TCLIE_PATTERN_MATCH
-	{"reset", example_cmd_echo, EXAMPLE_LEVEL(USER_LEVEL_DEFAULT)
-	 "Single word command, must match exactly.", "reset"},
-	{"config", example_cmd_echo, EXAMPLE_LEVEL(USER_LEVEL_DEFAULT)
-	 "Two word command, spaces around the words are ignored.", "config save"},
-	{"can", example_cmd_echo, EXAMPLE_LEVEL(USER_LEVEL_DEFAULT)
-	 "Two word command, with mandatory argument.", "can speed <rate>"},
-	{"set", example_cmd_echo, EXAMPLE_LEVEL(USER_LEVEL_DEFAULT)
-	 "One word command, with mandatory and optional argument.",
+	{"reset", example_cmd_echo,
+	 EXAMPLE_LEVEL(
+		 USER_LEVEL_DEFAULT) "Single word command, must match exactly.",
+	 "reset"},
+	{"config", example_cmd_echo,
+	 EXAMPLE_LEVEL(USER_LEVEL_DEFAULT) "Two word command, spaces around the "
+									   "words are ignored.",
+	 "config save"},
+	{"can", example_cmd_echo,
+	 EXAMPLE_LEVEL(
+		 USER_LEVEL_DEFAULT) "Two word command, with mandatory argument.",
+	 "can speed <rate>"},
+	{"set", example_cmd_echo,
+	 EXAMPLE_LEVEL(USER_LEVEL_DEFAULT) "One word command, with mandatory and "
+									   "optional argument.",
 	 "set <attr> [<value>]"},
-	{"=", example_cmd_echo, EXAMPLE_LEVEL(USER_LEVEL_DEFAULT)
-	 "One word command ('=') embedded between mandatory arguments.",
+	{"=", example_cmd_echo,
+	 EXAMPLE_LEVEL(USER_LEVEL_DEFAULT) "One word command ('=') embedded "
+									   "between mandatory arguments.",
 	 "<reg> = <value>"},
-	{"when", example_cmd_echo, EXAMPLE_LEVEL(USER_LEVEL_DEFAULT)
-	 "Three word command, with two mandatory arguments and arbitrary "
-	 "optional.",
+	{"when", example_cmd_echo,
+	 EXAMPLE_LEVEL(USER_LEVEL_DEFAULT) "Three word command, with two mandatory "
+									   "arguments and arbitrary "
+									   "optional.",
 	 "when <reg> is <value> echo ..."},
-	{"or", example_cmd_echo, EXAMPLE_LEVEL(USER_LEVEL_DEFAULT)
-	 "Two word command, with mandatory argument selected from options.",
+	{"or", example_cmd_echo,
+	 EXAMPLE_LEVEL(USER_LEVEL_DEFAULT) "Two word command, with mandatory "
+									   "argument selected from options.",
 	 "or a|b|c"},
-	{"complex", example_cmd_echo, EXAMPLE_LEVEL(USER_LEVEL_DEFAULT)
-	 "Complex example.",
+	{"complex", example_cmd_echo,
+	 EXAMPLE_LEVEL(USER_LEVEL_DEFAULT) "Complex example.",
 	 "complex {set|reset} [a|(b c)] 1|2 <var> [<opt>] end ..."},
-	{"options", example_cmd_echo, EXAMPLE_LEVEL(USER_LEVEL_DEFAULT)
-	 "Example with options.", "options [stuff] <attr>",
+	{"options",
+	 example_cmd_echo,
+	 EXAMPLE_LEVEL(USER_LEVEL_DEFAULT) "Example with options.",
+	 "options [stuff] <attr>",
 	 {example_options, EXAMPLE_ARRAY_SIZE(example_options)}},
 #endif
 };
