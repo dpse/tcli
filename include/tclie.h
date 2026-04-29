@@ -3,6 +3,10 @@
 
 #include "tcli.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #ifndef TCLIE_ENABLE_USERS
 /**
  * If users should be used.
@@ -396,5 +400,9 @@ int tclie_out_printf(tclie_t *tclie, char *buf, size_t len, const char *format,
  * @param tclie Instance pointer.
  */
 void tclie_clear_screen(tclie_t *tclie);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

@@ -6,6 +6,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define TCLI_COLOR_BLACK "\033[30m"
 #define TCLI_COLOR_RED "\033[31m"
 #define TCLI_COLOR_GREEN "\033[32m"
@@ -401,5 +405,9 @@ int tcli_out_printf(tcli_t *tcli, char *buf, size_t len, const char *format,
  * @param tcli Instance pointer.
  */
 void tcli_clear_screen(tcli_t *tcli);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
