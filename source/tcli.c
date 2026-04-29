@@ -33,7 +33,6 @@ static_assert(TCLI_OUTPUT_BUF_LEN == 0 || TCLI_OUTPUT_BUF_LEN >= 2,
 
 #if TCLI_OUTPUT_BUF_LEN > 0
 #define TCLI_ASSERT_OUT_BUF(out_buf)                                           \
-	assert(out_buf);                                                           \
 	assert((out_buf)->len <= TCLI_ARRAY_SIZE((out_buf)->buf))
 #endif
 
