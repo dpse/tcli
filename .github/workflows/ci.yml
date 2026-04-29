@@ -71,4 +71,26 @@ jobs:
         run: cmake --build build --parallel
 
       - name: Run fuzzer (60s)
-        run: ./build/fuzz/${{ matrix.harness }} -max_total_time=60 -print_final_stats=1
+        env:
+          # Hand SIGABRT (asserts) to ASan so it prints a backtrace instead of
+          # libFuzzer's "rudimentary signal handlers" minimal output.
+          ASAN_OPTIONS: abort_on_error=1:print_stacktrace=1:symbolize=1:halt_on_error=1
+          UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=1
+        run: |
+          ./build/fuzz/${{ matrix.harness }} \
+            -max_total_time=60 \
+            -print_final_stats=1 \
+            -handle_abrt=0
+
+      - name: Upload crash artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fuzz-crash-${{ matrix.harness }}
+          path: |
+            crash-*
+            leak-*
+            slow-unit-*
+            oom-*
+            timeout-*
+          if-no-files-found: ignore
