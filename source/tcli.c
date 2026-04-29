@@ -1896,7 +1896,7 @@ void tcli_input(tcli_t *const tcli, const void *const buf, size_t len)
 
 void tcli_set_echo(tcli_t *const tcli, const tcli_echo_mode_t mode)
 {
-	if (!tcli || mode < TCLI_ECHO_ON || mode > TCLI_ECHO_OFF_ONCE)
+	if (!tcli || (int)mode < TCLI_ECHO_ON || (int)mode > TCLI_ECHO_OFF_ONCE)
 		return;
 
 	tcli->echo.mode = mode;
@@ -1905,7 +1905,7 @@ void tcli_set_echo(tcli_t *const tcli, const tcli_echo_mode_t mode)
 #if TCLI_HISTORY_BUF_LEN > 0
 void tcli_set_hist(tcli_t *const tcli, const tcli_history_mode_t mode)
 {
-	if (!tcli || mode < TCLI_HIST_ON || mode > TCLI_HIST_OFF_ONCE)
+	if (!tcli || (int)mode < TCLI_HIST_ON || (int)mode > TCLI_HIST_OFF_ONCE)
 		return;
 
 	tcli->hist.mode = mode;

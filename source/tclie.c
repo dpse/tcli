@@ -1116,7 +1116,7 @@ static inline void tclie_login_proceed(tclie_login_t *const login,
 	assert(login);
 	assert(login->state >= TCLIE_LOGIN_IDLE &&
 		   login->state <= TCLIE_LOGIN_PASSWORD);
-	assert(state >= TCLIE_LOGIN_IDLE && state <= TCLIE_LOGIN_PASSWORD);
+	assert((int)state >= TCLIE_LOGIN_IDLE && (int)state <= TCLIE_LOGIN_PASSWORD);
 
 	login->state = state;
 	login->attempt = 0;
