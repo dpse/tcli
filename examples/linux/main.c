@@ -1,3 +1,4 @@
+#include "../common/example_cmds.h"
 #include "tclie.h"
 #include <assert.h>
 #include <stdio.h>
@@ -5,81 +6,6 @@
 #include <string.h>
 #include <termios.h>
 #include <unistd.h>
-
-#define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
-
-static int cmd_echo(void *arg, int argc, const char **argv);
-static int cmd_fail(void *arg, int argc, const char **argv);
-static int cmd_exit(void *arg, int argc, const char **argv);
-
-static void output(void *arg, const char *str);
-
-enum { USER_LEVEL_DEFAULT = 0, USER_LEVEL_DEBUG, USER_LEVEL_ADMIN };
-
-#if TCLIE_ENABLE_USERS
-static const tclie_user_t users[] = {{"debug", NULL, USER_LEVEL_DEBUG},
-									 {"admin", "12345", USER_LEVEL_ADMIN}};
-#endif
-
-#if TCLIE_PATTERN_MATCH
-static const tclie_cmd_opt_t options[] = {
-	{'v', "verbose", "Simple option."},
-	{'t', "test", "Simple option."},
-	{'r', "required", "Option with required argument.", "arg"},
-	{'o', "optional", "Option with optional argument.", "[arg]"},
-	{'s', NULL, "Option with short option only.", NULL},
-	{0, "long", "Option with long option only.", NULL},
-};
-#endif
-
-static const tclie_cmd_t cmds[] = {
-	{"exit", cmd_exit, USER_LEVEL_DEFAULT, "Exit application.",
-#if TCLIE_PATTERN_MATCH
-	 "exit|quit|q"
-#endif
-	},
-	{"echo", cmd_echo, USER_LEVEL_DEFAULT, "Echo input.",
-#if TCLIE_PATTERN_MATCH
-	 "echo ..."
-#endif
-	},
-	{"fail", cmd_fail, USER_LEVEL_ADMIN, "A command that will fail.",
-#if TCLIE_PATTERN_MATCH
-	 "fail ..."
-#endif
-	},
-	{"sub one", cmd_echo, USER_LEVEL_DEFAULT, "Subcommand example."},
-	{"sub other", cmd_echo, USER_LEVEL_DEFAULT, "Subcommand example."},
-#if TCLIE_PATTERN_MATCH
-	{"reset", cmd_echo, USER_LEVEL_DEFAULT,
-	 "Single word command, must match exactly.", "reset"},
-	{"config", cmd_echo, USER_LEVEL_DEFAULT,
-	 "Two word command, spaces around the words are ignored.", "config save"},
-	{"can", cmd_echo, USER_LEVEL_DEFAULT,
-	 "Two word command, with mandatory argument.", "can speed <rate>"},
-	{"set", cmd_echo, USER_LEVEL_DEFAULT,
-	 "One word command, with mandatory and optional argument.",
-	 "set <attr> [<value>]"},
-	{"=", cmd_echo, USER_LEVEL_DEFAULT,
-	 "One word command ('=') embedded between mandatory arguments.",
-	 "<reg> = <value>"},
-	{"when", cmd_echo, USER_LEVEL_DEFAULT,
-	 "Three word command, with two mandatory arguments and arbitrary "
-	 "optional.",
-	 "when <reg> is <value> echo ..."},
-	{"or", cmd_echo, USER_LEVEL_DEFAULT,
-	 "Two word command, with mandatory argument selected from options.",
-	 "or a|b|c"},
-	{"complex", cmd_echo, USER_LEVEL_DEFAULT, "Complex example.",
-	 "complex {set|reset} [a|(b c)] 1|2 <var> [<opt>] end ..."},
-	{"options",
-	 cmd_echo,
-	 USER_LEVEL_DEFAULT,
-	 "Example with options.",
-	 "options [stuff] <attr>",
-	 {options, ARRAY_SIZE(options)}},
-#endif
-};
 
 static bool quit = false;
 
