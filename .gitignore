@@ -8,3 +8,6 @@ leak-*
 slow-unit-*
 oom-*
 timeout-*
+
+# PlatformIO
+.pio/
