@@ -723,6 +723,7 @@ void tclie_flush(tclie_t *const tclie)
 static inline void tclie_out_flush(tclie_t *const tclie, const char *const str)
 {
 	assert(tclie);
+
 	tclie_out(tclie, str);
 	tclie_flush(tclie);
 }
