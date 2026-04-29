@@ -12,12 +12,14 @@ static bool quit = false;
 static void output(void *arg, const char *str)
 {
 	(void)arg;
+
 	printf("%s", str);
 }
 
 static void sigint(void *arg)
 {
 	(void)arg;
+
 	quit = true;
 }
 
@@ -45,6 +47,7 @@ int example_cmd_fail(void *const arg, const int argc, const char **const argv)
 	(void)arg;
 	(void)argc;
 	(void)argv;
+
 	printf("Command failed...\r\n");
 	return -1;
 }
@@ -54,6 +57,7 @@ int example_cmd_exit(void *const arg, const int argc, const char **const argv)
 	(void)arg;
 	(void)argc;
 	(void)argv;
+
 	quit = true;
 	return 0;
 }
