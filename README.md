@@ -1,7 +1,7 @@
 # TinyCLI
 
 *TinyCLI* is a command line interface for embedded systems that is intended to be very easy to use.
-Typical applications would e.g. be to provide a simple CLI over a serial line or over a Telnet connection.
+Typical applications include providing a simple CLI over a serial line or a Telnet connection.
 
 ![Sample](sample.gif)
 
@@ -14,9 +14,9 @@ Typical applications would e.g. be to provide a simple CLI over a serial line or
 - Backwards history search.
 - Tab-completion.
 - Custom SIGINT handler.
-- Functions for printing e.g. log data without disturbing the prompt.
+- Functions for printing log data without disturbing the prompt.
 
-History and output buffering can be disabled to reduce memory requirements for use on smaller systems.
+History and output buffering can be disabled to reduce memory usage on smaller systems.
 
 ### Wrapper Extensions (`tclie`)
 
@@ -24,15 +24,15 @@ History and output buffering can be disabled to reduce memory requirements for u
 - Optional pattern matching system:
     - Automatic validation of command syntax and command options.
     - Context-sensitive tab-completion.
-- Default commands (`help`, `clear`, `login`, and `logout`)
+- Default commands (`help`, `clear`, `login`, and `logout`).
 
 Users can be registered so that only certain commands are available to certain users.
 Login is possible with either password only or with usernames and optional passwords.
 Only users with a level matching the minimum required level for a command can execute the command.
 
-Commands are registered with a command, the minimum user level required (if users are enabled), a description, and
+Each command is registered with a name, the minimum user level required (if users are enabled), a description, and
 optionally a pattern with some options (if pattern matching is enabled).
-The description along with any pattern and options (if used) are automatically printed when the built-in help command is called.
+The description, along with any pattern and options (if used), is automatically printed when the built-in help command is called.
 
 #### Pattern Matching
 
@@ -112,7 +112,7 @@ See the examples directory for more details.
 
 ### Logging
 
-In a multithreaded environment it can be useful to be able to log stuff without disturbing the prompt:
+The log functions print without disturbing the prompt:
 
 ```c
 tclie_log(&tclie, "Some message...\r\n");
@@ -127,7 +127,7 @@ tclie_log_printf(&tclie, buf, sizeof(buf), "Hello %s\r\n", "world!");
 |----------|---------------------------------------------------------|
 | Ctrl+a   | Move cursor to line start.                              |
 | Ctrl+b   | Move cursor back one character.                         |
-| Ctrl+c   | Sends SIGINT to registred handler.                      |
+| Ctrl+c   | Sends SIGINT to registered handler.                     |
 | Ctrl+d   | Delete current character.                               |
 | Ctrl+e   | Move cursor to line end.                                |
 | Ctrl+f   | Move cursor forward one character.                      |
@@ -149,13 +149,14 @@ tclie_log_printf(&tclie, buf, sizeof(buf), "Hello %s\r\n", "world!");
 | Tab      | Tab-complete at cursor or select from multiple matches. |
 | Esc      | Exit tab-completion or reverse search mode.             |
 
-*Note! `Esc` needs to be pressed twice since it is impossible to differentiate from an escape sequence otherwise.*
+> [!NOTE]
+> `Esc` needs to be pressed twice since it is impossible to differentiate from an escape sequence otherwise.
 
 ## Miscellaneous
 
 ### Telnet
 
-Telnet newlines (`<CR><NUL>`) are automatically handled but it may be necessary to tell connecting clients (e.g.
+Telnet newlines (`<CR><NUL>`) are automatically handled, but it may be necessary to tell connecting clients (e.g.
 PuTTY) how to behave.
 This can be done by sending the following sequences to the client:
 
