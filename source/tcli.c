@@ -22,12 +22,15 @@ static_assert(TCLI_OUTPUT_BUF_LEN == 0 || TCLI_OUTPUT_BUF_LEN >= 2,
 	assert((tcli)->cmdline.buf[(tcli)->cmdline.len] == '\0')
 
 #if TCLI_HISTORY_BUF_LEN > 0
-#define TCLI_ASSERT_RB(rb)                                                     \
+#define TCLI_ASSERT_RB_STORAGE(rb)                                             \
 	assert(rb);                                                                \
 	assert((rb)->head < TCLI_ARRAY_SIZE((rb)->buf));                           \
 	assert((rb)->tail < TCLI_ARRAY_SIZE((rb)->buf));                           \
 	assert((rb)->count <= TCLI_ARRAY_SIZE((rb)->buf));                         \
-	assert((rb)->pos < TCLI_ARRAY_SIZE((rb)->buf));                            \
+	assert((rb)->pos < TCLI_ARRAY_SIZE((rb)->buf))
+
+#define TCLI_ASSERT_RB(rb)                                                     \
+	TCLI_ASSERT_RB_STORAGE(rb);                                                \
 	assert((rb)->index <= (rb)->count)
 #endif
 
@@ -175,7 +178,7 @@ typedef enum tcli_hist_mode {
 
 static inline void tcli_rb_reset_pos(tcli_rb_t *const rb)
 {
-	TCLI_ASSERT_RB(rb);
+	TCLI_ASSERT_RB_STORAGE(rb);
 	rb->pos = rb->head;
 	rb->index = 0;
 }
