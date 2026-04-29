@@ -9,16 +9,16 @@ typedef struct {
 	int last_argc;
 } test_ctx_t;
 
-static void test_out(void *arg, const char *str)
+static void test_out(void *const arg, const char *const str)
 {
 	(void)arg;
 	(void)str;
 }
 
-static int cmd_capture(void *arg, int argc, const char **argv)
+static int cmd_capture(void *const arg, const int argc, const char **const argv)
 {
 	(void)argv;
-	test_ctx_t *ctx = arg;
+	test_ctx_t *const ctx = arg;
 	ctx->calls++;
 	ctx->last_argc = argc;
 	return 0;

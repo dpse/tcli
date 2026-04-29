@@ -10,15 +10,15 @@ typedef struct {
 	char last_argv0[64];
 } test_ctx_t;
 
-static void test_out(void *arg, const char *str)
+static void test_out(void *const arg, const char *const str)
 {
 	(void)arg;
 	(void)str;
 }
 
-static int cmd_capture(void *arg, int argc, const char **argv)
+static int cmd_capture(void *const arg, const int argc, const char **const argv)
 {
-	test_ctx_t *ctx = arg;
+	test_ctx_t *const ctx = arg;
 	ctx->calls++;
 	ctx->last_argc = argc;
 	if (argc > 0) {

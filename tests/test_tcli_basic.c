@@ -14,9 +14,9 @@ typedef struct {
 	int exec_calls;
 } test_ctx_t;
 
-static void test_out(void *arg, const char *str)
+static void test_out(void *const arg, const char *const str)
 {
-	test_ctx_t *ctx = arg;
+	test_ctx_t *const ctx = arg;
 	const size_t len = strlen(str);
 	if (ctx->out_len + len < sizeof(ctx->out_buf)) {
 		memcpy(ctx->out_buf + ctx->out_len, str, len);
@@ -25,9 +25,9 @@ static void test_out(void *arg, const char *str)
 	}
 }
 
-static int test_exec(void *arg, int argc, const char **argv)
+static int test_exec(void *const arg, const int argc, const char **const argv)
 {
-	test_ctx_t *ctx = arg;
+	test_ctx_t *const ctx = arg;
 	ctx->exec_calls++;
 	ctx->exec_argc = argc;
 	if (argc > 0) {

@@ -19,7 +19,7 @@ typedef struct {
 	size_t order_len;
 } test_ctx_t;
 
-static void record(test_ctx_t *ctx, char tag)
+static void record(test_ctx_t *const ctx, const char tag)
 {
 	if (ctx->order_len < ORDER_LEN) {
 		ctx->order[ctx->order_len++] = tag;
@@ -27,50 +27,50 @@ static void record(test_ctx_t *ctx, char tag)
 	}
 }
 
-static void test_out(void *arg, const char *str)
+static void test_out(void *const arg, const char *const str)
 {
 	(void)arg;
 	(void)str;
 }
 
-static void pre_cmd(void *arg, int argc, const char **argv)
+static void pre_cmd(void *const arg, const int argc, const char **const argv)
 {
-	test_ctx_t *ctx = arg;
+	test_ctx_t *const ctx = arg;
 	ctx->pre_calls++;
 	ctx->last_pre_argc = argc;
 	if (argc > 0) {
-		strncpy(ctx->last_pre_argv0, argv[0],
-				sizeof(ctx->last_pre_argv0) - 1);
+		strncpy(ctx->last_pre_argv0, argv[0], sizeof(ctx->last_pre_argv0) - 1);
 		ctx->last_pre_argv0[sizeof(ctx->last_pre_argv0) - 1] = '\0';
 	}
 	record(ctx, 'P');
 }
 
-static void post_cmd(void *arg, int argc, const char **argv, int res)
+static void post_cmd(void *const arg, const int argc, const char **const argv,
+					 const int res)
 {
 	(void)argv;
-	test_ctx_t *ctx = arg;
+	test_ctx_t *const ctx = arg;
 	ctx->post_calls++;
 	ctx->last_post_argc = argc;
 	ctx->last_post_res = res;
 	record(ctx, 'p');
 }
 
-static int cmd_ok(void *arg, int argc, const char **argv)
+static int cmd_ok(void *const arg, const int argc, const char **const argv)
 {
 	(void)argc;
 	(void)argv;
-	test_ctx_t *ctx = arg;
+	test_ctx_t *const ctx = arg;
 	ctx->exec_calls++;
 	record(ctx, 'E');
 	return 0;
 }
 
-static int cmd_fail(void *arg, int argc, const char **argv)
+static int cmd_fail(void *const arg, const int argc, const char **const argv)
 {
 	(void)argc;
 	(void)argv;
-	test_ctx_t *ctx = arg;
+	test_ctx_t *const ctx = arg;
 	ctx->exec_calls++;
 	record(ctx, 'E');
 	return -1;
@@ -91,7 +91,7 @@ static const tclie_cmd_t cmds[] = {
 	},
 };
 
-static void init(tclie_t *tclie, test_ctx_t *ctx)
+static void init(tclie_t *const tclie, test_ctx_t *const ctx)
 {
 	memset(ctx, 0, sizeof(*ctx));
 	tclie_init(tclie, test_out, ctx);

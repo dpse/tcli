@@ -13,15 +13,15 @@ typedef struct {
 	int sigint_count;
 } test_ctx_t;
 
-static void test_out(void *arg, const char *str)
+static void test_out(void *const arg, const char *const str)
 {
 	(void)arg;
 	(void)str;
 }
 
-static int test_exec(void *arg, int argc, const char **argv)
+static int test_exec(void *const arg, const int argc, const char **const argv)
 {
-	test_ctx_t *ctx = arg;
+	test_ctx_t *const ctx = arg;
 	if (ctx->call_count < MAX_CALLS) {
 		ctx->argc[ctx->call_count] = argc;
 		if (argc > 0) {
@@ -34,13 +34,13 @@ static int test_exec(void *arg, int argc, const char **argv)
 	return 0;
 }
 
-static void test_sigint(void *arg)
+static void test_sigint(void *const arg)
 {
-	test_ctx_t *ctx = arg;
+	test_ctx_t *const ctx = arg;
 	ctx->sigint_count++;
 }
 
-static void init(tcli_t *tcli, test_ctx_t *ctx)
+static void init(tcli_t *const tcli, test_ctx_t *const ctx)
 {
 	memset(ctx, 0, sizeof(*ctx));
 	tcli_init(tcli, test_out, ctx);
@@ -73,7 +73,7 @@ TEST down_arrow_after_up_returns_to_empty(void)
 	init(&tcli, &ctx);
 
 	tcli_input_str(&tcli, "first\r");
-	tcli_input_str(&tcli, "\x1b[A");  // up: now showing "first"
+	tcli_input_str(&tcli, "\x1b[A");   // up: now showing "first"
 	tcli_input_str(&tcli, "\x1b[B\r"); // down: back to empty, then enter
 	// Empty line shouldn't fire exec.
 	ASSERT_EQ(1, ctx.call_count);

@@ -5,7 +5,7 @@
 
 GREATEST_MAIN_DEFS();
 
-int example_cmd_echo(void *arg, int argc, const char **argv)
+int example_cmd_echo(void *const arg, const int argc, const char **const argv)
 {
 	(void)arg;
 	(void)argc;
@@ -13,7 +13,7 @@ int example_cmd_echo(void *arg, int argc, const char **argv)
 	return 0;
 }
 
-int example_cmd_fail(void *arg, int argc, const char **argv)
+int example_cmd_fail(void *const arg, const int argc, const char **const argv)
 {
 	(void)arg;
 	(void)argc;
@@ -21,7 +21,7 @@ int example_cmd_fail(void *arg, int argc, const char **argv)
 	return -1;
 }
 
-int example_cmd_exit(void *arg, int argc, const char **argv)
+int example_cmd_exit(void *const arg, const int argc, const char **const argv)
 {
 	(void)arg;
 	(void)argc;
@@ -29,7 +29,7 @@ int example_cmd_exit(void *arg, int argc, const char **argv)
 	return 0;
 }
 
-static void out_sink(void *arg, const char *str)
+static void out_sink(void *const arg, const char *const str)
 {
 	(void)arg;
 	(void)str;

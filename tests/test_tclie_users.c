@@ -13,13 +13,13 @@ typedef struct {
 	int admin_calls;
 } test_ctx_t;
 
-static void test_out(void *arg, const char *str)
+static void test_out(void *const arg, const char *const str)
 {
 	(void)arg;
 	(void)str;
 }
 
-static int cmd_default(void *arg, int argc, const char **argv)
+static int cmd_default(void *const arg, const int argc, const char **const argv)
 {
 	(void)argc;
 	(void)argv;
@@ -27,7 +27,7 @@ static int cmd_default(void *arg, int argc, const char **argv)
 	return 0;
 }
 
-static int cmd_user(void *arg, int argc, const char **argv)
+static int cmd_user(void *const arg, const int argc, const char **const argv)
 {
 	(void)argc;
 	(void)argv;
@@ -35,7 +35,7 @@ static int cmd_user(void *arg, int argc, const char **argv)
 	return 0;
 }
 
-static int cmd_admin(void *arg, int argc, const char **argv)
+static int cmd_admin(void *const arg, const int argc, const char **const argv)
 {
 	(void)argc;
 	(void)argv;
@@ -77,7 +77,7 @@ static const tclie_user_t login_users[] = {
 
 #define LOGIN_USERS_COUNT (sizeof(login_users) / sizeof(login_users[0]))
 
-static void init(tclie_t *tclie, test_ctx_t *ctx)
+static void init(tclie_t *const tclie, test_ctx_t *const ctx)
 {
 	memset(ctx, 0, sizeof(*ctx));
 	tclie_init(tclie, test_out, ctx);

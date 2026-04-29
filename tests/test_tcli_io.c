@@ -11,9 +11,9 @@ typedef struct {
 	size_t len;
 } test_ctx_t;
 
-static void test_out(void *arg, const char *str)
+static void test_out(void *const arg, const char *const str)
 {
-	test_ctx_t *ctx = arg;
+	test_ctx_t *const ctx = arg;
 	const size_t n = strlen(str);
 	if (ctx->len + n < sizeof(ctx->buf)) {
 		memcpy(ctx->buf + ctx->len, str, n);
@@ -22,7 +22,7 @@ static void test_out(void *arg, const char *str)
 	}
 }
 
-static int exec_noop(void *arg, int argc, const char **argv)
+static int exec_noop(void *const arg, const int argc, const char **const argv)
 {
 	(void)arg;
 	(void)argc;
@@ -30,7 +30,7 @@ static int exec_noop(void *arg, int argc, const char **argv)
 	return 0;
 }
 
-static void init(tcli_t *tcli, test_ctx_t *ctx)
+static void init(tcli_t *const tcli, test_ctx_t *const ctx)
 {
 	memset(ctx, 0, sizeof(*ctx));
 	tcli_init(tcli, test_out, ctx);
@@ -71,8 +71,8 @@ TEST out_printf_formats(void)
 	init(&tcli, &ctx);
 
 	char fmtbuf[64];
-	const int n = tcli_out_printf(&tcli, fmtbuf, sizeof(fmtbuf),
-								  "x=%d y=%s", 42, "ok");
+	const int n =
+		tcli_out_printf(&tcli, fmtbuf, sizeof(fmtbuf), "x=%d y=%s", 42, "ok");
 	tcli_flush(&tcli);
 
 	ASSERT(n > 0);
@@ -87,8 +87,8 @@ TEST out_printf_truncation_returns_full_length(void)
 	init(&tcli, &ctx);
 
 	char small[8];
-	const int n = tcli_out_printf(&tcli, small, sizeof(small),
-								  "%s", "a string longer than the buffer");
+	const int n = tcli_out_printf(&tcli, small, sizeof(small), "%s",
+								  "a string longer than the buffer");
 	ASSERT(n >= (int)sizeof(small));
 	PASS();
 }
@@ -113,8 +113,8 @@ TEST log_printf_formats(void)
 	init(&tcli, &ctx);
 
 	char fmtbuf[64];
-	const int n = tcli_log_printf(&tcli, fmtbuf, sizeof(fmtbuf),
-								  "value=%d\r\n", 7);
+	const int n =
+		tcli_log_printf(&tcli, fmtbuf, sizeof(fmtbuf), "value=%d\r\n", 7);
 	tcli_flush(&tcli);
 
 	ASSERT(n > 0);
