@@ -714,8 +714,6 @@ int tclie_out_printf(tclie_t *const tclie, char *const buf, const size_t len,
 
 void tclie_flush(tclie_t *const tclie)
 {
-	assert(tclie);
-
 	if (tclie)
 		tcli_flush(&tclie->tcli);
 }
