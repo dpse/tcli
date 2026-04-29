@@ -1,0 +1,17 @@
+add_library(greatest INTERFACE)
+target_include_directories(greatest INTERFACE greatest)
+
+function(tcli_add_test name)
+    add_executable(${name} ${name}.c)
+    target_link_libraries(${name} PRIVATE tcli::tcli greatest)
+    add_test(NAME ${name} COMMAND ${name})
+endfunction()
+
+tcli_add_test(test_tcli_basic)
+tcli_add_test(test_tcli_escape)
+tcli_add_test(test_tcli_io)
+tcli_add_test(test_tclie_pattern)
+tcli_add_test(test_tclie_options)
+tcli_add_test(test_tclie_users)
+tcli_add_test(test_tclie_hooks)
+tcli_add_test(test_example_cmds)

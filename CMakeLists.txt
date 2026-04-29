@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.22)
 project(tcli C)
 
 option(TCLI_BUILD_EXAMPLES "Build TinyCLI examples" ${PROJECT_IS_TOP_LEVEL})
+option(TCLI_BUILD_TESTS "Build TinyCLI unit tests" ${PROJECT_IS_TOP_LEVEL})
 option(TCLI_WERROR "Treat compiler warnings as errors" OFF)
 
 add_library(tcli STATIC source/tcli.c source/tclie.c)
@@ -32,4 +33,9 @@ endif()
 if(TCLI_BUILD_EXAMPLES)
     add_executable(example_linux examples/linux/main.c)
     target_link_libraries(example_linux PRIVATE tcli::tcli)
+endif()
+
+if(TCLI_BUILD_TESTS)
+    enable_testing()
+    add_subdirectory(tests)
 endif()
