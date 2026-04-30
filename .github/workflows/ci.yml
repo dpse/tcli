@@ -11,7 +11,7 @@ jobs:
     name: Build & Test (GCC)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           submodules: true
 
@@ -30,7 +30,7 @@ jobs:
     name: Clang + ASan + UBSan
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           submodules: true
 
@@ -58,7 +58,7 @@ jobs:
       matrix:
         harness: [fuzz_stateless, fuzz_stateful]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           submodules: true
 
@@ -84,7 +84,7 @@ jobs:
 
       - name: Upload crash artifacts
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: fuzz-crash-${{ matrix.harness }}
           path: |
