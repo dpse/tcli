@@ -74,6 +74,6 @@ void loop()
 	while (Serial.available() > 0) {
 		const int c = Serial.read();
 		if (c >= 0)
-			tclie_input_char(&tclie, (char)c);
+			tclie_in_char(&tclie, (char)c);
 	}
 }
