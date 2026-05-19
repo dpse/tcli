@@ -41,8 +41,8 @@ static const tclie_user_t example_users[] = {
 static const tclie_cmd_opt_t example_options[] = {
 	{'v', "verbose", "Simple option."},
 	{'t', "test", "Simple option."},
-	{'r', "required", "Option with required argument.", "arg"},
-	{'o', "optional", "Option with optional argument.", "[arg]"},
+	{'r', "required", "Option with required argument.", "<arg>"},
+	{'o', "optional", "Option with optional argument.", "[<arg>]"},
 	{'s', NULL, "Option with short option only.", NULL},
 	{0, "long", "Option with long option only.", NULL},
 };
