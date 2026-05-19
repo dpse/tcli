@@ -1756,7 +1756,7 @@ static void tcli_convert_op(const char c, unsigned char *const op)
 	}
 }
 
-void tcli_input_char(tcli_t *const tcli, char c)
+void tcli_in_char(tcli_t *const tcli, char c)
 {
 	if (!tcli)
 		return;
@@ -1873,23 +1873,23 @@ void tcli_input_char(tcli_t *const tcli, char c)
 	tcli_flush(tcli);
 }
 
-void tcli_input_str(tcli_t *const tcli, const char *str)
+void tcli_in_str(tcli_t *const tcli, const char *str)
 {
 	if (!tcli || !str)
 		return;
 
 	while (*str != '\0')
-		tcli_input_char(tcli, *str++);
+		tcli_in_char(tcli, *str++);
 }
 
-void tcli_input(tcli_t *const tcli, const void *const buf, size_t len)
+void tcli_in(tcli_t *const tcli, const void *const buf, size_t len)
 {
 	if (!tcli || !buf)
 		return;
 
 	const char *str = buf;
 	while (len != 0) {
-		tcli_input_char(tcli, *str++);
+		tcli_in_char(tcli, *str++);
 		len--;
 	}
 }

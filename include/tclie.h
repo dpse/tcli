@@ -215,14 +215,14 @@ bool tclie_reg_cmds(tclie_t *tclie, const tclie_cmd_t *cmds, size_t count);
  * @param tclie Instance pointer.
  * @param c Character to process.
  */
-void tclie_input_char(tclie_t *tclie, char c);
+void tclie_in_char(tclie_t *tclie, char c);
 
 /**
  * Pass string input to be processed.
  * @param tclie Instance pointer.
  * @param str Null-terminated string to process.
  */
-void tclie_input_str(tclie_t *tclie, const char *str);
+void tclie_in_str(tclie_t *tclie, const char *str);
 
 /**
  * Pass data input to be processed.
@@ -230,7 +230,7 @@ void tclie_input_str(tclie_t *tclie, const char *str);
  * @param buf Pointer to data buffer.
  * @param len Data length.
  */
-void tclie_input(tclie_t *tclie, const void *buf, size_t len);
+void tclie_in(tclie_t *tclie, const void *buf, size_t len);
 
 /**
  * Set callback function for output.

@@ -79,7 +79,7 @@ TEST representative_inputs_do_not_crash(void)
 	};
 
 	for (size_t i = 0; i < sizeof(inputs) / sizeof(inputs[0]); i++)
-		tclie_input_str(&tclie, inputs[i]);
+		tclie_in_str(&tclie, inputs[i]);
 
 	PASS();
 }

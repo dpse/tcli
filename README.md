@@ -104,7 +104,7 @@ tclie_reg_cmds(&tclie, cmds, 1);
 ```c
 while (1) {
     char c = getchar(); // Read e.g. serial input
-    tclie_input_char(&tclie, c);
+    tclie_in_char(&tclie, c);
 }
 ```
 

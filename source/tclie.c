@@ -1491,22 +1491,22 @@ static int tclie_cmd_logout(void *const arg, const int argc,
 }
 #endif
 
-void tclie_input_char(tclie_t *const tclie, const char c)
+void tclie_in_char(tclie_t *const tclie, const char c)
 {
 	if (tclie)
-		tcli_input_char(&tclie->tcli, c);
+		tcli_in_char(&tclie->tcli, c);
 }
 
-void tclie_input_str(tclie_t *const tclie, const char *const str)
+void tclie_in_str(tclie_t *const tclie, const char *const str)
 {
 	if (tclie)
-		tcli_input_str(&tclie->tcli, str);
+		tcli_in_str(&tclie->tcli, str);
 }
 
-void tclie_input(tclie_t *const tclie, const void *const buf, const size_t len)
+void tclie_in(tclie_t *const tclie, const void *const buf, const size_t len)
 {
 	if (tclie)
-		tcli_input(&tclie->tcli, buf, len);
+		tcli_in(&tclie->tcli, buf, len);
 }
 
 void tclie_set_echo(tclie_t *const tclie, const tcli_echo_mode_t mode)

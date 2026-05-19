@@ -142,7 +142,7 @@ TEST echo_on_echoes_input(void)
 	init(&tcli, &ctx);
 	tcli_set_echo(&tcli, TCLI_ECHO_ON);
 
-	tcli_input_str(&tcli, "abc");
+	tcli_in_str(&tcli, "abc");
 	tcli_flush(&tcli);
 
 	ASSERT(strstr(ctx.buf, "abc") != NULL);
@@ -156,7 +156,7 @@ TEST echo_off_suppresses_input(void)
 	init(&tcli, &ctx);
 	tcli_set_echo(&tcli, TCLI_ECHO_OFF);
 
-	tcli_input_str(&tcli, "secret");
+	tcli_in_str(&tcli, "secret");
 	tcli_flush(&tcli);
 
 	ASSERT(strstr(ctx.buf, "secret") == NULL);

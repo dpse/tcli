@@ -106,7 +106,7 @@ TEST hooks_fire_in_order_around_exec(void)
 	test_ctx_t ctx;
 	init(&tclie, &ctx);
 
-	tclie_input_str(&tclie, "ok\r");
+	tclie_in_str(&tclie, "ok\r");
 	ASSERT_EQ(1, ctx.pre_calls);
 	ASSERT_EQ(1, ctx.exec_calls);
 	ASSERT_EQ(1, ctx.post_calls);
@@ -120,7 +120,7 @@ TEST pre_hook_sees_command_args(void)
 	test_ctx_t ctx;
 	init(&tclie, &ctx);
 
-	tclie_input_str(&tclie, "ok\r");
+	tclie_in_str(&tclie, "ok\r");
 	ASSERT_EQ(1, ctx.last_pre_argc);
 	ASSERT_STR_EQ("ok", ctx.last_pre_argv0);
 	PASS();
@@ -132,10 +132,10 @@ TEST post_hook_receives_exec_result(void)
 	test_ctx_t ctx;
 	init(&tclie, &ctx);
 
-	tclie_input_str(&tclie, "ok\r");
+	tclie_in_str(&tclie, "ok\r");
 	ASSERT_EQ(0, ctx.last_post_res);
 
-	tclie_input_str(&tclie, "fail\r");
+	tclie_in_str(&tclie, "fail\r");
 	ASSERT_EQ(-1, ctx.last_post_res);
 	PASS();
 }
@@ -146,7 +146,7 @@ TEST hooks_not_called_for_unknown_command(void)
 	test_ctx_t ctx;
 	init(&tclie, &ctx);
 
-	tclie_input_str(&tclie, "doesnotexist\r");
+	tclie_in_str(&tclie, "doesnotexist\r");
 	ASSERT_EQ(0, ctx.exec_calls);
 	ASSERT_EQ(0, ctx.pre_calls);
 	ASSERT_EQ(0, ctx.post_calls);

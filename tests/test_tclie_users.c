@@ -90,7 +90,7 @@ TEST default_level_can_run_public(void)
 	test_ctx_t ctx;
 	init(&tclie, &ctx);
 
-	tclie_input_str(&tclie, "public\r");
+	tclie_in_str(&tclie, "public\r");
 	ASSERT_EQ(1, ctx.default_calls);
 	PASS();
 }
@@ -101,7 +101,7 @@ TEST default_level_blocked_from_user(void)
 	test_ctx_t ctx;
 	init(&tclie, &ctx);
 
-	tclie_input_str(&tclie, "userspace\r");
+	tclie_in_str(&tclie, "userspace\r");
 	ASSERT_EQ(0, ctx.user_calls);
 	PASS();
 }
@@ -112,7 +112,7 @@ TEST default_level_blocked_from_admin(void)
 	test_ctx_t ctx;
 	init(&tclie, &ctx);
 
-	tclie_input_str(&tclie, "adminspace\r");
+	tclie_in_str(&tclie, "adminspace\r");
 	ASSERT_EQ(0, ctx.admin_calls);
 	PASS();
 }
@@ -124,10 +124,10 @@ TEST user_level_unlocks_user_command(void)
 	init(&tclie, &ctx);
 	tclie_set_user_level(&tclie, LEVEL_USER);
 
-	tclie_input_str(&tclie, "userspace\r");
+	tclie_in_str(&tclie, "userspace\r");
 	ASSERT_EQ(1, ctx.user_calls);
 
-	tclie_input_str(&tclie, "adminspace\r");
+	tclie_in_str(&tclie, "adminspace\r");
 	ASSERT_EQ(0, ctx.admin_calls);
 	PASS();
 }
@@ -139,9 +139,9 @@ TEST admin_level_unlocks_all(void)
 	init(&tclie, &ctx);
 	tclie_set_user_level(&tclie, LEVEL_ADMIN);
 
-	tclie_input_str(&tclie, "public\r");
-	tclie_input_str(&tclie, "userspace\r");
-	tclie_input_str(&tclie, "adminspace\r");
+	tclie_in_str(&tclie, "public\r");
+	tclie_in_str(&tclie, "userspace\r");
+	tclie_in_str(&tclie, "adminspace\r");
 	ASSERT_EQ(1, ctx.default_calls);
 	ASSERT_EQ(1, ctx.user_calls);
 	ASSERT_EQ(1, ctx.admin_calls);
@@ -170,17 +170,17 @@ TEST login_with_correct_password_unlocks_admin(void)
 	ASSERT_EQ(LEVEL_DEFAULT, (int)tclie_get_user_level(&tclie));
 
 #if TCLIE_ENABLE_USERNAMES
-	tclie_input_str(&tclie, "login\r");
-	tclie_input_str(&tclie, "admin\r");
-	tclie_input_str(&tclie, "12345\r");
+	tclie_in_str(&tclie, "login\r");
+	tclie_in_str(&tclie, "admin\r");
+	tclie_in_str(&tclie, "12345\r");
 #else
-	tclie_input_str(&tclie, "login\r");
-	tclie_input_str(&tclie, "12345\r");
+	tclie_in_str(&tclie, "login\r");
+	tclie_in_str(&tclie, "12345\r");
 #endif
 
 	ASSERT_EQ(LEVEL_ADMIN, (int)tclie_get_user_level(&tclie));
 
-	tclie_input_str(&tclie, "adminspace\r");
+	tclie_in_str(&tclie, "adminspace\r");
 	ASSERT_EQ(1, ctx.admin_calls);
 	PASS();
 }
@@ -193,17 +193,17 @@ TEST login_with_wrong_password_keeps_default_level(void)
 	assert(tclie_reg_users(&tclie, login_users, LOGIN_USERS_COUNT));
 
 #if TCLIE_ENABLE_USERNAMES
-	tclie_input_str(&tclie, "login\r");
-	tclie_input_str(&tclie, "admin\r");
-	tclie_input_str(&tclie, "wrong\r");
+	tclie_in_str(&tclie, "login\r");
+	tclie_in_str(&tclie, "admin\r");
+	tclie_in_str(&tclie, "wrong\r");
 #else
-	tclie_input_str(&tclie, "login\r");
-	tclie_input_str(&tclie, "wrong\r");
+	tclie_in_str(&tclie, "login\r");
+	tclie_in_str(&tclie, "wrong\r");
 #endif
 
 	ASSERT_EQ(LEVEL_DEFAULT, (int)tclie_get_user_level(&tclie));
 
-	tclie_input_str(&tclie, "adminspace\r");
+	tclie_in_str(&tclie, "adminspace\r");
 	ASSERT_EQ(0, ctx.admin_calls);
 	PASS();
 }
@@ -216,8 +216,8 @@ TEST login_with_passwordless_user(void)
 	init(&tclie, &ctx);
 	assert(tclie_reg_users(&tclie, login_users, LOGIN_USERS_COUNT));
 
-	tclie_input_str(&tclie, "login\r");
-	tclie_input_str(&tclie, "debug\r");
+	tclie_in_str(&tclie, "login\r");
+	tclie_in_str(&tclie, "debug\r");
 
 	ASSERT_EQ(LEVEL_USER, (int)tclie_get_user_level(&tclie));
 	PASS();

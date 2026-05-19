@@ -53,7 +53,7 @@ TEST exec_fires_on_enter(void)
 	tcli_init(&tcli, test_out, &ctx);
 	tcli_set_exec(&tcli, test_exec);
 
-	tcli_input_str(&tcli, "hello\r");
+	tcli_in_str(&tcli, "hello\r");
 
 	ASSERT_EQ(1, ctx.exec_calls);
 	ASSERT_EQ(1, ctx.exec_argc);
@@ -68,7 +68,7 @@ TEST exec_argc_counts_tokens(void)
 	tcli_init(&tcli, test_out, &ctx);
 	tcli_set_exec(&tcli, test_exec);
 
-	tcli_input_str(&tcli, "one two three\r");
+	tcli_in_str(&tcli, "one two three\r");
 
 	ASSERT_EQ(1, ctx.exec_calls);
 	ASSERT_EQ(3, ctx.exec_argc);
@@ -82,7 +82,7 @@ TEST exec_not_called_without_enter(void)
 	tcli_init(&tcli, test_out, &ctx);
 	tcli_set_exec(&tcli, test_exec);
 
-	tcli_input_str(&tcli, "incomplete");
+	tcli_in_str(&tcli, "incomplete");
 
 	ASSERT_EQ(0, ctx.exec_calls);
 	PASS();

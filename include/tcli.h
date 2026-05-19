@@ -245,14 +245,14 @@ void tcli_init(tcli_t *tcli, tcli_out_fn_t out, void *arg);
  * @param tcli Instance pointer.
  * @param c Character to process.
  */
-void tcli_input_char(tcli_t *tcli, char c);
+void tcli_in_char(tcli_t *tcli, char c);
 
 /**
  * Pass string input to be processed.
  * @param tcli Instance pointer.
  * @param str Null-terminated string to process.
  */
-void tcli_input_str(tcli_t *tcli, const char *str);
+void tcli_in_str(tcli_t *tcli, const char *str);
 
 /**
  * Pass data input to be processed.
@@ -260,7 +260,7 @@ void tcli_input_str(tcli_t *tcli, const char *str);
  * @param buf Pointer to data buffer.
  * @param len Data length.
  */
-void tcli_input(tcli_t *tcli, const void *buf, size_t len);
+void tcli_in(tcli_t *tcli, const void *buf, size_t len);
 
 /**
  * Set callback function for output.

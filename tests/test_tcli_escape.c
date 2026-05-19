@@ -55,12 +55,12 @@ TEST up_arrow_recalls_previous_command(void)
 	test_ctx_t ctx;
 	init(&tcli, &ctx);
 
-	tcli_input_str(&tcli, "first\r");
+	tcli_in_str(&tcli, "first\r");
 	ASSERT_EQ(1, ctx.call_count);
 	ASSERT_STR_EQ("first", ctx.argv0[0]);
 
 	// Up arrow then Enter: should re-issue "first".
-	tcli_input_str(&tcli, "\x1b[A\r");
+	tcli_in_str(&tcli, "\x1b[A\r");
 	ASSERT_EQ(2, ctx.call_count);
 	ASSERT_STR_EQ("first", ctx.argv0[1]);
 	PASS();
@@ -72,9 +72,9 @@ TEST down_arrow_after_up_returns_to_empty(void)
 	test_ctx_t ctx;
 	init(&tcli, &ctx);
 
-	tcli_input_str(&tcli, "first\r");
-	tcli_input_str(&tcli, "\x1b[A");   // up: now showing "first"
-	tcli_input_str(&tcli, "\x1b[B\r"); // down: back to empty, then enter
+	tcli_in_str(&tcli, "first\r");
+	tcli_in_str(&tcli, "\x1b[A");   // up: now showing "first"
+	tcli_in_str(&tcli, "\x1b[B\r"); // down: back to empty, then enter
 	// Empty line shouldn't fire exec.
 	ASSERT_EQ(1, ctx.call_count);
 	PASS();
@@ -89,7 +89,7 @@ TEST unknown_csi_does_not_leak(void)
 
 	// ESC [ 9 9 ~ is not in the table. Must be fully consumed; the visible
 	// "ok" must be the only content of the line.
-	tcli_input_str(&tcli, "\x1b[99~ok\r");
+	tcli_in_str(&tcli, "\x1b[99~ok\r");
 	ASSERT_EQ(1, ctx.call_count);
 	ASSERT_EQ(1, ctx.argc[0]);
 	ASSERT_STR_EQ("ok", ctx.argv0[0]);
@@ -103,7 +103,7 @@ TEST multi_param_csi_does_not_leak(void)
 	init(&tcli, &ctx);
 
 	// ESC [ 1 ; 5 A (Ctrl+Up on xterm) — unknown to us. Should be consumed.
-	tcli_input_str(&tcli, "\x1b[1;5Aok\r");
+	tcli_in_str(&tcli, "\x1b[1;5Aok\r");
 	ASSERT_EQ(1, ctx.call_count);
 	ASSERT_STR_EQ("ok", ctx.argv0[0]);
 	PASS();
@@ -116,7 +116,7 @@ TEST unknown_single_byte_escape_does_not_leak(void)
 	init(&tcli, &ctx);
 
 	// ESC q (just an unknown ESC + letter). Should be consumed.
-	tcli_input_str(&tcli, "\x1bqok\r");
+	tcli_in_str(&tcli, "\x1bqok\r");
 	ASSERT_EQ(1, ctx.call_count);
 	ASSERT_STR_EQ("ok", ctx.argv0[0]);
 	PASS();
@@ -130,7 +130,7 @@ TEST ctrl_c_mid_escape_triggers_sigint(void)
 
 	// User starts an escape sequence then hits Ctrl+C (0x03). The escape
 	// should be cancelled and the SIGINT handler should fire.
-	tcli_input_str(&tcli, "\x1b[\x03");
+	tcli_in_str(&tcli, "\x1b[\x03");
 	ASSERT_EQ(1, ctx.sigint_count);
 	PASS();
 }
@@ -143,7 +143,7 @@ TEST escape_state_resets_between_sequences(void)
 
 	// Two unknown escapes back-to-back, then a real command. Verify the
 	// state machine fully recovers between sequences.
-	tcli_input_str(&tcli, "\x1b[99~\x1b[1;5Aok\r");
+	tcli_in_str(&tcli, "\x1b[99~\x1b[1;5Aok\r");
 	ASSERT_EQ(1, ctx.call_count);
 	ASSERT_STR_EQ("ok", ctx.argv0[0]);
 	PASS();

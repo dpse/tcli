@@ -97,7 +97,7 @@ int main(int argc, char **argv)
 		if (c == EOF)
 			break;
 
-		tclie_input_char(&tclie, (char)c);
+		tclie_in_char(&tclie, (char)c);
 
 		if (++counter % 100 == 0) {
 			tclie_log(&tclie, "Logging stuff... \r\n");

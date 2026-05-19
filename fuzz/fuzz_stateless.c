@@ -41,6 +41,6 @@ int LLVMFuzzerTestOneInput(const uint8_t *const data, const size_t size)
 	tclie_reg_users(&tclie, example_users, EXAMPLE_USERS_COUNT);
 #endif
 	tclie_reg_cmds(&tclie, example_cmds, EXAMPLE_CMDS_COUNT);
-	tclie_input(&tclie, data, size);
+	tclie_in(&tclie, data, size);
 	return 0;
 }

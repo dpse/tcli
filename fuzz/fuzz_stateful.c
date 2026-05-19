@@ -49,6 +49,6 @@ int LLVMFuzzerInitialize(int *argc, char ***argv)
 
 int LLVMFuzzerTestOneInput(const uint8_t *const data, const size_t size)
 {
-	tclie_input(&tclie, data, size);
+	tclie_in(&tclie, data, size);
 	return 0;
 }

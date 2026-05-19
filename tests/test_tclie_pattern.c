@@ -44,7 +44,7 @@ TEST simple_command_matches(void)
 	ASSERT(tclie_reg_cmds(&tclie, cmds_simple,
 						  sizeof(cmds_simple) / sizeof(cmds_simple[0])));
 
-	tclie_input_str(&tclie, "echo hi\r");
+	tclie_in_str(&tclie, "echo hi\r");
 
 	ASSERT_EQ(1, ctx.calls);
 	ASSERT_STR_EQ("echo", ctx.last_argv0);
@@ -60,7 +60,7 @@ TEST mandatory_arg_required(void)
 						  sizeof(cmds_simple) / sizeof(cmds_simple[0])));
 
 	// "set" alone has no <attr> — should not invoke callback.
-	tclie_input_str(&tclie, "set\r");
+	tclie_in_str(&tclie, "set\r");
 
 	ASSERT_EQ(0, ctx.calls);
 	PASS();
@@ -74,9 +74,9 @@ TEST optional_arg_accepted(void)
 	ASSERT(tclie_reg_cmds(&tclie, cmds_simple,
 						  sizeof(cmds_simple) / sizeof(cmds_simple[0])));
 
-	tclie_input_str(&tclie, "set foo\r");
+	tclie_in_str(&tclie, "set foo\r");
 	ASSERT_EQ(1, ctx.calls);
-	tclie_input_str(&tclie, "set foo bar\r");
+	tclie_in_str(&tclie, "set foo bar\r");
 	ASSERT_EQ(2, ctx.calls);
 	PASS();
 }

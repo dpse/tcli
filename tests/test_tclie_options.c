@@ -49,7 +49,7 @@ TEST short_option_accepted(void)
 	ASSERT(tclie_reg_cmds(&tclie, cmds_with_opts,
 						  sizeof(cmds_with_opts) / sizeof(cmds_with_opts[0])));
 
-	tclie_input_str(&tclie, "run -v\r");
+	tclie_in_str(&tclie, "run -v\r");
 	ASSERT_EQ(1, ctx.calls);
 	PASS();
 }
@@ -62,7 +62,7 @@ TEST long_option_accepted(void)
 	ASSERT(tclie_reg_cmds(&tclie, cmds_with_opts,
 						  sizeof(cmds_with_opts) / sizeof(cmds_with_opts[0])));
 
-	tclie_input_str(&tclie, "run --verbose\r");
+	tclie_in_str(&tclie, "run --verbose\r");
 	ASSERT_EQ(1, ctx.calls);
 	PASS();
 }
@@ -75,7 +75,7 @@ TEST long_only_option_accepted(void)
 	ASSERT(tclie_reg_cmds(&tclie, cmds_with_opts,
 						  sizeof(cmds_with_opts) / sizeof(cmds_with_opts[0])));
 
-	tclie_input_str(&tclie, "run --longonly\r");
+	tclie_in_str(&tclie, "run --longonly\r");
 	ASSERT_EQ(1, ctx.calls);
 	PASS();
 }
@@ -88,7 +88,7 @@ TEST option_with_required_arg(void)
 	ASSERT(tclie_reg_cmds(&tclie, cmds_with_opts,
 						  sizeof(cmds_with_opts) / sizeof(cmds_with_opts[0])));
 
-	tclie_input_str(&tclie, "run --required value\r");
+	tclie_in_str(&tclie, "run --required value\r");
 	ASSERT_EQ(1, ctx.calls);
 	PASS();
 }
@@ -101,7 +101,7 @@ TEST unknown_long_option_does_not_crash(void)
 	ASSERT(tclie_reg_cmds(&tclie, cmds_with_opts,
 						  sizeof(cmds_with_opts) / sizeof(cmds_with_opts[0])));
 
-	tclie_input_str(&tclie, "run --doesnotexist\r");
+	tclie_in_str(&tclie, "run --doesnotexist\r");
 	PASS();
 }
 
@@ -113,7 +113,7 @@ TEST unknown_short_option_does_not_crash(void)
 	ASSERT(tclie_reg_cmds(&tclie, cmds_with_opts,
 						  sizeof(cmds_with_opts) / sizeof(cmds_with_opts[0])));
 
-	tclie_input_str(&tclie, "run -x\r");
+	tclie_in_str(&tclie, "run -x\r");
 	PASS();
 }
 
