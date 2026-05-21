@@ -59,53 +59,50 @@ The following syntax can be used in patterns:
 ```c
 #include "tclie.h"
 
-void output(void * arg, const char * str)
+void out(void *arg, const char *str)
 {
     printf("%s", str); // Or send through serial interface
 }
 
-tclie_t tclie;
-tclie_init(&tclie, output, NULL);
+tclie_t t;
+tclie_init(&t, out, NULL);
 ```
 
 2. Register user table (if needed):
 
 ```c
 static const tclie_user_t users[] = {
-    // Name,  password, level
-    {"debug", NULL,     1}, // No password required
-    {"admin", "12345",  2}
+    { .name = "debug", .password = NULL,    .level = 1 }, // No password required
+    { .name = "admin", .password = "12345", .level = 2 },
 };
 
-tclie_reg_users(&tclie, users, 2);
+tclie_reg_users(&t, users, sizeof(users) / sizeof(*users));
 ```
 
 3. Register command table:
 
 ```c
-int echo(void * arg, int argc, const char ** argv)
+int cmd_echo(void *arg, int argc, const char **argv)
 {
-    if (argc > 1)
-        printf("%s\r\n", argv[1]);
-    
+    for (int i = 1; i < argc; i++)
+        printf("%s%s", argv[i], i + 1 < argc ? " " : "\r\n");
+
     return 0;
 }
 
 static const tclie_cmd_t cmds[] = {
-    // Name, callback, minimum user level, description (for help)    
-    {"echo", echo, 1, "Echo input."}
+    { .name = "echo", .fn = cmd_echo, .min_user_level = 1, .desc = "Echo input." },
 };
 
-tclie_reg_cmds(&tclie, cmds, 1);
+tclie_reg_cmds(&t, cmds, sizeof(cmds) / sizeof(*cmds));
 ```
 
 4. Feed input characters:
 
 ```c
-while (1) {
-    char c = getchar(); // Read e.g. serial input
-    tclie_in_char(&tclie, c);
-}
+int c;
+while ((c = getchar()) != EOF) // Read e.g. serial input
+    tclie_in_char(&t, (char) c);
 ```
 
 See the examples directory for more details.
@@ -115,10 +112,10 @@ See the examples directory for more details.
 The log functions print without disturbing the prompt:
 
 ```c
-tclie_log(&tclie, "Some message...\r\n");
+tclie_log(&t, "Some message...\r\n");
 
 char buf[64];
-tclie_log_printf(&tclie, buf, sizeof(buf), "Hello %s\r\n", "world!");
+tclie_log_printf(&t, buf, sizeof(buf), "Hello %s\r\n", "world!");
 ```
 
 ## Supported Keyboard Shortcuts
@@ -166,8 +163,8 @@ This can be done by sending the following sequences to the client:
 - `IAC WILL SUPPRESS-GO-AHEAD`: Tell client that the server won't send `GO AHEAD` when transmitting.
 
 ```c
-const char options[] = {255, 253, 1,  // IAC DO ECHO
-                        255, 251, 1,  // IAC WILL ECHO
-                        255, 253, 3,  // IAC DO SUPPRESS-GO-AHEAD
-                        255, 251, 3}; // IAC WILL SUPPRESS-GO-AHEAD
+const unsigned char options[] = {255, 253, 1,  // IAC DO ECHO
+                                 255, 251, 1,  // IAC WILL ECHO
+                                 255, 253, 3,  // IAC DO SUPPRESS-GO-AHEAD
+                                 255, 251, 3}; // IAC WILL SUPPRESS-GO-AHEAD
 ```
