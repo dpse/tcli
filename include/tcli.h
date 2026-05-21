@@ -12,7 +12,7 @@ extern "C" {
 
 #define TCLI_VERSION_MAJOR 1
 #define TCLI_VERSION_MINOR 0
-#define TCLI_VERSION_PATCH 0
+#define TCLI_VERSION_PATCH 1
 
 #define TCLI_STRINGIFY_(x) #x
 #define TCLI_STRINGIFY(x) TCLI_STRINGIFY_(x)
