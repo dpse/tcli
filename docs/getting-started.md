@@ -78,7 +78,7 @@ The above is a complete CLI with tab-completion and command history. The built-i
 
 ## 4. Next Steps
 
-A SIGINT handler can be registered to catch {{ kbd(key="Ctrl+c") }} (see [`tclie_set_sigint`](@/tclie.md#sigint)).
+A SIGINT handler can be registered to catch {{ kbd(key="Ctrl+c") }} (see [`tclie_set_sigint`](@/tcli.md#sigint-handling)).
 
 Commands can be restricted to certain user levels by enabling the optional users feature:
 

@@ -1,6 +1,6 @@
 +++
 title = "Logging and Output"
-description = "Print without disturbing the current prompt; output buffering"
+description = "Printing without disturbing the current prompt; output buffering"
 weight = 40
 +++
 
@@ -16,7 +16,7 @@ tclie_log_printf(&t, buf, sizeof(buf), "Temperature: %d C\r\n", temp);
 tclie_log_vprintf(&t, buf, sizeof(buf), fmt, va);   /* va_list variant */
 ```
 
-The `buf` buffer is provided by the caller and is used for formatting; TinyCLI does not allocate. The buffer should be sized for the longest expected formatted line. Output longer than `len` is truncated, and the return value is the would-be length (matching the C99 `vsnprintf` convention). Truncation can therefore be detected by comparing the return value against `len`.
+The `buf` buffer is provided by the caller and is used for formatting (TinyCLI does not allocate). The buffer should be sized for the longest expected formatted line. Output longer than `len` is truncated, and the return value is the would-be length (matching the C99 `vsnprintf` convention). Truncation can therefore be detected by comparing the return value against `len`.
 
 ## Prompt-Preserving Redraw
 
@@ -37,7 +37,7 @@ The redraw also covers tab-completion and reverse-search overlays when either mo
 | `tcli_out`     | Output produced *as part of executing a command*, e.g. `help`, command results, or error messages emitted from a callback. The prompt is not on screen at this point. |
 | `tcli_log`     | Output produced *outside* command execution, e.g. sensor readings or alerts emitted from a background context. The prompt may be visible and partially typed. |
 
-Calling `tcli_log` while a command is running is harmless but slightly slower than `tcli_out` (an additional erase-line round trip is performed). Calling `tcli_out` from a background context will overwrite the user's input; `tcli_log` should be used in that situation.
+Calling `tcli_log` while a command is running is harmless but slightly slower than `tcli_out` (an additional erase-line round trip is performed). Calling `tcli_out` from a background context will overwrite the user's input, and `tcli_log` should be used in that situation instead.
 
 ## Output Buffering
 

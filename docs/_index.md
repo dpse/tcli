@@ -4,7 +4,7 @@ description = "A tiny command-line interface for embedded systems"
 sort_by = "weight"
 +++
 
-_TinyCLI_ is a tiny _command-line interface_ library for embedded systems. It allows you to register a set of commands (and optionally users), and then by directing input and output you automatically get a command-line interface with tab-completion, history, [shortcut support](@/shortcuts.md), [pattern matching](@/pattern-matching.md), etc.
+_TinyCLI_ is a _command-line interface_ library for embedded systems. It allows you to register a set of commands (and optionally users), and then by directing input and output you automatically get a command-line interface with tab-completion, history, [shortcut support](@/shortcuts.md), [pattern matching](@/pattern-matching.md), etc.
 It can also coexist with log or debug-output.
 
 It is written in C, performs no dynamic allocations, and is intended to run on microcontrollers with or without an RTOS. Typical applications include providing a CLI over a serial line or a [Telnet connection](@/telnet.md).
@@ -15,9 +15,9 @@ The library is [configured](@/configuration.md) using compiler flags, and featur
 
 The library is provided in two layers. Unless you have very specific requirements it is recommended to only use the high-level `tclie` API:
 
-- [`tcli`](@/tcli.md): The lower-level core. Input characters are fed in, and the line buffer, command history, tab-completion, and output callback are managed internally. When the user presses {{ kbd(key="Enter") }}, the registered exec callback is invoked with an `argc`/`argv`-style argument list.
+- [`tcli`](@/tcli.md): The lower-level core. Input characters are fed in, and the line buffer, command history, tab-completion, and output callback are managed internally. When the user presses {{ kbd(key="Enter") }}, the registered `exec` callback is invoked with an `argc`/`argv`-style argument list.
 
-- [`tclie`](@/tclie.md): A thin wrapper on top of `tcli` that adds a registered command table, optional users with login, an optional pattern-matching system for argument validation and automatic tab-completion, and the built-in commands `help`, `clear`, `login`, and `logout`.
+- [`tclie`](@/tclie.md): A wrapper on top of `tcli` that adds a registered command table, optional users with login, an optional pattern-matching system for argument validation and automatic tab-completion, and the built-in commands `help`, `clear`, `login`, and `logout`.
 
 Prompt rendering, history, tab-completion, and prompt-preserving log output are common to both layers.
 
@@ -30,7 +30,7 @@ Below is a minimal program that shows how to use the library:
 #include "tclie.h"
 
 /* Output callback. The library routes every emitted byte through this;
-   on an MCU this would typically write to a UART instead of stdout. */
+   on an MCU this would typically write to a UART. */
 void out(void *arg, const char *str)
 {
     printf("%s", str);
@@ -80,4 +80,4 @@ The [examples directory](https://github.com/dpse/tcli/tree/master/examples) cont
 
 - [Linux CLI](https://github.com/dpse/tcli/tree/master/examples/linux): full terminal integration with termios, history, signal handling, and a periodic logging demo.
 - [Arduino](https://github.com/dpse/tcli/tree/master/examples/arduino): serial CLI for AVR, <abbr>ESP32</abbr>, and <abbr>RP2040</abbr> via PlatformIO, with memory-tight defaults.
-- [Shared command set](https://github.com/dpse/tcli/blob/master/examples/common/example_cmds.h): patterns, options, login, and subcommands, reused across platforms.
+- [Shared command set](https://github.com/dpse/tcli/blob/master/examples/common/example_cmds.h): patterns, options, login, and subcommands, reused across samples.

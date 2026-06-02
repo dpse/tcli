@@ -41,7 +41,7 @@ Each prompt is a string. The defaults wrap the visible text in ANSI color escape
 | `TCLI_DEFAULT_ERROR_PROMPT`  | `(TCLI_COLOR_RED "> " TCLI_COLOR_DEFAULT)`   | <code style="background:#000000;color:#bb0000">&gt;&nbsp;</code> |
 | `TCLI_DEFAULT_SEARCH_PROMPT` | `(TCLI_COLOR_GREEN "? " TCLI_COLOR_DEFAULT)` | <code style="background:#000000;color:#00bb00">?&nbsp;</code> |
 
-These are the starting values. The prompts can also be overridden at runtime via [`tcli_set_prompt`](@/tcli.md#prompts) and the corresponding setters.
+The prompts can also be overridden at runtime via [`tcli_set_prompt`](@/tcli.md#prompts) and the corresponding setters.
 
 ## `tclie`-Specific
 
@@ -56,7 +56,7 @@ These are the starting values. The prompts can also be overridden at runtime via
 
 ## ANSI Color and Format Macros
 
-A set of ANSI escape constants is provided for use in prompts and command output. They are referenced by name; the samples below show how each renders in a terminal.
+A set of ANSI escape constants is provided for use in prompts and command output.
 
 ### Foreground Colors
 
@@ -106,7 +106,7 @@ A set of ANSI escape constants is provided for use in prompts and command output
 
 ### Combinations
 
-Format and color macros concatenate; any number can be combined.
+Format and color macros concatenate, and any number can be combined:
 
 | Macros | Sample |
 |---|---|

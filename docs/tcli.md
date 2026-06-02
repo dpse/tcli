@@ -4,7 +4,7 @@ description = "Lower-level interface"
 weight = 15
 +++
 
-`tcli` is the lower-level layer and is intended to be used directly when a registered command table is not desired, e.g. when implementing a custom dispatch that interprets each typed line. The wrapper [`tclie`](@/tclie.md) is built entirely on top of `tcli`; everything described on this page applies in both.
+`tcli` is the lower-level layer and is intended to be used directly when a registered command table is not desired, e.g. when implementing a custom dispatch that interprets each typed line. The wrapper [`tclie`](@/tclie.md) is built entirely on top of `tcli`, and everything described on this page applies to both.
 
 The canonical declarations live in [`include/tcli.h`](https://github.com/dpse/tcli/blob/master/include/tcli.h).
 
@@ -47,7 +47,7 @@ All three are equivalent. The library only acts on byte boundaries; no caller-si
 
 ## Output
 
-The output callback registered through `tcli_init` (or later via `tcli_set_out`) receives every byte emitted by the library: the prompt, echoed user input, command output produced via `tcli_out` and `tcli_out_printf`, and any ANSI escape sequences. Output may be buffered (see [Logging and Output](@/logging.md)); `tcli_flush` forces an immediate flush.
+The output callback registered through `tcli_init` (or later via `tcli_set_out`) receives every byte emitted by the library: the prompt, echoed user input, command output produced via `tcli_out` and `tcli_out_printf`, and any ANSI escape sequences. Output may be buffered (see [Logging and Output](@/logging.md)) and can be manually flushed using `tcli_flush`.
 
 ```c
 tcli_out(&t, "Hello\n");
@@ -56,7 +56,7 @@ tcli_out_vprintf(&t, buf, sizeof(buf), fmt, va);   /* va_list variant */
 tcli_flush(&t);
 ```
 
-The `buf` and `len` arguments to the printf-style functions are for a caller-provided scratch space; TinyCLI does not allocate. `tcli_out_printf` and `tcli_out_vprintf` return the would-be length, following the C99 `vsnprintf` convention, so truncation can be detected by comparing the return value against `len`.
+The `buf` and `len` arguments to the printf-style functions are for a caller-provided scratch space and are required as TinyCLI does not allocate internally. `tcli_out_printf` and `tcli_out_vprintf` return the would-be length, following the C99 `vsnprintf` convention, so truncation can be detected by comparing the return value against `len`.
 
 ## Echo Modes
 
@@ -68,9 +68,11 @@ tcli_set_echo(&t, TCLI_ECHO_OFF_ONCE);     /* mask once, then revert to TCLI_ECH
 tcli_set_echo(&t, TCLI_ECHO_ON);           /* default: echo verbatim */
 ```
 
-The `tclie` built-in `login` command sets `TCLI_ECHO_OFF_ONCE` for the password line, so the password is echoed as `*` characters and normal echo resumes automatically once it is submitted.
+The `tclie` built-in `login` command sets `TCLI_ECHO_OFF_ONCE` for the password line, so the password is echoed as `*` characters and normal echo resumes automatically once it has been submitted.
 
 ## Prompts
+
+The different prompts can be configured:
 
 ```c
 tcli_set_prompt(&t, "device> ");
@@ -94,7 +96,7 @@ The history is stored in a ring buffer. Old lines are evicted as the buffer fill
 
 ## Tab-Completion
 
-When [`TCLI_COMPLETE`](@/configuration.md#tab-completion) is `1` (the default), pressing {{ kbd(key="Tab") }} invokes the registered completion function. If multiple matches are returned, subsequent {{ kbd(key="Tab") }} presses cycle through them.
+When [`TCLI_COMPLETE`](@/configuration.md#tab-completion) is set to `1` (enabled by default), pressing {{ kbd(key="Tab") }} invokes the registered completion function. If multiple matches are returned, subsequent {{ kbd(key="Tab") }} presses cycle through them.
 
 ```c
 size_t complete(void *arg, int argc, const char **argv,
@@ -123,6 +125,9 @@ tcli_set_sigint(&t, my_sigint);
 ```
 
 The registered handler is invoked when the user presses {{ kbd(key="Ctrl+c") }}. Without a handler the default behavior is to abort the current line and reprint the prompt.
+
+> [!NOTE]
+> Pressing {{ kbd(key="Ctrl+c") }} will not abort any currently executing command! The handler will be invoked once the command has returned.
 
 ## Screen Clearing
 

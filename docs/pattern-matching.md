@@ -6,7 +6,7 @@ weight = 30
 
 A pattern describes the expected shape of a command's arguments: required tokens, optional tokens, alternatives, and wildcards. Patterns are used by the library to reject malformed invocations before the callback is invoked, and to drive tab-completion at the current cursor position.
 
-Patterns are opt-in at compile time via [`TCLIE_PATTERN_MATCH`](@/configuration.md#tclie-specific) (default `1`). Each entry in the command table may carry a pattern in its `pattern` field.
+Patterns are opt-in at compile time via [`TCLIE_PATTERN_MATCH`](@/configuration.md#tclie-specific) (enabled by default). Each entry in the command table may carry a pattern in its `pattern` field. Without a pattern, the command name is used for tab-completion.
 
 ## Syntax
 
@@ -23,7 +23,7 @@ A pattern is a whitespace-separated list of tokens. The recognized forms are:
 | `a\|(b c)`          | Either `a` or the two words `b c`.       |
 | `...`               | None or all remaining tokens.            |
 
-Patterns operate on whole word-tokens; matching inside a word is not supported. The matcher is recursive, and stack usage scales with pattern complexity. Patterns with many alternations and nested groups should therefore be kept moderate on small devices.
+Patterns operate on whole word-tokens: matching inside a word is not supported. The matcher is recursive, and stack usage scales with pattern complexity. Patterns with many alternations and nested groups should therefore be kept moderate on small devices.
 
 ## Examples
 
@@ -66,7 +66,7 @@ A `log` command that accepts any tail:
 
 When the typed arguments do not match the pattern, the callback is not invoked. A usage hint is printed instead and the prompt switches to the error variant. The hint is the pattern itself, formatted with [`TCLIE_USAGE_FORMAT`](@/configuration.md#ansi-color-and-format-macros).
 
-When {{ kbd(key="Tab") }} is pressed mid-token, the matcher determines what is expected at the current position and offers it as a completion candidate. For literal alternations the candidates are the alternations themselves (e.g. `on` and `off`). For `<wildcard>` tokens no candidates are offered; the user types freely.
+When {{ kbd(key="Tab") }} is pressed mid-token, the matcher determines what is expected at the current position and offers it as a completion candidate. For literal alternations the candidates are the alternations themselves (e.g. `on` and `off`). For `<wildcard>` tokens no candidates are offered, and the user types freely.
 
 ## Options
 
@@ -85,7 +85,7 @@ static const tclie_cmd_t cmds[] = {
 };
 ```
 
-When an options table is set, the options are also completed automatically. At an option position, pressing {{ kbd(key="Tab") }} offers each option in both its short form (`-f`) and long form (`--force`); after a single `-` has been typed, the long forms are offered. No completion function needs to be supplied for this.
+When an options table is set, the options are also completed automatically. At an option position, pressing {{ kbd(key="Tab") }} offers each option in both its short form (`-f`) and long form (`--force`).
 
 Short options may be combined behind a single `-`: `-fv` is equivalent to `-f -v`. Each character is matched against the registered short options in turn. Long options are matched individually and are not combined. If any character in a combined group is not a registered short option, the whole token is left to be matched as an ordinary argument rather than as options.
 
@@ -113,12 +113,12 @@ static const tclie_cmd_opt_t set_opts[] = {
 
 `help <command>` prints each option together with its argument pattern, e.g. `-r|--retries <n>`.
 
-## Tuning
+## Configuration
 
-Two compile-time parameters in `tclie.h` (see [Configuration](@/configuration.md#tclie-specific)):
+Pattern matching can be configured by the following compile-time parameters in `tclie.h` (see [Configuration](@/configuration.md#tclie-specific)):
 
-- `TCLIE_PATTERN_MATCH_MAX_TOKENS` — upper bound on the number of tokens considered during matching. Defaults to `TCLI_MAX_TOKENS` (12).
-- `TCLIE_PATTERN_MATCH_BUF_LEN` — scratch buffer size for pattern-derived tab-completion matches (default 64).
+- `TCLIE_PATTERN_MATCH_MAX_TOKENS`: upper bound on the number of tokens considered during matching. Defaults to `TCLI_MAX_TOKENS` (12).
+- `TCLIE_PATTERN_MATCH_BUF_LEN`: scratch buffer size for pattern-derived tab-completion matches (default 64).
 
 Both are static buffers; the limits can be raised when required without introducing allocation.
 

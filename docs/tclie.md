@@ -6,7 +6,7 @@ weight = 20
 
 `tclie` extends `tcli` with a registered command table, optional users with password-based login, the built-in commands `help`, `clear`, `login`, and `logout`, and the [pattern-matching system](@/pattern-matching.md) used for argument validation and context-aware tab-completion.
 
-A `tclie_t` instance embeds a `tcli_t`. All lower-level functions ([prompts](@/tcli.md#prompts), [history](@/tcli.md#command-history), [echo](@/tcli.md#echo-modes), etc.) have a corresponding `tclie_*` wrapper function that delegates internally, so the inner `tcli` does not need to be accessed directly.
+A `tclie_t` instance embeds a `tcli_t`. All lower-level functions ([prompts](@/tcli.md#prompts), [history](@/tcli.md#command-history), [echo](@/tcli.md#echo-modes), etc.) have a corresponding `tclie_*` wrapper function that delegates internally, so the inner `tcli` _should not_ be accessed directly.
 
 The canonical declarations live in [`include/tclie.h`](https://github.com/dpse/tcli/blob/master/include/tclie.h).
 
@@ -24,7 +24,7 @@ tclie_t t;
 tclie_init(&t, out, NULL); /* NULL to not pass a custom arg */
 ```
 
-`tclie_init` calls `tcli_init` internally and then registers the built-in commands: `help` and `clear` always, plus `login` and `logout` when users are enabled.
+`tclie_init` calls [`tcli_init`](@/tcli.md#lifecycle) internally and then registers the built-in commands: `help` and `clear` always, plus `login` and `logout` when users are enabled.
 
 ## Command Registration
 
@@ -45,7 +45,7 @@ static const tclie_cmd_t cmds[] = {
 tclie_reg_cmds(&t, cmds, sizeof(cmds) / sizeof(*cmds));
 ```
 
-`tclie_reg_cmds` (and `tclie_reg_users`) return `false` if the arguments are invalid, otherwise `true`. The table is referenced, not copied, so it must remain valid for the lifetime of the instance (hence `static const`).
+`tclie_reg_cmds` (and `tclie_reg_users`) return `false` if the arguments are invalid, otherwise `true`. The table is referenced _(not copied)_, so it must remain valid for the lifetime of the instance (hence `static const`).
 
 | Field             | When it applies | Description |
 |-------------------|---|---|
@@ -54,7 +54,7 @@ tclie_reg_cmds(&t, cmds, sizeof(cmds) / sizeof(*cmds));
 | `desc`            | shown by `help` | A short description. The `help` command lists descriptions in a column, so a single line is recommended. |
 | `min_user_level`  | when users are enabled | The user must be at least this level (default 0) for the command to run. |
 | `pattern`         | when patterns are enabled | Argument shape; see [Pattern Matching](@/pattern-matching.md). |
-| `options`         | when patterns are enabled | Long/short option for pattern matching and `help`. |
+| `options`         | when patterns are enabled | Long/short options for pattern matching and `help`. |
 
 The callback follows the same calling convention as `main`: `int fn(void *arg, int argc, const char **argv)`. `argv[0]` contains the command name. A return value of zero signals success; a non-zero return switches the next prompt to the error variant (red by default).
 
@@ -131,7 +131,7 @@ These four names are reserved; user-defined commands must not collide with them.
 
 ## Input and Output
 
-The same input and output functions as `tcli`, with the `tclie_` prefix. All delegate to the embedded `tcli`:
+The same [input](@/tcli.md#input) and [output](@/tcli.md#output) functions as `tcli` provides are wrapped with the `tclie_` prefix. All delegate to the embedded `tcli`:
 
 ```c
 tclie_in_char(&t, c);
@@ -144,14 +144,8 @@ tclie_out_vprintf(&t, buf, sizeof(buf), fmt, va);   /* va_list variant */
 tclie_flush(&t);
 ```
 
-The configuration setters delegate the same way and carry the `tclie_` prefix: `tclie_set_out`, `tclie_set_arg`, `tclie_set_echo`, `tclie_set_prompt`, `tclie_set_error_prompt`, `tclie_set_hist`, and `tclie_set_search_prompt`. Their behavior and arguments are identical to the `tcli_*` originals described in [The tcli Core](@/tcli.md).
+## Other Configuration
+
+The configuration setters delegate and carry the `tclie_` prefix: [`tclie_set_out`](@/tcli.md#lifecycle), [`tclie_set_arg`](@/tcli.md#lifecycle), [`tclie_set_echo`](@/tcli.md#echo-modes), [`tclie_set_prompt`](@/tcli.md#prompts), [`tclie_set_error_prompt`](@/tcli.md#prompts), [`tclie_set_hist`](@/tcli.md#command-history), [`tclie_set_search_prompt`](@/tcli.md#prompts), and [`tclie_set_sigint`](@/tcli.md#sigint-handling). Their behavior and arguments are identical to the `tcli_*` originals described in [The tcli Core](@/tcli.md).
 
 The prompt-preserving log variants are described in [Logging and Output](@/logging.md).
-
-## SIGINT {#sigint}
-
-```c
-tclie_set_sigint(&t, my_sigint_handler);
-```
-
-The handler is invoked when the user presses {{ kbd(key="Ctrl+c") }} while no command is running. While a command is executing, interruption must be handled inside the callback itself; the library does not preempt running commands.
