@@ -367,8 +367,8 @@ static void tclie_pattern_match_complete(const char *const str,
 		return;
 
 	if (prefix)
-		strncpy(p->complete.buf + *p->complete.buf_len, prefix, prefix_len);
-	strncpy(p->complete.buf + *p->complete.buf_len + prefix_len, str, len);
+		memcpy(p->complete.buf + *p->complete.buf_len, prefix, prefix_len);
+	memcpy(p->complete.buf + *p->complete.buf_len + prefix_len, str, len);
 	p->complete.buf[*p->complete.buf_len + prefix_len + len] = '\0';
 	p->complete.completions[(*p->complete.count)++] =
 		&p->complete.buf[*p->complete.buf_len];
