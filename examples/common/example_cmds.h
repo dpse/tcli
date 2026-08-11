@@ -11,18 +11,15 @@ enum {
 	USER_LEVEL_ADMIN,
 };
 
-#if TCLIE_ENABLE_USERS
-#define EXAMPLE_LEVEL(x) x,
-#else
-#define EXAMPLE_LEVEL(x)
-#endif
-
 #ifdef __cplusplus
 extern "C" {
+
 #endif
 
 int example_cmd_echo(void *arg, int argc, const char **argv);
+
 int example_cmd_fail(void *arg, int argc, const char **argv);
+
 int example_cmd_exit(void *arg, int argc, const char **argv);
 
 #ifdef __cplusplus
@@ -31,83 +28,150 @@ int example_cmd_exit(void *arg, int argc, const char **argv);
 
 #if TCLIE_ENABLE_USERS
 static const tclie_user_t example_users[] = {
-	{"debug", NULL, USER_LEVEL_DEBUG},
-	{"admin", "12345", USER_LEVEL_ADMIN},
+#if TCLIE_ENABLE_USERNAMES
+	{.name = "debug", .password = NULL, .level = USER_LEVEL_DEBUG},
+	{.name = "admin", .password = "12345", .level = USER_LEVEL_ADMIN},
+#else
+	// Without usernames a user is identified by its password alone.
+	{.password = "12345", .level = USER_LEVEL_ADMIN},
+#endif
 };
 #define EXAMPLE_USERS_COUNT EXAMPLE_ARRAY_SIZE(example_users)
 #endif
 
 #if TCLIE_PATTERN_MATCH
 static const tclie_cmd_opt_t example_options[] = {
-	{'v', "verbose", "Simple option."},
-	{'t', "test", "Simple option."},
-	{'r', "required", "Option with required argument.", "<arg>"},
-	{'o', "optional", "Option with optional argument.", "[<arg>]"},
-	{'s', NULL, "Option with short option only.", NULL},
-	{0, "long", "Option with long option only.", NULL},
+	{.short_opt = 'v', .long_opt = "verbose", .desc = "Simple option."},
+	{.short_opt = 't', .long_opt = "test", .desc = "Simple option."},
+	{.short_opt = 'r',
+	 .long_opt = "required",
+	 .desc = "Option with required argument.",
+	 .pattern = "<arg>"},
+	{.short_opt = 'o',
+	 .long_opt = "optional",
+	 .desc = "Option with optional argument.",
+	 .pattern = "[<arg>]"},
+	{.short_opt = 's', .desc = "Option with short option only."},
+	{.long_opt = "long", .desc = "Option with long option only."},
 };
 #endif
 
 static const tclie_cmd_t example_cmds[] = {
-	{"exit", example_cmd_exit,
-	 EXAMPLE_LEVEL(USER_LEVEL_DEFAULT) "Exit application.",
+	{
+		.name = "exit",
+		.fn = example_cmd_exit,
+#if TCLIE_ENABLE_USERS
+		.min_user_level = USER_LEVEL_DEFAULT,
+#endif
+		.desc = "Exit application.",
 #if TCLIE_PATTERN_MATCH
-	 "exit|quit|q"
+		.pattern = "exit|quit|q",
 #endif
 	},
-	{"echo", example_cmd_echo, EXAMPLE_LEVEL(USER_LEVEL_DEFAULT) "Echo input.",
+	{
+		.name = "echo",
+		.fn = example_cmd_echo,
+#if TCLIE_ENABLE_USERS
+		.min_user_level = USER_LEVEL_DEFAULT,
+#endif
+		.desc = "Echo input.",
 #if TCLIE_PATTERN_MATCH
-	 "echo ..."
+		.pattern = "echo ...",
 #endif
 	},
-	{"fail", example_cmd_fail,
-	 EXAMPLE_LEVEL(USER_LEVEL_ADMIN) "A command that will fail.",
+	{
+		.name = "fail",
+		.fn = example_cmd_fail,
+#if TCLIE_ENABLE_USERS
+		.min_user_level = USER_LEVEL_ADMIN,
+#endif
+		.desc = "A command that will fail.",
 #if TCLIE_PATTERN_MATCH
-	 "fail ..."
+		.pattern = "fail ...",
 #endif
 	},
-	{"sub one", example_cmd_echo,
-	 EXAMPLE_LEVEL(USER_LEVEL_DEFAULT) "Subcommand example."},
-	{"sub other", example_cmd_echo,
-	 EXAMPLE_LEVEL(USER_LEVEL_DEFAULT) "Subcommand example."},
+	{
+		.name = "sub one",
+		.fn = example_cmd_echo,
+#if TCLIE_ENABLE_USERS
+		.min_user_level = USER_LEVEL_DEFAULT,
+#endif
+		.desc = "Subcommand example.",
+	},
+	{
+		.name = "sub other",
+		.fn = example_cmd_echo,
+#if TCLIE_ENABLE_USERS
+		.min_user_level = USER_LEVEL_DEFAULT,
+#endif
+		.desc = "Subcommand example.",
+	},
 #if TCLIE_PATTERN_MATCH
-	{"reset", example_cmd_echo,
-	 EXAMPLE_LEVEL(
-		 USER_LEVEL_DEFAULT) "Single word command, must match exactly.",
-	 "reset"},
-	{"config", example_cmd_echo,
-	 EXAMPLE_LEVEL(USER_LEVEL_DEFAULT) "Two word command, spaces around the "
-									   "words are ignored.",
-	 "config save"},
-	{"can", example_cmd_echo,
-	 EXAMPLE_LEVEL(
-		 USER_LEVEL_DEFAULT) "Two word command, with mandatory argument.",
-	 "can speed <rate>"},
-	{"set", example_cmd_echo,
-	 EXAMPLE_LEVEL(USER_LEVEL_DEFAULT) "One word command, with mandatory and "
-									   "optional argument.",
-	 "set <attr> [<value>]"},
-	{"=", example_cmd_echo,
-	 EXAMPLE_LEVEL(USER_LEVEL_DEFAULT) "One word command ('=') embedded "
-									   "between mandatory arguments.",
-	 "<reg> = <value>"},
-	{"when", example_cmd_echo,
-	 EXAMPLE_LEVEL(USER_LEVEL_DEFAULT) "Three word command, with two mandatory "
-									   "arguments and arbitrary "
-									   "optional.",
-	 "when <reg> is <value> echo ..."},
-	{"or", example_cmd_echo,
-	 EXAMPLE_LEVEL(USER_LEVEL_DEFAULT) "Two word command, with mandatory "
-									   "argument selected from options.",
-	 "or a|b|c"},
-	{"complex", example_cmd_echo,
-	 EXAMPLE_LEVEL(USER_LEVEL_DEFAULT) "Complex example.",
-	 "complex {set|reset} [a|(b c)] 1|2 <var> [<opt>] end ..."},
-	{"options",
-	 example_cmd_echo,
-	 EXAMPLE_LEVEL(USER_LEVEL_DEFAULT) "Example with options.",
-	 "options [stuff] <attr>",
-	 {example_options, EXAMPLE_ARRAY_SIZE(example_options)}},
+	{.name = "reset",
+	 .fn = example_cmd_echo,
+#if TCLIE_ENABLE_USERS
+	 .min_user_level = USER_LEVEL_DEFAULT,
+#endif
+	 .desc = "Single word command, must match exactly.",
+	 .pattern = "reset"},
+	{.name = "config",
+	 .fn = example_cmd_echo,
+#if TCLIE_ENABLE_USERS
+	 .min_user_level = USER_LEVEL_DEFAULT,
+#endif
+	 .desc = "Two word command, spaces around the words are ignored.",
+	 .pattern = "config save"},
+	{.name = "can",
+	 .fn = example_cmd_echo,
+#if TCLIE_ENABLE_USERS
+	 .min_user_level = USER_LEVEL_DEFAULT,
+#endif
+	 .desc = "Two word command, with mandatory argument.",
+	 .pattern = "can speed <rate>"},
+	{.name = "set",
+	 .fn = example_cmd_echo,
+#if TCLIE_ENABLE_USERS
+	 .min_user_level = USER_LEVEL_DEFAULT,
+#endif
+	 .desc = "One word command, with mandatory and optional argument.",
+	 .pattern = "set <attr> [<value>]"},
+	{.name = "=",
+	 .fn = example_cmd_echo,
+#if TCLIE_ENABLE_USERS
+	 .min_user_level = USER_LEVEL_DEFAULT,
+#endif
+	 .desc = "One word command ('=') embedded between mandatory arguments.",
+	 .pattern = "<reg> = <value>"},
+	{.name = "when",
+	 .fn = example_cmd_echo,
+#if TCLIE_ENABLE_USERS
+	 .min_user_level = USER_LEVEL_DEFAULT,
+#endif
+	 .desc = "Three word command, with two mandatory arguments and arbitrary "
+			 "optional.",
+	 .pattern = "when <reg> is <value> echo ..."},
+	{.name = "or",
+	 .fn = example_cmd_echo,
+#if TCLIE_ENABLE_USERS
+	 .min_user_level = USER_LEVEL_DEFAULT,
+#endif
+	 .desc = "Two word command, with mandatory argument selected from options.",
+	 .pattern = "or a|b|c"},
+	{.name = "complex",
+	 .fn = example_cmd_echo,
+#if TCLIE_ENABLE_USERS
+	 .min_user_level = USER_LEVEL_DEFAULT,
+#endif
+	 .desc = "Complex example.",
+	 .pattern = "complex {set|reset} [a|(b c)] 1|2 <var> [<opt>] end ..."},
+	{.name = "options",
+	 .fn = example_cmd_echo,
+#if TCLIE_ENABLE_USERS
+	 .min_user_level = USER_LEVEL_DEFAULT,
+#endif
+	 .desc = "Example with options.",
+	 .pattern = "options [stuff] <attr>",
+	 .options = {example_options, EXAMPLE_ARRAY_SIZE(example_options)}},
 #endif
 };
 
