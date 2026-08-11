@@ -557,8 +557,8 @@ static bool tclie_pattern_match_options(tclie_token_t *const tokens,
 
 		assert(count <= max_tokens);
 
-		if (count != 0 && !tclie_pattern_match_tokens(tokens, count, p,
-													  TCLIE_COMBINATOR_AND))
+		if (count != 0 &&
+			!tclie_pattern_match_tokens(tokens, count, p, TCLIE_COMBINATOR_AND))
 			return false;
 
 		if (*p->arg_index == arg_index)
@@ -1094,11 +1094,19 @@ static bool tclie_exec(tclie_t *const tclie, const tclie_cmd_t *const cmds,
 }
 
 #if TCLIE_ENABLE_USERS
+#if TCLIE_ENABLE_USERNAMES
+#define TCLIE_LOGIN_STATE_VALID(state)                                         \
+	((state) == TCLIE_LOGIN_IDLE || (state) == TCLIE_LOGIN_USERNAME ||         \
+	 (state) == TCLIE_LOGIN_PASSWORD)
+#else
+#define TCLIE_LOGIN_STATE_VALID(state)                                         \
+	((state) == TCLIE_LOGIN_IDLE || (state) == TCLIE_LOGIN_PASSWORD)
+#endif
+
 static void tclie_login_prompt(tclie_t *const tclie)
 {
 	assert(tclie);
-	assert(tclie->user.login.state >= TCLIE_LOGIN_IDLE &&
-		   tclie->user.login.state <= TCLIE_LOGIN_PASSWORD);
+	assert(TCLIE_LOGIN_STATE_VALID(tclie->user.login.state));
 
 	if (tclie->user.login.state == TCLIE_LOGIN_IDLE)
 		return;
@@ -1121,9 +1129,8 @@ static inline void tclie_login_proceed(tclie_login_t *const login,
 									   const tclie_login_state_t state)
 {
 	assert(login);
-	assert(login->state >= TCLIE_LOGIN_IDLE &&
-		   login->state <= TCLIE_LOGIN_PASSWORD);
-	assert((int)state >= TCLIE_LOGIN_IDLE && (int)state <= TCLIE_LOGIN_PASSWORD);
+	assert(TCLIE_LOGIN_STATE_VALID(login->state));
+	assert(TCLIE_LOGIN_STATE_VALID(state));
 
 	login->state = state;
 	login->attempt = 0;
@@ -1137,8 +1144,7 @@ static bool tclie_login_process(tclie_t *const tclie, const char *const str,
 
 	tclie_users_t *const user = &tclie->user;
 	tclie_login_t *const login = &user->login;
-	assert(login->state >= TCLIE_LOGIN_IDLE &&
-		   login->state <= TCLIE_LOGIN_PASSWORD);
+	assert(TCLIE_LOGIN_STATE_VALID(login->state));
 
 	if (login->state == TCLIE_LOGIN_IDLE)
 		return false;

@@ -1904,18 +1904,42 @@ void tcli_in(tcli_t *const tcli, const void *const buf, size_t len)
 	}
 }
 
+static bool tcli_echo_mode_valid(const tcli_echo_mode_t mode)
+{
+	switch (mode) {
+	case TCLI_ECHO_ON:
+	case TCLI_ECHO_OFF:
+	case TCLI_ECHO_OFF_ONCE:
+		return true;
+	}
+
+	return false;
+}
+
 void tcli_set_echo(tcli_t *const tcli, const tcli_echo_mode_t mode)
 {
-	if (!tcli || (int)mode < TCLI_ECHO_ON || (int)mode > TCLI_ECHO_OFF_ONCE)
+	if (!tcli || !tcli_echo_mode_valid(mode))
 		return;
 
 	tcli->echo.mode = mode;
 }
 
 #if TCLI_HISTORY_BUF_LEN > 0
+static bool tcli_hist_mode_valid(const tcli_history_mode_t mode)
+{
+	switch (mode) {
+	case TCLI_HIST_ON:
+	case TCLI_HIST_OFF:
+	case TCLI_HIST_OFF_ONCE:
+		return true;
+	}
+
+	return false;
+}
+
 void tcli_set_hist(tcli_t *const tcli, const tcli_history_mode_t mode)
 {
-	if (!tcli || (int)mode < TCLI_HIST_ON || (int)mode > TCLI_HIST_OFF_ONCE)
+	if (!tcli || !tcli_hist_mode_valid(mode))
 		return;
 
 	tcli->hist.mode = mode;
