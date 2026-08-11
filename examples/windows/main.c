@@ -94,9 +94,8 @@ int main(int argc, char **argv)
 	// ENABLE_VIRTUAL_TERMINAL_INPUT turns arrow keys and similar into the
 	// escape sequences the library expects.
 	SetConsoleMode(in,
-				   (saved_in_mode &
-					~(ENABLE_LINE_INPUT | ENABLE_ECHO_INPUT |
-					  ENABLE_PROCESSED_INPUT)) |
+				   (saved_in_mode & ~(ENABLE_LINE_INPUT | ENABLE_ECHO_INPUT |
+									  ENABLE_PROCESSED_INPUT)) |
 					   ENABLE_VIRTUAL_TERMINAL_INPUT);
 
 	// Binary mode keeps the byte stream intact: no <CR><LF> translation in
