@@ -167,7 +167,7 @@ typedef enum tcli_echo_mode {
 } tcli_echo_mode_t;
 
 typedef struct tcli_echo {
-	tcli_echo_mode_t mode : 2;
+	tcli_echo_mode_t mode;
 } tcli_echo_t;
 
 #if TCLI_HISTORY_BUF_LEN > 0
@@ -188,7 +188,7 @@ typedef struct tcli_rb {
 
 typedef struct tcli_hist {
 	tcli_rb_t rb;
-	tcli_history_mode_t mode : 2;
+	tcli_history_mode_t mode;
 	bool has_line : 1;
 	bool search : 1;
 	bool next : 1;
