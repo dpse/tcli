@@ -546,17 +546,24 @@ static bool tclie_pattern_match_options(tclie_token_t *const tokens,
 	assert(tokens);
 	assert(p);
 
-	size_t count = 0;
+	assert(p->arg_index);
 
-	if (!tclie_pattern_tokenize_options(p, tokens, max_tokens, &count))
-		return false;
+	while (true) {
+		const int arg_index = *p->arg_index;
+		size_t count = 0;
 
-	assert(count <= max_tokens);
+		if (!tclie_pattern_tokenize_options(p, tokens, max_tokens, &count))
+			return false;
 
-	if (count == 0)
-		return true;
+		assert(count <= max_tokens);
 
-	return tclie_pattern_match_tokens(tokens, count, p, TCLIE_COMBINATOR_AND);
+		if (count != 0 && !tclie_pattern_match_tokens(tokens, count, p,
+													  TCLIE_COMBINATOR_AND))
+			return false;
+
+		if (*p->arg_index == arg_index)
+			return true;
+	}
 }
 
 static bool tclie_pattern_match_token(const tclie_token_t *const token,
