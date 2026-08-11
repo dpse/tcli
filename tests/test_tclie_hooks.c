@@ -77,16 +77,20 @@ static int cmd_fail(void *const arg, const int argc, const char **const argv)
 }
 
 static const tclie_cmd_t cmds[] = {
-	{"ok", cmd_ok, 0, "Returns 0."
+	{.name = "ok",
+	 .fn = cmd_ok,
+	 .desc = "Returns 0."
 #if TCLIE_PATTERN_MATCH
 	 ,
-	 "ok"
+	 .pattern = "ok"
 #endif
 	},
-	{"fail", cmd_fail, 0, "Returns -1."
+	{.name = "fail",
+	 .fn = cmd_fail,
+	 .desc = "Returns -1."
 #if TCLIE_PATTERN_MATCH
 	 ,
-	 "fail"
+	 .pattern = "fail"
 #endif
 	},
 };

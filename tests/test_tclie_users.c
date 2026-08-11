@@ -7,6 +7,8 @@ GREATEST_MAIN_DEFS();
 
 enum { LEVEL_DEFAULT = 0, LEVEL_USER = 1, LEVEL_ADMIN = 2 };
 
+#if TCLIE_ENABLE_USERS
+
 typedef struct {
 	int default_calls;
 	int user_calls;
@@ -43,35 +45,42 @@ static int cmd_admin(void *const arg, const int argc, const char **const argv)
 	return 0;
 }
 
-#if TCLIE_ENABLE_USERS
-
 static const tclie_cmd_t cmds[] = {
-	{"public", cmd_default, LEVEL_DEFAULT, "Public command."
+	{.name = "public",
+	 .fn = cmd_default,
+	 .min_user_level = LEVEL_DEFAULT,
+	 .desc = "Public command."
 #if TCLIE_PATTERN_MATCH
 	 ,
-	 "public"
+	 .pattern = "public"
 #endif
 	},
-	{"userspace", cmd_user, LEVEL_USER, "Requires user."
+	{.name = "userspace",
+	 .fn = cmd_user,
+	 .min_user_level = LEVEL_USER,
+	 .desc = "Requires user."
 #if TCLIE_PATTERN_MATCH
 	 ,
-	 "userspace"
+	 .pattern = "userspace"
 #endif
 	},
-	{"adminspace", cmd_admin, LEVEL_ADMIN, "Admin only."
+	{.name = "adminspace",
+	 .fn = cmd_admin,
+	 .min_user_level = LEVEL_ADMIN,
+	 .desc = "Admin only."
 #if TCLIE_PATTERN_MATCH
 	 ,
-	 "adminspace"
+	 .pattern = "adminspace"
 #endif
 	},
 };
 
 static const tclie_user_t login_users[] = {
 #if TCLIE_ENABLE_USERNAMES
-	{"debug", NULL, LEVEL_USER},
-	{"admin", "12345", LEVEL_ADMIN},
+	{.name = "debug", .password = NULL, .level = LEVEL_USER},
+	{.name = "admin", .password = "12345", .level = LEVEL_ADMIN},
 #else
-	{NULL, "12345", LEVEL_ADMIN},
+	{.password = "12345", .level = LEVEL_ADMIN},
 #endif
 };
 

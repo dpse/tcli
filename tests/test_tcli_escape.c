@@ -73,7 +73,7 @@ TEST down_arrow_after_up_returns_to_empty(void)
 	init(&tcli, &ctx);
 
 	tcli_in_str(&tcli, "first\r");
-	tcli_in_str(&tcli, "\x1b[A");   // up: now showing "first"
+	tcli_in_str(&tcli, "\x1b[A");	// up: now showing "first"
 	tcli_in_str(&tcli, "\x1b[B\r"); // down: back to empty, then enter
 	// Empty line shouldn't fire exec.
 	ASSERT_EQ(1, ctx.call_count);

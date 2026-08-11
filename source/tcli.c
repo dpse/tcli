@@ -623,6 +623,8 @@ void tcli_flush(tcli_t *const tcli)
 	if (tcli->out)
 		tcli->out(tcli->arg, tcli->out_buf.buf);
 	tcli->out_buf.len = 0;
+#else
+	(void)tcli;
 #endif
 }
 
@@ -778,11 +780,13 @@ static inline void tcli_term_return_cut(tcli_t *const tcli)
 	tcli_term_cut(tcli);
 }
 
+#if TCLI_COMPLETE
 static inline void tcli_term_erase_all(tcli_t *const tcli)
 {
 	TCLI_ASSERT(tcli);
 	tcli_out(tcli, "\033[2K");
 }
+#endif
 
 static inline void tcli_term_save_cursor(tcli_t *const tcli)
 {
@@ -796,6 +800,7 @@ static inline void tcli_term_restore_cursor(tcli_t *const tcli)
 	tcli_out(tcli, "\033[u");
 }
 
+#if TCLI_COMPLETE
 static inline void tcli_term_cursor_up(tcli_t *const tcli)
 {
 	TCLI_ASSERT(tcli);
@@ -807,6 +812,7 @@ static inline void tcli_term_cursor_down(tcli_t *const tcli)
 	TCLI_ASSERT(tcli);
 	tcli_out(tcli, "\033[B");
 }
+#endif
 
 static void tcli_term_print_from_cursor(tcli_t *const tcli,
 										const bool save_cursor,
@@ -958,6 +964,7 @@ static size_t tcli_offset_prev_word(const tcli_t *const tcli)
 	return offset;
 }
 
+#if TCLI_HISTORY_BUF_LEN > 0
 static void tcli_reprint_line(tcli_t *const tcli, size_t new_len)
 {
 	TCLI_ASSERT(tcli);
@@ -978,6 +985,7 @@ static inline void tcli_erase_line(tcli_t *const tcli)
 	tcli->cmdline.buf[0] = '\0';
 	tcli_reprint_line(tcli, 0);
 }
+#endif
 
 static void tcli_reprint_all(tcli_t *const tcli, size_t new_len)
 {
@@ -1074,6 +1082,7 @@ static void tcli_delete(tcli_t *const tcli, size_t len, const bool output)
 	}
 }
 
+#if TCLI_COMPLETE
 static inline void tcli_replace(tcli_t *const tcli, size_t len,
 								const char *const str, const size_t str_len,
 								const bool output)
@@ -1084,6 +1093,7 @@ static inline void tcli_replace(tcli_t *const tcli, size_t len,
 	tcli_delete(tcli, len, str_len == 0);
 	tcli_insert(tcli, str, str_len, output);
 }
+#endif
 
 #if TCLI_HISTORY_BUF_LEN > 0
 static void tcli_hist_reset(tcli_t *const tcli)
