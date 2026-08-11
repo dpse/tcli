@@ -26,6 +26,65 @@ jobs:
       - name: Run tests
         run: ctest --test-dir build --output-on-failure
 
+  configurations:
+    name: Config (${{ matrix.name }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: no-users
+            defines: TCLIE_ENABLE_USERS=0
+          - name: no-usernames
+            defines: TCLIE_ENABLE_USERNAMES=0
+          - name: no-pattern-match
+            defines: TCLIE_PATTERN_MATCH=0
+          - name: no-history
+            defines: TCLI_HISTORY_BUF_LEN=0
+          - name: no-output-buffer
+            defines: TCLI_OUTPUT_BUF_LEN=0
+          - name: no-completion
+            defines: TCLI_COMPLETE=0
+          - name: small
+            defines: TCLI_CMDLINE_MAX_LEN=32;TCLI_MAX_TOKENS=4
+          # Matches the Uno environment in examples/platformio/platformio.ini.
+          - name: minimal
+            defines: TCLIE_ENABLE_USERS=0;TCLIE_PATTERN_MATCH=0;TCLI_HISTORY_BUF_LEN=0;TCLI_OUTPUT_BUF_LEN=0;TCLI_COMPLETE=0
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          submodules: true
+
+      - name: Configure
+        env:
+          CC: gcc
+        run: >
+          cmake -S . -B build -DTCLI_BUILD_TESTS=ON -DTCLI_BUILD_EXAMPLES=ON
+          -DTCLI_WERROR=ON "-DTCLI_CONFIG_DEFINITIONS=${{ matrix.defines }}"
+
+      - name: Build
+        run: cmake --build build --parallel
+
+      - name: Run tests
+        run: ctest --test-dir build --output-on-failure
+
+  windows:
+    name: Build & Test (MSVC)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          submodules: true
+
+      - name: Configure
+        run: cmake -S . -B build -DTCLI_BUILD_TESTS=ON -DTCLI_BUILD_EXAMPLES=ON
+
+      - name: Build
+        run: cmake --build build --config Debug --parallel
+
+      - name: Run tests
+        run: ctest --test-dir build --build-config Debug --output-on-failure
+
   sanitizers:
     name: Clang + ASan + UBSan
     runs-on: ubuntu-latest
