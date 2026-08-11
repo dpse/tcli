@@ -79,5 +79,6 @@ int main(void)
 The [examples directory](https://github.com/dpse/tcli/tree/master/examples) contains:
 
 - [Linux CLI](https://github.com/dpse/tcli/tree/master/examples/linux): full terminal integration with termios, history, signal handling, and a periodic logging demo.
+- [Windows CLI](https://github.com/dpse/tcli/tree/master/examples/windows): the same integration for the Windows console, with virtual terminal input and output enabled.
 - [Arduino](https://github.com/dpse/tcli/tree/master/examples/arduino): serial CLI for AVR, <abbr>ESP32</abbr>, and <abbr>RP2040</abbr> via PlatformIO, with memory-tight defaults.
 - [Shared command set](https://github.com/dpse/tcli/blob/master/examples/common/example_cmds.h): patterns, options, login, and subcommands, reused across samples.
