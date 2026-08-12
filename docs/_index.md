@@ -15,7 +15,7 @@ The library is [configured](@/configuration.md) using compiler flags, and featur
 
 The library is provided in two layers. Unless you have very specific requirements it is recommended to only use the high-level `tclie` API:
 
-- [`tcli`](@/tcli.md): The lower-level core. Input characters are fed in, and the line buffer, command history, tab-completion, and output callback are managed internally. When the user presses {{ kbd(key="Enter") }}, the registered `exec` callback is invoked with an `argc`/`argv`-style argument list.
+- [`tcli`](@/tcli.md): The lower-level core. Input characters are fed in, and the line buffer, command history, tab-completion, and output callback are managed internally. When the user presses {{ <kbd key="Enter" /> }}, the registered `exec` callback is invoked with an `argc`/`argv`-style argument list.
 
 - [`tclie`](@/tclie.md): A wrapper on top of `tcli` that adds a registered command table, optional users with login, an optional pattern-matching system for argument validation and automatic tab-completion, and the built-in commands `help`, `clear`, `login`, and `logout`.
 

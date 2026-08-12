@@ -17,7 +17,7 @@ All tuning is performed via compile-time `#define`s; no runtime configuration is
 
 | Macro                 | Default | Effect |
 |-----------------------|---------|--------|
-| `TCLI_HISTORY_BUF_LEN`| `512`   | Size of the ring buffer that stores history lines. Setting it to `0` compiles history out entirely: no {{ kbd(key="Up") }}/{{ kbd(key="Down") }}, no {{ kbd(key="Ctrl+r") }}, smaller `tcli_t`. |
+| `TCLI_HISTORY_BUF_LEN`| `512`   | Size of the ring buffer that stores history lines. Setting it to `0` compiles history out entirely: no {{ <kbd key="Up" /> }}/{{ <kbd key="Down" /> }}, no {{ <kbd key="Ctrl+r" /> }}, smaller `tcli_t`. |
 
 ## Output Buffering
 

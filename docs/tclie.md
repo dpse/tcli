@@ -123,7 +123,7 @@ The following commands are always registered (subject to the relevant compile-ti
 | Command   | Available when                          | Description |
 |-----------|-----------------------------------------|------|
 | `help`    | always                                  | Lists registered commands with their descriptions. When given a command name as an argument, shows that command's pattern and options only. |
-| `clear`   | always                                  | Clears the screen. Equivalent to {{ kbd(key="Ctrl+l") }}. |
+| `clear`   | always                                  | Clears the screen. Equivalent to {{ <kbd key="Ctrl+l" /> }}. |
 | `login`   | `TCLIE_ENABLE_USERS = 1`                | Authenticates as a user. |
 | `logout`  | `TCLIE_ENABLE_USERS = 1`                | Returns the current user level to 0. |
 

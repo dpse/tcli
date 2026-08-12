@@ -74,11 +74,11 @@ int main(void)
 }
 ```
 
-The above is a complete CLI with tab-completion and command history. The built-in `help` command lists registered commands, {{ kbd(key="Tab") }} completes partial commands, {{ kbd(key="Up") }}/{{ kbd(key="Down") }} walks the history, and {{ kbd(key="Ctrl+r") }} performs a backwards history search.
+The above is a complete CLI with tab-completion and command history. The built-in `help` command lists registered commands, {{ <kbd key="Tab" /> }} completes partial commands, {{ <kbd key="Up" /> }}/{{ <kbd key="Down" /> }} walks the history, and {{ <kbd key="Ctrl+r" /> }} performs a backwards history search.
 
 ## 4. Next Steps
 
-A SIGINT handler can be registered to catch {{ kbd(key="Ctrl+c") }} (see [`tclie_set_sigint`](@/tcli.md#sigint-handling)).
+A SIGINT handler can be registered to catch {{ <kbd key="Ctrl+c" /> }} (see [`tclie_set_sigint`](@/tcli.md#sigint-handling)).
 
 Commands can be restricted to certain user levels by enabling the optional users feature:
 

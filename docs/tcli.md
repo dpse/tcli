@@ -84,7 +84,7 @@ The defaults wrap the prompt strings in ANSI color escapes (green, red, and gree
 
 ## Command History
 
-{{ kbd(key="Up") }}/{{ kbd(key="Down") }} recalls earlier lines and {{ kbd(key="Ctrl+r") }} enters reverse search. The feature is enabled when [`TCLI_HISTORY_BUF_LEN`](@/configuration.md#history) is non-zero at compile time (default 512 bytes).
+{{ <kbd key="Up" /> }}/{{ <kbd key="Down" /> }} recalls earlier lines and {{ <kbd key="Ctrl+r" /> }} enters reverse search. The feature is enabled when [`TCLI_HISTORY_BUF_LEN`](@/configuration.md#history) is non-zero at compile time (default 512 bytes).
 
 ```c
 tcli_set_hist(&t, TCLI_HIST_OFF);          /* do not record any new lines */
@@ -96,7 +96,7 @@ The history is stored in a ring buffer. Old lines are evicted as the buffer fill
 
 ## Tab-Completion
 
-When [`TCLI_COMPLETE`](@/configuration.md#tab-completion) is set to `1` (enabled by default), pressing {{ kbd(key="Tab") }} invokes the registered completion function. If multiple matches are returned, subsequent {{ kbd(key="Tab") }} presses cycle through them.
+When [`TCLI_COMPLETE`](@/configuration.md#tab-completion) is set to `1` (enabled by default), pressing {{ <kbd key="Tab" /> }} invokes the registered completion function. If multiple matches are returned, subsequent {{ <kbd key="Tab" /> }} presses cycle through them.
 
 ```c
 size_t complete(void *arg, int argc, const char **argv,
@@ -124,10 +124,10 @@ A completion function is provided automatically by the `tclie` pattern-matching 
 tcli_set_sigint(&t, my_sigint);
 ```
 
-The registered handler is invoked when the user presses {{ kbd(key="Ctrl+c") }}. Without a handler the default behavior is to abort the current line and reprint the prompt.
+The registered handler is invoked when the user presses {{ <kbd key="Ctrl+c" /> }}. Without a handler the default behavior is to abort the current line and reprint the prompt.
 
 > [!NOTE]
-> Pressing {{ kbd(key="Ctrl+c") }} will not abort any currently executing command! The handler will be invoked once the command has returned.
+> Pressing {{ <kbd key="Ctrl+c" /> }} will not abort any currently executing command! The handler will be invoked once the command has returned.
 
 ## Screen Clearing
 
@@ -135,4 +135,4 @@ The registered handler is invoked when the user presses {{ kbd(key="Ctrl+c") }}.
 tcli_clear_screen(&t);
 ```
 
-Sends the ANSI clear sequence and reprints the prompt. Bound to {{ kbd(key="Ctrl+l") }} automatically.
+Sends the ANSI clear sequence and reprints the prompt. Bound to {{ <kbd key="Ctrl+l" /> }} automatically.

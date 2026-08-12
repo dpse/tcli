@@ -66,7 +66,7 @@ A `log` command that accepts any tail:
 
 When the typed arguments do not match the pattern, the callback is not invoked. A usage hint is printed instead and the prompt switches to the error variant. The hint is the pattern itself, formatted with [`TCLIE_USAGE_FORMAT`](@/configuration.md#ansi-color-and-format-macros).
 
-When {{ kbd(key="Tab") }} is pressed mid-token, the matcher determines what is expected at the current position and offers it as a completion candidate. For literal alternations the candidates are the alternations themselves (e.g. `on` and `off`). For `<wildcard>` tokens no candidates are offered, and the user types freely.
+When {{ <kbd key="Tab" /> }} is pressed mid-token, the matcher determines what is expected at the current position and offers it as a completion candidate. For literal alternations the candidates are the alternations themselves (e.g. `on` and `off`). For `<wildcard>` tokens no candidates are offered, and the user types freely.
 
 ## Options
 
@@ -85,7 +85,7 @@ static const tclie_cmd_t cmds[] = {
 };
 ```
 
-When an options table is set, the options are also completed automatically. At an option position, pressing {{ kbd(key="Tab") }} offers each option in both its short form (`-f`) and long form (`--force`).
+When an options table is set, the options are also completed automatically. At an option position, pressing {{ <kbd key="Tab" /> }} offers each option in both its short form (`-f`) and long form (`--force`).
 
 Short options may be combined behind a single `-`: `-fv` is equivalent to `-f -v`. Each character is matched against the registered short options in turn. Long options are matched individually and are not combined. If any character in a combined group is not a registered short option, the whole token is left to be matched as an ordinary argument rather than as options.
 
